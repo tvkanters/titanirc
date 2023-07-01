@@ -6,6 +6,7 @@ import com.tvkdevelopment.titanirc.bridge.ChannelMapping
 import com.tvkdevelopment.titanirc.bridge.transformation.MessageTransformationLink
 import com.tvkdevelopment.titanirc.bridge.transformation.MessageTransformationMapping
 import com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations.StripIrcFormattingMessageTransformation
+import com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations.StripSmolFiMessageTransformation
 import com.tvkdevelopment.titanirc.discord.Discord
 import com.tvkdevelopment.titanirc.irc.Irc
 import org.apache.log4j.BasicConfigurator
@@ -38,6 +39,7 @@ object Main {
                     irc to discord,
                     listOf(
                         StripIrcFormattingMessageTransformation(),
+                        StripSmolFiMessageTransformation(),
                     )
                 ),
                 MessageTransformationLink(
