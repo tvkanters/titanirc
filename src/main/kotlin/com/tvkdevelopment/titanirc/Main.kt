@@ -3,6 +3,9 @@ package com.tvkdevelopment.titanirc
 import com.tvkdevelopment.titanirc.bridge.Bridge
 import com.tvkdevelopment.titanirc.bridge.ChannelLink
 import com.tvkdevelopment.titanirc.bridge.ChannelMapping
+import com.tvkdevelopment.titanirc.bridge.transformation.MessageTransformationLink
+import com.tvkdevelopment.titanirc.bridge.transformation.MessageTransformationMapping
+import com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations.StripIrcFormattingMessageTransformation
 import com.tvkdevelopment.titanirc.discord.Discord
 import com.tvkdevelopment.titanirc.irc.Irc
 import org.apache.log4j.BasicConfigurator
@@ -30,6 +33,19 @@ object Main {
                 ChannelLink(discord to "399598970860732416", irc to "#dopefish_gdq"),
                 ChannelLink(discord to "1089194862915637412", irc to "#titanirc"),
             ),
+            MessageTransformationMapping(
+                MessageTransformationLink(
+                    irc to discord,
+                    listOf(
+                        StripIrcFormattingMessageTransformation(),
+                    )
+                ),
+                MessageTransformationLink(
+                    discord to irc,
+                    listOf(
+                    )
+                )
+            )
         )
 
         stayAlive()
