@@ -6,7 +6,6 @@ import com.tvkdevelopment.titanirc.irc.listeners.IrcBridgeListener
 import com.tvkdevelopment.titanirc.irc.listeners.LogListener
 import com.tvkdevelopment.titanirc.irc.listeners.NickFixListener
 import com.tvkdevelopment.titanirc.irc.listeners.RestartListener
-import com.tvkdevelopment.titanirc.util.splitMessageForIrc
 import kotlinx.coroutines.*
 import org.pircbotx.Configuration
 import org.pircbotx.PircBotX

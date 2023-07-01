@@ -1,8 +1,15 @@
-package com.tvkdevelopment.titanirc.util
+package com.tvkdevelopment.titanirc.irc
 
-fun String.splitMessageForIrc(lineBasicCharMax: Int, prefix: String? = null): String {
+fun String.splitMessageForIrc(lineBasicCharMax: Int, prefix: String? = null): String =
+    split('\n')
+        .filter { it.isNotBlank() }
+        .joinToString("\n") { it.splitLineForIrc(lineBasicCharMax, prefix) }
+
+private fun String.splitLineForIrc(lineBasicCharMax: Int, prefix: String?): String {
     val messageChars = this.toCharArray()
     val charSize = if (messageChars.any { it.code >= 128 }) 2 else 1
+    val prefixLength = (prefix?.length ?: 0) * charSize
+    val wordBasicCharMax = lineBasicCharMax - prefixLength * charSize
 
     val splitMessageBuilder = StringBuilder()
     val wordBuilder = StringBuilder()
@@ -10,19 +17,17 @@ fun String.splitMessageForIrc(lineBasicCharMax: Int, prefix: String? = null): St
     var lineBasicCharCount = 0
     var wordBasicCharCount = 0
     var wordAddedToLine = false
-    var lastCharNewLine = false
 
     fun prepareNewLine() {
         prefix?.let { splitMessageBuilder.append(it) }
-        lineBasicCharCount = prefix?.length ?: 0
-        lastCharNewLine = true
+        lineBasicCharCount = prefixLength
         wordAddedToLine = false
     }
     prepareNewLine()
 
     this.toCharArray().forEach {
-        // On word splits, try to add the buffered word to the line
         when (it) {
+            // On word splits, try to add the buffered word to the line
             ' ' -> {
                 lineBasicCharCount += wordBasicCharCount
 
@@ -46,25 +51,17 @@ fun String.splitMessageForIrc(lineBasicCharMax: Int, prefix: String? = null): St
                 wordBuilder.clear()
             }
 
-            '\n' -> {
-                if (!lastCharNewLine) {
-                    splitMessageBuilder.append(wordBuilder)
-                    wordBasicCharCount = 0
-                    wordBuilder.clear()
-
-                    splitMessageBuilder.append(it)
-
-                    prepareNewLine()
-                }
-            }
-
             else -> {
                 // Add the character, counting extended ASCII chars (such as Cyrillic) as double
                 wordBasicCharCount += charSize
-                if (wordBasicCharCount < lineBasicCharMax) {
+                if (wordBasicCharCount < wordBasicCharMax) {
                     wordBuilder.append(it)
+                } else {
+                    if (wordBuilder.last() != '…') {
+                        wordBuilder.append('…')
+                    }
+                    wordBasicCharCount = wordBasicCharMax
                 }
-                lastCharNewLine = false
             }
         }
     }
@@ -74,7 +71,7 @@ fun String.splitMessageForIrc(lineBasicCharMax: Int, prefix: String? = null): St
     if (lineBasicCharCount > lineBasicCharMax) {
         splitMessageBuilder.append('\n')
         prepareNewLine()
-    } else if (splitMessageBuilder.isNotEmpty()) {
+    } else if (splitMessageBuilder.length > prefixLength) {
         splitMessageBuilder.append(' ')
     }
 
