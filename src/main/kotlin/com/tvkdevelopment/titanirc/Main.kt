@@ -24,14 +24,12 @@ object Main {
         val discord = Discord.startBot(configuration)
 
         Bridge.connect(
-            irc,
-            discord,
             ChannelMapping(
-                ChannelLink("#dopefish_lives", "418911279625797652"),
-                ChannelLink("#freamonsmind", "381040418436939777"),
-                ChannelLink("#dopefish_gdq", "399598970860732416"),
-                ChannelLink("#titanirc", "1089194862915637412"),
-            )
+                ChannelLink(discord to "418911279625797652", irc to "#dopefish_lives"),
+                ChannelLink(discord to "381040418436939777", irc to "#freamonsmind"),
+                ChannelLink(discord to "399598970860732416", irc to "#dopefish_gdq"),
+                ChannelLink(discord to "1089194862915637412", irc to "#titanirc"),
+            ),
         )
 
         stayAlive()

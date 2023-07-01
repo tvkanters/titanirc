@@ -1,40 +1,61 @@
 package com.tvkdevelopment.titanirc.bridge
 
 class Bridge(
-    private val ircClient: BridgeClient,
-    private val discordClient: BridgeClient,
     private val channelMapping: ChannelMapping,
 ) {
 
     private fun connect() {
-        ircClient.addRelayMessageListener { channel, nick, message ->
-            val targetChannel = channelMapping.getDiscordChannel(channel) ?: return@addRelayMessageListener
-            discordClient.relayMessage(targetChannel, nick, message)
-        }
-        discordClient.addRelayMessageListener { channel, nick, message ->
-            val targetChannel = channelMapping.getIrcChannel(channel) ?: return@addRelayMessageListener
-            ircClient.relayMessage(targetChannel, nick, message)
+        channelMapping.clients.forEach { sourceClient ->
+            val targetClients = channelMapping.clients - sourceClient
+            sourceClient.addRelayMessageListener { sourceChannel, nick, message ->
+                targetClients.forEach { targetClient ->
+                    channelMapping.getTargetChannel(sourceClient, targetClient, sourceChannel)
+                        ?.let { targetChannel ->
+                            targetClient.relayMessage(targetChannel, nick, message)
+                        }
+                }
+            }
         }
     }
 
     companion object {
         fun connect(
-            ircClient: BridgeClient,
-            discordClient: BridgeClient,
             channelMapping: ChannelMapping,
-        ) = Bridge(ircClient, discordClient, channelMapping)
+        ) = Bridge(channelMapping)
             .apply { connect() }
     }
 }
 
-class ChannelMapping(vararg channels: ChannelLink) {
-    private val ircToDiscord = channels.associate { it.ircChannel to it.discordChannel }
-    private val discordToIrc = channels.associate { it.discordChannel to it.ircChannel }
+class ChannelMapping(vararg links: ChannelLink) {
 
-    fun getIrcChannel(discordChannelId: String) = discordToIrc[discordChannelId]
-    fun getDiscordChannel(ircChannel: String) = ircToDiscord[ircChannel]
+    val clients: Set<BridgeClient> = links.flatMap { link -> link.channels.map { it.client } }.toSet()
+
+    private val clientMapping: Map<BridgeClient, Map<BridgeClient, Map<String, String>>> =
+        mutableMapOf<BridgeClient, MutableMap<BridgeClient, MutableMap<String, String>>>().apply {
+            links.forEach { link ->
+                link.channels.forEach { channel ->
+                    link.channels
+                        .minus(channel)
+                        .forEach { otherChannel ->
+                            getOrPut(channel.client) { mutableMapOf() }
+                                .getOrPut(otherChannel.client) { mutableMapOf() }
+                                .put(channel.id, otherChannel.id)
+                        }
+                }
+            }
+        }
+
+    fun getTargetChannel(sourceClient: BridgeClient, targetClient: BridgeClient, sourceChannel: String): String? =
+        clientMapping[sourceClient]?.get(targetClient)?.get(sourceChannel)
 }
 
-data class ChannelLink(val ircChannel: String, val discordChannel: String)
+data class ChannelLink(val channels: Set<Channel>) {
+    constructor(vararg channels: Pair<BridgeClient, String>) :
+        this(channels.map { Channel(it.first, it.second) }.toSet())
+}
+
+data class Channel(val client: BridgeClient, val id: String)
+
+
 
 
