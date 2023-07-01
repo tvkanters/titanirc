@@ -2,7 +2,7 @@ package com.tvkdevelopment.titanirc.bridge
 
 import com.tvkdevelopment.titanirc.bridge.transformation.MessageTransformationMapping
 
-class Bridge(
+class Bridge private constructor(
     private val channelMapping: ChannelMapping,
     private val messageTransformationMapping: MessageTransformationMapping,
 ) {
@@ -34,7 +34,7 @@ class Bridge(
     companion object {
         fun connect(
             channelMapping: ChannelMapping,
-            transformationMapping: MessageTransformationMapping,
+            transformationMapping: MessageTransformationMapping = MessageTransformationMapping(),
         ) = Bridge(channelMapping, transformationMapping)
             .apply { connect() }
     }
