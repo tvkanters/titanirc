@@ -1,0 +1,8 @@
+# Project exclude paths
+/.gradle/
+/build/
+/exe/
+*.log*
+*.iml
+/deploy.gradle
+/src/main/kotlin/com/tvkdevelopment/titanirc/TitanircConfigurationPrivate.kt
