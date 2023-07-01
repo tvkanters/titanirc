@@ -17,14 +17,13 @@ import kotlinx.coroutines.*
 @OptIn(DelicateCoroutinesApi::class)
 class Discord(private val configuration: TitanircConfiguration) : BridgeClient {
 
-    private val loginScope = CoroutineScope(newSingleThreadContext("DiscordLogin"))
-    private val taskScope = CoroutineScope(newSingleThreadContext("DiscordTask"))
+    private val scope = CoroutineScope(newSingleThreadContext("Discord"))
     private lateinit var kord: Kord
 
     private val messageListeners = mutableListOf<BridgeClient.MessageListener>()
 
     private fun startBot() {
-        loginScope.launch {
+        scope.launch {
             kord = Kord(configuration.discordToken)
             with(kord) {
                 on<MessageCreateEvent> {
@@ -50,7 +49,7 @@ class Discord(private val configuration: TitanircConfiguration) : BridgeClient {
     }
 
     override fun relayMessage(channel: String, nick: String, message: String) {
-        taskScope.launch {
+        scope.launch {
             if (::kord.isInitialized) {
                 try {
                     kord.getChannelOf<MessageChannel>(Snowflake(channel))
