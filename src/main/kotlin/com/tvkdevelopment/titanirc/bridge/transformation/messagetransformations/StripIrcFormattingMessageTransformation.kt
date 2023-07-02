@@ -9,6 +9,5 @@ class StripIrcFormattingMessageTransformation : MessageTransformation {
 
     companion object {
         private val FORMATTING_REGEX = Regex("""$NORMAL|$BOLD|$ITALICS|$UNDERLINE|$REVERSE|\u0003\d,?\d""")
-
     }
 }

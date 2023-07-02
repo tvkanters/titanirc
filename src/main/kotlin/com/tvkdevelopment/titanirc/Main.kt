@@ -45,6 +45,7 @@ object Main {
                 MessageTransformationLink(
                     irc to discord,
                     listOf(
+                        EscapeDiscordFormattingMessageTransformation(),
                         IrcFormattingToDiscordMessageTransformation(),
                         StripIrcFormattingMessageTransformation(),
                         StripSmolFiMessageTransformation(),
