@@ -103,6 +103,6 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
     }
 
     companion object {
-        private const val QUAKENET_MAXLINELENGTH = 444
+        private const val QUAKENET_MAXLINELENGTH = 443
     }
 }

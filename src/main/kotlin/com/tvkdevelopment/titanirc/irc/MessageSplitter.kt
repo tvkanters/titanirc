@@ -54,10 +54,12 @@ private fun String.splitLineForIrc(lineBasicCharMax: Int, prefix: String?): Stri
             else -> {
                 // Add the character, counting extended ASCII chars (such as Cyrillic) as double
                 wordBasicCharCount += charSize
-                if (wordBasicCharCount < wordBasicCharMax) {
+                if (wordBasicCharCount <= wordBasicCharMax) {
                     wordBuilder.append(it)
                 } else {
                     if (wordBuilder.last() != '…') {
+                        // Ellipsis is unicode and counts as 4 chars
+                        wordBuilder.delete(wordBuilder.length - 3, wordBuilder.length)
                         wordBuilder.append('…')
                     }
                     wordBasicCharCount = wordBasicCharMax
