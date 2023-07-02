@@ -11,6 +11,7 @@ class ConvertIrcFormattingToDiscordMessageTransformation : MessageTransformation
         private val FORMATTINGS = listOf(
             Formatting(Colors.BOLD, "**"),
             Formatting(Colors.ITALICS, "_"),
+            Formatting("\u00031,1", "||"),
             // Underlines are disabled because they can conflict with italics
             //Formatting(Colors.UNDERLINE, "__"),
         )
