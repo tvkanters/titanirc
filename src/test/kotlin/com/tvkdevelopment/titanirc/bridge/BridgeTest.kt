@@ -15,14 +15,21 @@ class BridgeTest {
     private val mockClient1MessageListeners = mutableListOf<BridgeClient.MessageListener>()
     private val mockClient2MessageListeners = mutableListOf<BridgeClient.MessageListener>()
     private val mockClient3MessageListeners = mutableListOf<BridgeClient.MessageListener>()
+    private val mockClient1TopicListeners = mutableListOf<BridgeClient.TopicListener>()
+    private val mockClient2TopicListeners = mutableListOf<BridgeClient.TopicListener>()
+    private val mockClient3TopicListeners = mutableListOf<BridgeClient.TopicListener>()
 
-    private val mockClient1 = mockClient(mockClient1MessageListeners)
-    private val mockClient2 = mockClient(mockClient2MessageListeners)
-    private val mockClient3 = mockClient(mockClient3MessageListeners)
+    private val mockClient1 = mockClient(mockClient1MessageListeners, mockClient1TopicListeners)
+    private val mockClient2 = mockClient(mockClient2MessageListeners, mockClient2TopicListeners)
+    private val mockClient3 = mockClient(mockClient3MessageListeners, mockClient3TopicListeners)
 
-    private fun mockClient(messageListeners: MutableList<BridgeClient.MessageListener>) =
+    private fun mockClient(
+        messageListeners: MutableList<BridgeClient.MessageListener>,
+        topicListeners: MutableList<BridgeClient.TopicListener>,
+    ) =
         niceMockk<BridgeClient> {
             every { addRelayMessageListener(capture(messageListeners)) } just Runs
+            every { addTopicListener(capture(topicListeners)) } just Runs
         }
 
     @Test
@@ -186,5 +193,22 @@ class BridgeTest {
 
         // THEN
         verify { mockClient2.relayMessage("a2", "nick", "message 1 2") }
+    }
+
+    @Test
+    fun testSyncTopic() {
+        // GIVEN
+        Bridge.connect(
+            ChannelMapping(
+                ChannelLink(mockClient1 to "a1", mockClient2 to "a2"),
+            ),
+        )
+
+        // WHEN
+        mockClient1TopicListeners.forEach { it.onTopicChanged("a1", "topic") }
+
+        // THEN
+        verify(exactly = 0) { mockClient1.setTopic(any(), any()) }
+        verify { mockClient2.setTopic("a2", "topic") }
     }
 }

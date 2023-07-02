@@ -4,23 +4,31 @@ import com.tvkdevelopment.titanirc.TitanircConfiguration
 import com.tvkdevelopment.titanirc.bridge.BridgeClient
 import com.tvkdevelopment.titanirc.util.Log
 import dev.kord.common.entity.Snowflake
-import dev.kord.common.exception.RequestException
+import dev.kord.common.entity.optional.Optional
 import dev.kord.core.Kord
 import dev.kord.core.entity.channel.MessageChannel
+import dev.kord.core.event.channel.ChannelUpdateEvent
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
+import dev.kord.rest.json.request.ChannelModifyPatchRequest
 import kotlinx.coroutines.*
 
 
 @OptIn(DelicateCoroutinesApi::class)
-class Discord(private val configuration: TitanircConfiguration) : BridgeClient {
+class Discord(
+    private val configuration: TitanircConfiguration,
+    private val topicRoles: TopicRoles,
+) : BridgeClient {
+
+    override val name = "Discord"
 
     private val scope = CoroutineScope(newSingleThreadContext("Discord"))
     private lateinit var kord: Kord
 
     private val messageListeners = mutableListOf<BridgeClient.MessageListener>()
+    private val topicListeners = mutableListOf<BridgeClient.TopicListener>()
 
     private fun startBot() {
         scope.launch {
@@ -36,6 +44,10 @@ class Discord(private val configuration: TitanircConfiguration) : BridgeClient {
                         }
                 }
 
+                on<ChannelUpdateEvent> {
+                    topicListeners.forEach { it.onTopicChanged(channel.id.toString(), channel.data.topic.value ?: "") }
+                }
+
                 login {
                     @OptIn(PrivilegedIntent::class)
                     intents += Intent.MessageContent
@@ -44,25 +56,55 @@ class Discord(private val configuration: TitanircConfiguration) : BridgeClient {
         }
     }
 
-    override fun addRelayMessageListener(listener: BridgeClient.MessageListener) {
-        messageListeners += listener
-    }
-
-    override fun relayMessage(channel: String, nick: String, message: String) {
+    private fun onKord(block: suspend Kord.() -> Unit) {
         scope.launch {
             if (::kord.isInitialized) {
                 try {
-                    kord.getChannelOf<MessageChannel>(Snowflake(channel))
-                        ?.createMessage("**<$nick>** $message")
-                } catch (e: RequestException) {
+                    block(kord)
+                } catch (e: Exception) {
                     Log.e(e)
                 }
             }
         }
     }
 
+    private suspend fun Kord.sendMessage(channel: String, message: String) {
+        getChannelOf<MessageChannel>(Snowflake(channel))
+            ?.createMessage(message)
+    }
+
+    override fun relayMessage(channel: String, nick: String, message: String) {
+        onKord {
+            sendMessage(channel, "**<$nick>** $message")
+        }
+    }
+
+    override fun addRelayMessageListener(listener: BridgeClient.MessageListener) {
+        messageListeners += listener
+    }
+
+    override fun setTopic(channel: String, topic: String) {
+        onKord {
+            getChannelOf<MessageChannel>(Snowflake(channel))
+                ?.takeIf { it.data.topic.value != topic }
+                ?.apply {
+                    rest.channel.patchChannel(id, ChannelModifyPatchRequest(topic = Optional(topic)))
+                    createMessage(
+                        ":bell: ${topicRoles.getRole(channel)?.let { "<@&$it>" } ?: "Topic"} updated: $topic"
+                    )
+                }
+        }
+    }
+
+    override fun addTopicListener(listener: BridgeClient.TopicListener) {
+        topicListeners += listener
+    }
+
     companion object {
-        fun startBot(configuration: TitanircConfiguration) =
-            Discord(configuration).apply { startBot() }
+        fun startBot(
+            configuration: TitanircConfiguration,
+            topicRoles: TopicRoles,
+        ) =
+            Discord(configuration, topicRoles).apply { startBot() }
     }
 }
