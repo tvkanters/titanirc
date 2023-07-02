@@ -71,10 +71,14 @@ class Discord(
                     member
                         ?.takeUnless { it.isBot }
                         ?.let { member ->
+                            val attachedUrls =
+                                message.attachments.map { it.url }
+                                    .plus(message.embeds.mapNotNull { it.url })
+                                    .distinct()
+                                    .filterNot { message.content.contains(it) }
                             val messageToSend =
                                 listOf(message.content)
-                                    .plus(message.attachments.map { it.url })
-                                    .plus(message.embeds.mapNotNull { it.url })
+                                    .plus(attachedUrls)
                                     .filter { it.isNotBlank() }
                                     .joinToString(" ")
                             messageListeners.forEach {
