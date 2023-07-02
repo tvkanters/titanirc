@@ -6,10 +6,11 @@ import kotlin.test.assertEquals
 
 class StripIrcFormattingMessageTransformationTest {
 
+    private val sut = StripIrcFormattingMessageTransformation()
+
     @Test
     fun testTransformation() {
         // GIVEN
-        val sut = StripIrcFormattingMessageTransformation()
         val message = "mes${Colors.BOLD}s${Colors.BLUE}a${Colors.NORMAL}ge"
 
         // WHEN

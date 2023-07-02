@@ -5,10 +5,11 @@ import kotlin.test.assertEquals
 
 class AddSmolFiMessageTransformationTest {
 
+    private val sut = AddSmolFiMessageTransformation()
+
     @Test
     fun testTransformation() {
         // GIVEN
-        val sut = AddSmolFiMessageTransformation()
         val message = "Hi https://media.discordapp.net/attachments/1234/1234/test.mp4"
 
         // WHEN
@@ -24,7 +25,6 @@ class AddSmolFiMessageTransformationTest {
     @Test
     fun testTransformationHttp() {
         // GIVEN
-        val sut = AddSmolFiMessageTransformation()
         val message = "Hi http://media.discordapp.net/attachments/1234/1234/test.mp4"
 
         // WHEN
@@ -40,7 +40,6 @@ class AddSmolFiMessageTransformationTest {
     @Test
     fun testTransformationCdn() {
         // GIVEN
-        val sut = AddSmolFiMessageTransformation()
         val message = "Hi https://cdn.discordapp.com/attachments/1234/1234/test.mp4"
 
         // WHEN
@@ -56,7 +55,6 @@ class AddSmolFiMessageTransformationTest {
     @Test
     fun testNoDuplicateSmolFi() {
         // GIVEN
-        val sut = AddSmolFiMessageTransformation()
         val message = "Hi https://smol.fi/e/?v=https://media.discordapp.net/attachments/1234/1234/test.mp4"
 
         // WHEN
@@ -72,7 +70,6 @@ class AddSmolFiMessageTransformationTest {
     @Test
     fun testNoSmolFiNonVideo() {
         // GIVEN
-        val sut = AddSmolFiMessageTransformation()
         val message = "Hi https://media.discordapp.net/attachments/1234/1234/test.jpg no .mp4"
 
         // WHEN

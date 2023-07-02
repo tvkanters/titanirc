@@ -5,10 +5,11 @@ import kotlin.test.assertEquals
 
 class StripSmolFiMessageTransformationTest {
 
+    private val sut = StripSmolFiMessageTransformation()
+
     @Test
     fun testTransformationHttps() {
         // GIVEN
-        val sut = StripSmolFiMessageTransformation()
         val message = "Hi https://smol.fi/e/?v=http://google.com?test"
 
         // WHEN
@@ -21,7 +22,6 @@ class StripSmolFiMessageTransformationTest {
     @Test
     fun testTransformationHttp() {
         // GIVEN
-        val sut = StripSmolFiMessageTransformation()
         val message = "Hi http://smol.fi/e/?v=https://google.com?test"
 
         // WHEN
