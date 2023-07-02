@@ -5,6 +5,7 @@ import com.tvkdevelopment.titanirc.bridge.ChannelLink
 import com.tvkdevelopment.titanirc.bridge.ChannelMapping
 import com.tvkdevelopment.titanirc.bridge.transformation.MessageTransformationLink
 import com.tvkdevelopment.titanirc.bridge.transformation.MessageTransformationMapping
+import com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations.AddSmolFiMessageTransformation
 import com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations.StripIrcFormattingMessageTransformation
 import com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations.StripSmolFiMessageTransformation
 import com.tvkdevelopment.titanirc.discord.Discord
@@ -45,6 +46,7 @@ object Main {
                 MessageTransformationLink(
                     discord to irc,
                     listOf(
+                        AddSmolFiMessageTransformation()
                     )
                 )
             )
