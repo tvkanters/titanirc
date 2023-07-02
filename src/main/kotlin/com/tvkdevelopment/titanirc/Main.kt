@@ -12,6 +12,7 @@ import com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations.
 import com.tvkdevelopment.titanirc.discord.Discord
 import com.tvkdevelopment.titanirc.discord.TopicRoles
 import com.tvkdevelopment.titanirc.irc.Irc
+import com.tvkdevelopment.titanirc.util.TopicUtil
 import org.apache.log4j.BasicConfigurator
 import org.slf4j.simple.SimpleLogger
 
@@ -23,14 +24,16 @@ object Main {
         val configuration = TitanircConfigurationPrivate
 
         if (configuration.isDevEnv) {
-            System.setProperty(SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "INFO")
+            System.setProperty(SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "WARN")
             BasicConfigurator.configure()
         }
 
         val irc = Irc.connect(configuration)
         val discord = Discord.startBot(
             configuration,
-            TopicRoles("418911279625797652" to "806471250406670367")
+            TopicRoles(
+                "418911279625797652" to { topic -> "806471250406670367".takeIf { TopicUtil.getStreamInfo(topic) != null } },
+            )
         )
 
         Bridge.connect(

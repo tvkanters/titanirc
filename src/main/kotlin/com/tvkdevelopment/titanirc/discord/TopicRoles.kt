@@ -1,8 +1,10 @@
 package com.tvkdevelopment.titanirc.discord
 
-class TopicRoles(private val channelToRoleMap: Map<String, String>) {
-    constructor(vararg channelsToRoles: Pair<String, String>) : this(channelsToRoles.toMap())
+typealias GetTopicRoleForTopic = (topic: String) -> String?
 
-    fun getRole(channel: String): String? =
-        channelToRoleMap[channel]
+class TopicRoles(private val channelToRoleMap: Map<String, GetTopicRoleForTopic>) {
+    constructor(vararg channelsToRoles: Pair<String, GetTopicRoleForTopic>) : this(channelsToRoles.toMap())
+
+    fun getRole(channel: String, topic: String): String? =
+        channelToRoleMap[channel]?.invoke(topic)
 }

@@ -6,6 +6,7 @@ import com.tvkdevelopment.titanirc.util.Log
 import dev.kord.common.entity.Snowflake
 import dev.kord.common.entity.optional.Optional
 import dev.kord.core.Kord
+import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.entity.channel.MessageChannel
 import dev.kord.core.event.channel.ChannelUpdateEvent
 import dev.kord.core.event.message.MessageCreateEvent
@@ -45,7 +46,14 @@ class Discord(
                 }
 
                 on<ChannelUpdateEvent> {
-                    topicListeners.forEach { it.onTopicChanged(channel.id.toString(), channel.data.topic.value ?: "") }
+                    val topic = channel.data.topic.value ?: ""
+                    val channelString = channel.id.toString()
+                    if (old != null) {
+                        val topicRole = topicRoles.getRole(channelString, topic)
+                        channel.asChannelOfOrNull<MessageChannel>()
+                            ?.createMessage(":bell: ${topicRole?.let { "<@&$it>" } ?: "Topic"} updated: $topic")
+                    }
+                    topicListeners.forEach { it.onTopicChanged(channelString, topic) }
                 }
 
                 login {
@@ -87,12 +95,7 @@ class Discord(
         onKord {
             getChannelOf<MessageChannel>(Snowflake(channel))
                 ?.takeIf { it.data.topic.value != topic }
-                ?.apply {
-                    rest.channel.patchChannel(id, ChannelModifyPatchRequest(topic = Optional(topic)))
-                    createMessage(
-                        ":bell: ${topicRoles.getRole(channel)?.let { "<@&$it>" } ?: "Topic"} updated: $topic"
-                    )
-                }
+                ?.apply { rest.channel.patchChannel(id, ChannelModifyPatchRequest(topic = Optional(topic))) }
         }
     }
 
