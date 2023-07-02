@@ -19,11 +19,16 @@ class Bridge private constructor(
             }
 
             sourceClient.addTopicListener { sourceChannel, topic ->
-                Log.i("Topic update: client=${sourceClient.name}, channel=$sourceChannel, topic=$topic")
+                Log.i("Bridge topic update: client=${sourceClient.name}, channel=$sourceChannel, topic=$topic")
                 targetClients.forEach { targetClient ->
                     setTopic(sourceClient, targetClient, sourceChannel, topic)
                 }
             }
+        }
+
+        channelMapping.clients.forEach {
+            Log.i("Bridge connecting client: ${it.name}")
+            it.connect()
         }
     }
 

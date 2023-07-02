@@ -22,7 +22,7 @@ class RestartListener(private val restartDelayMs: Long, private val restartFunct
                 restartJob?.cancel()
                 restartJob = GlobalScope.launch {
                     delay(restartDelayMs)
-                    Log.i("Restarting")
+                    Log.i("IRC restarting")
                     restartFunction()
                 }
             }

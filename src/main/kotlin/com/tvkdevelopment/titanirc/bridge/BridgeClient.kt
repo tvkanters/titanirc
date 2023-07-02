@@ -4,6 +4,8 @@ interface BridgeClient {
 
     val name: String
 
+    fun connect()
+
     fun relayMessage(channel: String, nick: String, message: String)
 
     fun addRelayMessageListener(listener: MessageListener)

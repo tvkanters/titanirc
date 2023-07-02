@@ -28,9 +28,10 @@ object Main {
             BasicConfigurator.configure()
         }
 
-        val irc = Irc.connect(configuration)
-        val discord = Discord.startBot(
+        val irc = Irc(configuration)
+        val discord = Discord(
             configuration,
+            nick = "\uD83D\uDCAC",
             TopicRoles(
                 "418911279625797652" to { topic -> "806471250406670367".takeIf { TopicUtil.getStreamInfo(topic) != null } },
             )

@@ -20,18 +20,16 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
 
     private val scope = CoroutineScope(newSingleThreadContext("Irc"))
 
-    private lateinit var bot: PircBotX
+    private var bot: PircBotX? = null
     private var maxLineLength: Int = QUAKENET_MAXLINELENGTH
 
     private val messageListeners = mutableListOf<BridgeClient.MessageListener>()
     private val topicListeners = mutableListOf<BridgeClient.TopicListener>()
 
-    private fun startBot() {
+    override fun connect() {
         scope.launch {
-            if (::bot.isInitialized) {
-                bot.close()
-            }
-            bot = PircBotX(
+            bot?.close()
+            PircBotX(
                 Configuration.Builder().apply {
                     name = configuration.ircNick
                     login = configuration.ircUsername
@@ -61,22 +59,21 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
                     setListenerManager(SequentialListenerManager.newDefault())
 
                     addListener(LogListener())
-                    addListener(RestartListener(60_000L, ::startBot))
+                    addListener(RestartListener(60_000L, ::connect))
                     addListener(NickFixListener(name))
                     addListener(IrcBridgeListener(messageListeners, topicListeners))
                 }.buildConfiguration()
             )
-            bot.startBot()
+                .also { bot = it }
+                .startBot()
         }
     }
 
     private fun onBot(block: PircBotX.() -> Unit) {
-        if (::bot.isInitialized) {
-            try {
-                block(bot)
-            } catch (e: Exception) {
-                Log.e(e)
-            }
+        try {
+            bot?.block()
+        } catch (e: Exception) {
+            Log.e(e)
         }
     }
 
@@ -107,8 +104,5 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
 
     companion object {
         private const val QUAKENET_MAXLINELENGTH = 444
-
-        fun connect(configuration: TitanircConfiguration) =
-            Irc(configuration).apply { startBot() }
     }
 }

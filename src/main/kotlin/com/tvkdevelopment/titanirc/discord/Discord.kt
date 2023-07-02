@@ -9,32 +9,54 @@ import dev.kord.core.Kord
 import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.entity.channel.MessageChannel
 import dev.kord.core.event.channel.ChannelUpdateEvent
+import dev.kord.core.event.gateway.DisconnectEvent
+import dev.kord.core.event.gateway.ReadyEvent
+import dev.kord.core.event.guild.GuildCreateEvent
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import dev.kord.rest.json.request.ChannelModifyPatchRequest
+import dev.kord.rest.json.request.CurrentUserNicknameModifyRequest
 import kotlinx.coroutines.*
 
 
 @OptIn(DelicateCoroutinesApi::class)
 class Discord(
     private val configuration: TitanircConfiguration,
+    private val nick: String,
     private val topicRoles: TopicRoles,
 ) : BridgeClient {
 
     override val name = "Discord"
 
     private val scope = CoroutineScope(newSingleThreadContext("Discord"))
-    private lateinit var kord: Kord
+    private var bot: Kord? = null
 
     private val messageListeners = mutableListOf<BridgeClient.MessageListener>()
     private val topicListeners = mutableListOf<BridgeClient.TopicListener>()
 
-    private fun startBot() {
+    override fun connect() {
         scope.launch {
-            kord = Kord(configuration.discordToken)
-            with(kord) {
+            with(Kord(configuration.discordToken)) {
+                on<ReadyEvent> {
+                    Log.i("Discord connected")
+                    bot = kord
+                }
+
+                on<DisconnectEvent> {
+                    Log.i("Discord disconnected")
+                    bot = null
+                }
+
+                on<GuildCreateEvent> {
+                    Log.i("Discord server joined: ${guild.data.name}")
+                    rest.guild.modifyCurrentUserNickname(
+                        guild.id,
+                        CurrentUserNicknameModifyRequest(Optional(nick))
+                    )
+                }
+
                 on<MessageCreateEvent> {
                     member
                         ?.takeUnless { it.isBot }
@@ -64,14 +86,12 @@ class Discord(
         }
     }
 
-    private fun onKord(block: suspend Kord.() -> Unit) {
+    private fun onBot(block: suspend Kord.() -> Unit) {
         scope.launch {
-            if (::kord.isInitialized) {
-                try {
-                    block(kord)
-                } catch (e: Exception) {
-                    Log.e(e)
-                }
+            try {
+                bot?.block()
+            } catch (e: Exception) {
+                Log.e(e)
             }
         }
     }
@@ -82,7 +102,7 @@ class Discord(
     }
 
     override fun relayMessage(channel: String, nick: String, message: String) {
-        onKord {
+        onBot {
             sendMessage(channel, "**<$nick>** $message")
         }
     }
@@ -92,7 +112,7 @@ class Discord(
     }
 
     override fun setTopic(channel: String, topic: String) {
-        onKord {
+        onBot {
             getChannelOf<MessageChannel>(Snowflake(channel))
                 ?.takeIf { it.data.topic.value != topic }
                 ?.apply { rest.channel.patchChannel(id, ChannelModifyPatchRequest(topic = Optional(topic))) }
@@ -101,13 +121,5 @@ class Discord(
 
     override fun addTopicListener(listener: BridgeClient.TopicListener) {
         topicListeners += listener
-    }
-
-    companion object {
-        fun startBot(
-            configuration: TitanircConfiguration,
-            topicRoles: TopicRoles,
-        ) =
-            Discord(configuration, topicRoles).apply { startBot() }
     }
 }
