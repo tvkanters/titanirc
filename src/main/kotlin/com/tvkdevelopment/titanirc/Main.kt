@@ -46,7 +46,7 @@ object Main {
                     irc to discord,
                     listOf(
                         EscapeDiscordFormattingMessageTransformation(),
-                        IrcFormattingToDiscordMessageTransformation(),
+                        ConvertIrcFormattingToDiscordMessageTransformation(),
                         StripIrcFormattingMessageTransformation(),
                         StripSmolFiMessageTransformation(),
                         AddTwitterFixMessageTransformation(),
@@ -55,6 +55,7 @@ object Main {
                 MessageTransformationLink(
                     discord to irc,
                     listOf(
+                        ConvertDiscordFormattingToIrcMessageTransformation(),
                         AddSmolFiMessageTransformation(),
                     )
                 )

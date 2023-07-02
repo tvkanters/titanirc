@@ -3,7 +3,7 @@ package com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations
 import com.tvkdevelopment.titanirc.bridge.transformation.MessageTransformation
 import org.pircbotx.Colors
 
-class IrcFormattingToDiscordMessageTransformation : MessageTransformation {
+class ConvertIrcFormattingToDiscordMessageTransformation : MessageTransformation {
     override fun transform(message: String): String =
         FORMATTINGS.fold(message) { transformedMessage, formatting -> formatting.apply(transformedMessage) }
 
