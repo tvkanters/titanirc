@@ -83,14 +83,16 @@ class Discord(
                 }
 
                 on<ChannelUpdateEvent> {
-                    val topic = channel.data.topic.value ?: ""
-                    val channelString = channel.id.toString()
-                    if (old != null) {
-                        val topicRole = topicRoles.getRole(channelString, topic)
-                        channel.asChannelOfOrNull<MessageChannel>()
-                            ?.createMessage(":bell: ${topicRole?.let { "<@&$it>" } ?: "Topic"} updated: $topic")
+                    val topic = channel.topicValue
+                    if (topic != old.topicValue) {
+                        val channelString = channel.id.toString()
+                        if (old != null && topic.isNotBlank()) {
+                            val topicRole = topicRoles.getRole(channelString, topic)
+                            channel.asChannelOfOrNull<MessageChannel>()
+                                ?.createMessage(":bell: ${topicRole?.let { "<@&$it>" } ?: "Topic"} updated: $topic")
+                        }
+                        topicListeners.forEach { it.onTopicChanged(channelString, topic) }
                     }
-                    topicListeners.forEach { it.onTopicChanged(channelString, topic) }
                 }
 
                 login {
@@ -129,12 +131,17 @@ class Discord(
     override fun setTopic(channel: String, topic: String) {
         onBot {
             getChannelOf<MessageChannel>(Snowflake(channel))
-                ?.takeIf { it.data.topic.value != topic }
+                ?.takeIf { it.topicValue != topic }
                 ?.apply { rest.channel.patchChannel(id, ChannelModifyPatchRequest(topic = Optional(topic))) }
         }
     }
 
     override fun addTopicListener(listener: BridgeClient.TopicListener) {
         topicListeners += listener
+    }
+
+    companion object {
+        private val dev.kord.core.entity.channel.Channel?.topicValue: String
+            get() = this?.data?.topic?.value ?: ""
     }
 }
