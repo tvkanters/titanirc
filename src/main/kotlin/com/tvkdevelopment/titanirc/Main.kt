@@ -5,10 +5,7 @@ import com.tvkdevelopment.titanirc.bridge.ChannelLink
 import com.tvkdevelopment.titanirc.bridge.ChannelMapping
 import com.tvkdevelopment.titanirc.bridge.transformation.MessageTransformationLink
 import com.tvkdevelopment.titanirc.bridge.transformation.MessageTransformationMapping
-import com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations.AddSmolFiMessageTransformation
-import com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations.AddTwitterFixMessageTransformation
-import com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations.StripIrcFormattingMessageTransformation
-import com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations.StripSmolFiMessageTransformation
+import com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations.*
 import com.tvkdevelopment.titanirc.discord.Discord
 import com.tvkdevelopment.titanirc.discord.TopicRoles
 import com.tvkdevelopment.titanirc.irc.Irc
@@ -48,6 +45,7 @@ object Main {
                 MessageTransformationLink(
                     irc to discord,
                     listOf(
+                        IrcFormattingToDiscordMessageTransformation(),
                         StripIrcFormattingMessageTransformation(),
                         StripSmolFiMessageTransformation(),
                         AddTwitterFixMessageTransformation(),
