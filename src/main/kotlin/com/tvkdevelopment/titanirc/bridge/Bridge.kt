@@ -18,6 +18,12 @@ class Bridge private constructor(
                 }
             }
 
+            sourceClient.addRelaySlashMeListener { sourceChannel, nick, message ->
+                targetClients.forEach { targetClient ->
+                    relaySlashMe(sourceClient, targetClient, sourceChannel, nick, message)
+                }
+            }
+
             sourceClient.addTopicListener { sourceChannel, topic ->
                 Log.i("Bridge topic update: client=${sourceClient.name}, channel=$sourceChannel, topic=$topic")
                 targetClients.forEach { targetClient ->
@@ -43,6 +49,19 @@ class Bridge private constructor(
         val transformedMessage = messageTransformationMapping.transform(sourceClient, targetClient, message)
 
         targetClient.relayMessage(targetChannel, nick, transformedMessage)
+    }
+
+    private fun relaySlashMe(
+        sourceClient: BridgeClient,
+        targetClient: BridgeClient,
+        sourceChannel: String,
+        nick: String,
+        message: String,
+    ) {
+        val targetChannel = channelMapping.getTargetChannel(sourceClient, targetClient, sourceChannel) ?: return
+        val transformedMessage = messageTransformationMapping.transform(sourceClient, targetClient, message)
+
+        targetClient.relaySlashMe(targetChannel, nick, transformedMessage)
     }
 
     private fun setTopic(

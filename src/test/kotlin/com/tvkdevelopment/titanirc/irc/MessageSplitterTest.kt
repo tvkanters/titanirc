@@ -50,7 +50,7 @@ class MessageSplitterTest {
         val splitMessage = message.splitMessageForIrc(15)
 
         // THEN
-        assertEquals("https://www.wa…", splitMessage)
+        assertEquals("https://www.…", splitMessage)
     }
 
     @Test
@@ -62,7 +62,7 @@ class MessageSplitterTest {
         val splitMessage = message.splitMessageForIrc(15, prefix = "<a> ")
 
         // THEN
-        assertEquals("<a> https://ww…", splitMessage)
+        assertEquals("<a> https://…", splitMessage)
     }
 
     @Test

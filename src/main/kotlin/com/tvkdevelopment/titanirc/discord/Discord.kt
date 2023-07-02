@@ -36,6 +36,7 @@ class Discord(
     private var bot: Kord? = null
 
     private val messageListeners = mutableListOf<BridgeClient.MessageListener>()
+    private val slashMeListeners = mutableListOf<BridgeClient.SlashMeListener>()
     private val topicListeners = mutableListOf<BridgeClient.TopicListener>()
 
     override fun connect() {
@@ -126,6 +127,16 @@ class Discord(
 
     override fun addRelayMessageListener(listener: BridgeClient.MessageListener) {
         messageListeners += listener
+    }
+
+    override fun relaySlashMe(channel: String, nick: String, message: String) {
+        onBot {
+            sendMessage(channel, "\\* $nick $message")
+        }
+    }
+
+    override fun addRelaySlashMeListener(listener: BridgeClient.SlashMeListener) {
+        slashMeListeners += listener
     }
 
     override fun setTopic(channel: String, topic: String) {

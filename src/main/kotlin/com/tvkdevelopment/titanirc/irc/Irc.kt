@@ -24,6 +24,7 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
     private var maxLineLength: Int = QUAKENET_MAXLINELENGTH
 
     private val messageListeners = mutableListOf<BridgeClient.MessageListener>()
+    private val slashMeListeners = mutableListOf<BridgeClient.SlashMeListener>()
     private val topicListeners = mutableListOf<BridgeClient.TopicListener>()
 
     override fun connect() {
@@ -61,7 +62,7 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
                     addListener(LogListener())
                     addListener(RestartListener(60_000L, ::connect))
                     addListener(NickFixListener(name))
-                    addListener(IrcBridgeListener(messageListeners, topicListeners))
+                    addListener(IrcBridgeListener(messageListeners, slashMeListeners, topicListeners))
                 }.buildConfiguration()
             )
                 .also { bot = it }
@@ -88,6 +89,19 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
 
     override fun addRelayMessageListener(listener: BridgeClient.MessageListener) {
         messageListeners += listener
+    }
+
+    override fun relaySlashMe(channel: String, nick: String, message: String) {
+        onBot {
+            sendIRC().message(
+                channel,
+                message.splitMessageForIrc(maxLineLength, prefix = "* $nick ")
+            )
+        }
+    }
+
+    override fun addRelaySlashMeListener(listener: BridgeClient.SlashMeListener) {
+        slashMeListeners += listener
     }
 
     override fun setTopic(channel: String, topic: String) {

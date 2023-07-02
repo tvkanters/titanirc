@@ -14,6 +14,14 @@ interface BridgeClient {
         fun onMessage(channel: String, nick: String, message: String)
     }
 
+    fun addRelaySlashMeListener(listener: SlashMeListener)
+
+    fun interface SlashMeListener {
+        fun onSlashMe(channel: String, nick: String, message: String)
+    }
+
+    fun relaySlashMe(channel: String, nick: String, message: String)
+
     fun setTopic(channel: String, topic: String)
 
     fun addTopicListener(listener: TopicListener)
