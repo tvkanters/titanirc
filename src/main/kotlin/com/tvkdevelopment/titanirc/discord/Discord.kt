@@ -74,8 +74,14 @@ class Discord(
                     member
                         ?.takeUnless { it.isBot }
                         ?.let { member ->
+                            val messageToSend =
+                                listOf(message.content)
+                                    .plus(message.attachments.map { it.url })
+                                    .plus(message.embeds.mapNotNull { it.url })
+                                    .filter { it.isNotBlank() }
+                                    .joinToString(" ")
                             messageListeners.forEach {
-                                it.onMessage(message.channel.id.toString(), member.displayName, message.content)
+                                it.onMessage(message.channel.id.toString(), member.displayName, messageToSend)
                             }
                         }
                 }
