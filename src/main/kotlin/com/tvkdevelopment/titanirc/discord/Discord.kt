@@ -19,7 +19,6 @@ import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
 import dev.kord.gateway.ratelimit.IdentifyRateLimiter
 import dev.kord.rest.json.request.ChannelModifyPatchRequest
-import dev.kord.rest.json.request.CurrentUserNicknameModifyRequest
 import kotlinx.coroutines.*
 import kotlin.time.Duration.Companion.seconds
 
@@ -64,10 +63,7 @@ class Discord(
 
                 on<GuildCreateEvent> {
                     Log.i("Discord server joined: ${guild.data.name}")
-                    rest.guild.modifyCurrentUserNickname(
-                        guild.id,
-                        CurrentUserNicknameModifyRequest(Optional(nick))
-                    )
+                    guild.editSelfNickname(nick)
                 }
 
                 on<MessageCreateEvent> {
@@ -81,7 +77,7 @@ class Discord(
                                     .filter { it.isNotBlank() }
                                     .joinToString(" ")
                             messageListeners.forEach {
-                                it.onMessage(message.channel.id.toString(), member.displayName, messageToSend)
+                                it.onMessage(message.channel.id.toString(), member.effectiveName, messageToSend)
                             }
                         }
                 }

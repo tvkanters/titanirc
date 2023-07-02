@@ -24,6 +24,7 @@ repositories {
     mavenCentral()
     jcenter()
     maven("https://jitpack.io")
+    maven("https://oss.sonatype.org/content/repositories/snapshots")
 }
 
 dependencies {
@@ -35,7 +36,7 @@ dependencies {
     implementation("org.slf4j:slf4j-simple:2.0.7")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
 
-    implementation("dev.kord:kord-core:0.9.0")
+    implementation("dev.kord:kord-core:0.10.0-SNAPSHOT")
 
     testImplementation(kotlin("test-junit"))
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.0")
