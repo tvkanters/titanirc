@@ -14,11 +14,14 @@ import dev.kord.core.event.gateway.ReadyEvent
 import dev.kord.core.event.guild.GuildCreateEvent
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
+import dev.kord.gateway.DefaultGateway
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
+import dev.kord.gateway.ratelimit.IdentifyRateLimiter
 import dev.kord.rest.json.request.ChannelModifyPatchRequest
 import dev.kord.rest.json.request.CurrentUserNicknameModifyRequest
 import kotlinx.coroutines.*
+import kotlin.time.Duration.Companion.seconds
 
 
 @OptIn(DelicateCoroutinesApi::class)
@@ -38,7 +41,17 @@ class Discord(
 
     override fun connect() {
         scope.launch {
-            with(Kord(configuration.discordToken)) {
+            Kord(configuration.discordToken) {
+                gateways { resources, shards ->
+                    shards.map {
+                        DefaultGateway {
+                            client = resources.httpClient
+                            identifyRateLimiter = IdentifyRateLimiter(resources.maxConcurrency, defaultDispatcher)
+                            reconnectRetry = IncrementalRetry(2.seconds, 2.seconds, 30.seconds)
+                        }
+                    }
+                }
+            }.apply {
                 on<ReadyEvent> {
                     Log.i("Discord connected")
                     bot = kord
