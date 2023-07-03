@@ -13,9 +13,16 @@ class MessageTransformationMapping(vararg links: MessageTransformationLink) {
             }
         }
 
-    fun transform(sourceClient: BridgeClient, targetClient: BridgeClient, message: String): String =
+    fun transform(
+        sourceClient: BridgeClient,
+        targetClient: BridgeClient,
+        targetChannel: String,
+        message: String,
+    ): String =
         transformations[sourceClient]?.get(targetClient)
-            ?.fold(message) { transformedMessage, transformation -> transformation.transform(transformedMessage) }
+            ?.fold(message) { transformedMessage, transformation ->
+                transformation.transform(targetChannel, transformedMessage)
+            }
             ?: message
 
 }

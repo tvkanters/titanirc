@@ -13,7 +13,7 @@ class StripSmolFiMessageTransformationTest {
         val message = "Hi https://smol.fi/e/?v=http://google.com?test"
 
         // WHEN
-        val transformedMessage = sut.transform(message)
+        val transformedMessage = sut.transform("", message)
 
         // THEN
         assertEquals("Hi http://google.com?test", transformedMessage)
@@ -25,7 +25,7 @@ class StripSmolFiMessageTransformationTest {
         val message = "Hi http://smol.fi/e/?v=https://google.com?test"
 
         // WHEN
-        val transformedMessage = sut.transform(message)
+        val transformedMessage = sut.transform("", message)
 
         // THEN
         assertEquals("Hi https://google.com?test", transformedMessage)

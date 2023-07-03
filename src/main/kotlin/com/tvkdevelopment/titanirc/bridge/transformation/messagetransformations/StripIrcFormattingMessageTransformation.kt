@@ -4,7 +4,7 @@ import com.tvkdevelopment.titanirc.bridge.transformation.MessageTransformation
 import org.pircbotx.Colors.*
 
 class StripIrcFormattingMessageTransformation : MessageTransformation {
-    override fun transform(message: String): String =
+    override fun transform(channel: String, message: String): String =
         message.replace(FORMATTING_REGEX, "")
 
     companion object {

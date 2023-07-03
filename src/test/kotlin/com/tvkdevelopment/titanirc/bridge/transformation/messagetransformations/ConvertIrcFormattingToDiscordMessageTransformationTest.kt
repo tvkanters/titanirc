@@ -14,7 +14,7 @@ class ConvertIrcFormattingToDiscordMessageTransformationTest {
         val message = "${Colors.BOLD}test"
 
         // WHEN
-        val result = sut.transform(message)
+        val result = sut.transform("", message)
 
         // THEN
         assertEquals("**test**", result)
@@ -26,7 +26,7 @@ class ConvertIrcFormattingToDiscordMessageTransformationTest {
         val message = "t${Colors.BOLD}es${Colors.BOLD}t"
 
         // WHEN
-        val result = sut.transform(message)
+        val result = sut.transform("", message)
 
         // THEN
         assertEquals("t**es**t", result)
@@ -38,7 +38,7 @@ class ConvertIrcFormattingToDiscordMessageTransformationTest {
         val message = "t${Colors.BOLD}es${Colors.NORMAL}t"
 
         // WHEN
-        val result = sut.transform(message)
+        val result = sut.transform("", message)
 
         // THEN
         assertEquals("t**es**${Colors.NORMAL}t", result)
@@ -50,7 +50,7 @@ class ConvertIrcFormattingToDiscordMessageTransformationTest {
         val message = "${Colors.ITALICS}test"
 
         // WHEN
-        val result = sut.transform(message)
+        val result = sut.transform("", message)
 
         // THEN
         assertEquals("_test_", result)
@@ -62,7 +62,7 @@ class ConvertIrcFormattingToDiscordMessageTransformationTest {
         val message = "t${Colors.ITALICS}es${Colors.ITALICS}t"
 
         // WHEN
-        val result = sut.transform(message)
+        val result = sut.transform("", message)
 
         // THEN
         assertEquals("t_es_t", result)
@@ -74,7 +74,7 @@ class ConvertIrcFormattingToDiscordMessageTransformationTest {
         val message = "t${Colors.ITALICS}es${Colors.NORMAL}t"
 
         // WHEN
-        val result = sut.transform(message)
+        val result = sut.transform("", message)
 
         // THEN
         assertEquals("t_es_${Colors.NORMAL}t", result)
@@ -86,7 +86,7 @@ class ConvertIrcFormattingToDiscordMessageTransformationTest {
         val message = "\u00031,1test"
 
         // WHEN
-        val result = sut.transform(message)
+        val result = sut.transform("", message)
 
         // THEN
         assertEquals("||test||", result)
@@ -98,7 +98,7 @@ class ConvertIrcFormattingToDiscordMessageTransformationTest {
         val message = "t\u00031,1es\u00031,1t"
 
         // WHEN
-        val result = sut.transform(message)
+        val result = sut.transform("", message)
 
         // THEN
         assertEquals("t||es||t", result)
@@ -110,7 +110,7 @@ class ConvertIrcFormattingToDiscordMessageTransformationTest {
         val message = "t\u00031,1es${Colors.NORMAL}t"
 
         // WHEN
-        val result = sut.transform(message)
+        val result = sut.transform("", message)
 
         // THEN
         assertEquals("t||es||${Colors.NORMAL}t", result)
@@ -122,7 +122,7 @@ class ConvertIrcFormattingToDiscordMessageTransformationTest {
         val message = "t\u00031,1es\u0003t"
 
         // WHEN
-        val result = sut.transform(message)
+        val result = sut.transform("", message)
 
         // THEN
         assertEquals("t||es||\u0003t", result)
@@ -134,7 +134,7 @@ class ConvertIrcFormattingToDiscordMessageTransformationTest {
         val message = "t\u00031,1es\u00032,2t"
 
         // WHEN
-        val result = sut.transform(message)
+        val result = sut.transform("", message)
 
         // THEN
         assertEquals("t||es||\u00032,2t", result)
@@ -146,7 +146,7 @@ class ConvertIrcFormattingToDiscordMessageTransformationTest {
         val message = "${Colors.ITALICS}te${Colors.BOLD}st"
 
         // WHEN
-        val result = sut.transform(message)
+        val result = sut.transform("", message)
 
         // THEN
         assertEquals("_te**st**_", result)
@@ -158,7 +158,7 @@ class ConvertIrcFormattingToDiscordMessageTransformationTest {
         val message = "t${Colors.ITALICS}e${Colors.BOLD}s${Colors.BOLD}t${Colors.ITALICS}s"
 
         // WHEN
-        val result = sut.transform(message)
+        val result = sut.transform("", message)
 
         // THEN
         assertEquals("t_e**s**t_s", result)
@@ -170,7 +170,7 @@ class ConvertIrcFormattingToDiscordMessageTransformationTest {
         val message = "t${Colors.ITALICS}e${Colors.BOLD}s${Colors.ITALICS}t${Colors.BOLD}s"
 
         // WHEN
-        val result = sut.transform(message)
+        val result = sut.transform("", message)
 
         // THEN
         assertEquals("t_e**s**_**t**s", result)

@@ -46,7 +46,8 @@ class Bridge private constructor(
         message: String,
     ) {
         val targetChannel = channelMapping.getTargetChannel(sourceClient, targetClient, sourceChannel) ?: return
-        val transformedMessage = messageTransformationMapping.transform(sourceClient, targetClient, message)
+        val transformedMessage =
+            messageTransformationMapping.transform(sourceClient, targetClient, targetChannel, message)
 
         targetClient.relayMessage(targetChannel, nick, transformedMessage)
     }
@@ -59,7 +60,8 @@ class Bridge private constructor(
         message: String,
     ) {
         val targetChannel = channelMapping.getTargetChannel(sourceClient, targetClient, sourceChannel) ?: return
-        val transformedMessage = messageTransformationMapping.transform(sourceClient, targetClient, message)
+        val transformedMessage =
+            messageTransformationMapping.transform(sourceClient, targetClient, targetChannel, message)
 
         targetClient.relaySlashMe(targetChannel, nick, transformedMessage)
     }

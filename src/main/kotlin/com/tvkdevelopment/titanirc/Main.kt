@@ -50,6 +50,7 @@ object Main {
                         StripIrcFormattingMessageTransformation(),
                         StripSmolFiMessageTransformation(),
                         AddTwitterFixMessageTransformation(),
+                        DiscordPingMessageTransformation(discord.memberRegistry),
                     )
                 ),
                 MessageTransformationLink(

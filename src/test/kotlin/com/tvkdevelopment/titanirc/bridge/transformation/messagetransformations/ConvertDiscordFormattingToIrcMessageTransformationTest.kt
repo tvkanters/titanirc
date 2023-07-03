@@ -14,7 +14,7 @@ class ConvertDiscordFormattingToIrcMessageTransformationTest {
         val message = "**test**"
 
         // WHEN
-        val result = sut.transform(message)
+        val result = sut.transform("", message)
 
         // THEN
         assertEquals("${BOLD}test$BOLD", result)
@@ -26,7 +26,7 @@ class ConvertDiscordFormattingToIrcMessageTransformationTest {
         val message = "**test"
 
         // WHEN
-        val result = sut.transform(message)
+        val result = sut.transform("", message)
 
         // THEN
         assertEquals("**test", result)
@@ -38,7 +38,7 @@ class ConvertDiscordFormattingToIrcMessageTransformationTest {
         val message = "**te*st"
 
         // WHEN
-        val result = sut.transform(message)
+        val result = sut.transform("", message)
 
         // THEN
         assertEquals("*${ITALICS}te${ITALICS}st", result)
@@ -50,7 +50,7 @@ class ConvertDiscordFormattingToIrcMessageTransformationTest {
         val message = "**te*st**"
 
         // WHEN
-        val result = sut.transform(message)
+        val result = sut.transform("", message)
 
         // THEN
         assertEquals("${BOLD}te*st$BOLD", result)
@@ -62,7 +62,7 @@ class ConvertDiscordFormattingToIrcMessageTransformationTest {
         val message = "__test__"
 
         // WHEN
-        val result = sut.transform(message)
+        val result = sut.transform("", message)
 
         // THEN
         assertEquals("${UNDERLINE}test$UNDERLINE", result)
@@ -74,7 +74,7 @@ class ConvertDiscordFormattingToIrcMessageTransformationTest {
         val message = "__test"
 
         // WHEN
-        val result = sut.transform(message)
+        val result = sut.transform("", message)
 
         // THEN
         assertEquals("__test", result)
@@ -86,7 +86,7 @@ class ConvertDiscordFormattingToIrcMessageTransformationTest {
         val message = "__te_st"
 
         // WHEN
-        val result = sut.transform(message)
+        val result = sut.transform("", message)
 
         // THEN
         assertEquals("_${ITALICS}te${ITALICS}st", result)
@@ -98,7 +98,7 @@ class ConvertDiscordFormattingToIrcMessageTransformationTest {
         val message = "__te_st__"
 
         // WHEN
-        val result = sut.transform(message)
+        val result = sut.transform("", message)
 
         // THEN
         assertEquals("${UNDERLINE}te_st$UNDERLINE", result)
@@ -110,7 +110,7 @@ class ConvertDiscordFormattingToIrcMessageTransformationTest {
         val message = "_test_"
 
         // WHEN
-        val result = sut.transform(message)
+        val result = sut.transform("", message)
 
         // THEN
         assertEquals("${ITALICS}test$ITALICS", result)
@@ -122,7 +122,7 @@ class ConvertDiscordFormattingToIrcMessageTransformationTest {
         val message = "_test"
 
         // WHEN
-        val result = sut.transform(message)
+        val result = sut.transform("", message)
 
         // THEN
         assertEquals("_test", result)
@@ -134,7 +134,7 @@ class ConvertDiscordFormattingToIrcMessageTransformationTest {
         val message = "*test*"
 
         // WHEN
-        val result = sut.transform(message)
+        val result = sut.transform("", message)
 
         // THEN
         assertEquals("${ITALICS}test$ITALICS", result)
@@ -146,7 +146,7 @@ class ConvertDiscordFormattingToIrcMessageTransformationTest {
         val message = "*test"
 
         // WHEN
-        val result = sut.transform(message)
+        val result = sut.transform("", message)
 
         // THEN
         assertEquals("*test", result)
@@ -158,7 +158,7 @@ class ConvertDiscordFormattingToIrcMessageTransformationTest {
         val message = "||test||"
 
         // WHEN
-        val result = sut.transform(message)
+        val result = sut.transform("", message)
 
         // THEN
         assertEquals("\u00031,1test\u00031,1", result)
@@ -170,7 +170,7 @@ class ConvertDiscordFormattingToIrcMessageTransformationTest {
         val message = "||test"
 
         // WHEN
-        val result = sut.transform(message)
+        val result = sut.transform("", message)
 
         // THEN
         assertEquals("||test", result)
@@ -182,7 +182,7 @@ class ConvertDiscordFormattingToIrcMessageTransformationTest {
         val message = "||te|st"
 
         // WHEN
-        val result = sut.transform(message)
+        val result = sut.transform("", message)
 
         // THEN
         assertEquals("||te|st", result)
@@ -194,7 +194,7 @@ class ConvertDiscordFormattingToIrcMessageTransformationTest {
         val message = "||te|st||"
 
         // WHEN
-        val result = sut.transform(message)
+        val result = sut.transform("", message)
 
         // THEN
         assertEquals("\u00031,1te|st\u00031,1", result)

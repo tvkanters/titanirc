@@ -13,7 +13,7 @@ class AddSmolFiMessageTransformationTest {
         val message = "Hi https://media.discordapp.net/attachments/1234/1234/test.mp4"
 
         // WHEN
-        val transformedMessage = sut.transform(message)
+        val transformedMessage = sut.transform("", message)
 
         // THEN
         assertEquals(
@@ -28,7 +28,7 @@ class AddSmolFiMessageTransformationTest {
         val message = "Hi http://media.discordapp.net/attachments/1234/1234/test.mp4"
 
         // WHEN
-        val transformedMessage = sut.transform(message)
+        val transformedMessage = sut.transform("", message)
 
         // THEN
         assertEquals(
@@ -43,7 +43,7 @@ class AddSmolFiMessageTransformationTest {
         val message = "Hi https://cdn.discordapp.com/attachments/1234/1234/test.mp4"
 
         // WHEN
-        val transformedMessage = sut.transform(message)
+        val transformedMessage = sut.transform("", message)
 
         // THEN
         assertEquals(
@@ -58,7 +58,7 @@ class AddSmolFiMessageTransformationTest {
         val message = "Hi https://smol.fi/e/?v=https://media.discordapp.net/attachments/1234/1234/test.mp4"
 
         // WHEN
-        val transformedMessage = sut.transform(message)
+        val transformedMessage = sut.transform("", message)
 
         // THEN
         assertEquals(
@@ -73,7 +73,7 @@ class AddSmolFiMessageTransformationTest {
         val message = "Hi https://media.discordapp.net/attachments/1234/1234/test.jpg no .mp4"
 
         // WHEN
-        val transformedMessage = sut.transform(message)
+        val transformedMessage = sut.transform("", message)
 
         // THEN
         assertEquals(

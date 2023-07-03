@@ -108,11 +108,10 @@ class IrcMessageSender(
     }
 
     companion object {
+        private const val COMMAND_ANTIFLOOD = "ANTIFLOOD"
         /** The amount of bytes Quakenet can accept before potentially triggering flood protection. */
-        private const val VIRTUAL_BUFFER_CAPACITY = 1024
+        private const val VIRTUAL_BUFFER_CAPACITY = 1024 - COMMAND_ANTIFLOOD.length
 
         private val CLEAR_VIRTUAL_BUFFER_TIMEOUT = 1.minutes
-
-        private const val COMMAND_ANTIFLOOD = "ANTIFLOOD"
     }
 }

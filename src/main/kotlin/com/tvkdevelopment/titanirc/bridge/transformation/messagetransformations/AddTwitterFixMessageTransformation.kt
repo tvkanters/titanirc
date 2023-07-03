@@ -4,7 +4,7 @@ import com.tvkdevelopment.titanirc.bridge.transformation.MessageTransformation
 
 class AddTwitterFixMessageTransformation : MessageTransformation {
 
-    override fun transform(message: String): String =
+    override fun transform(channel: String, message: String): String =
         message.replace(REGEX, "https://vxtwitter.")
 
     companion object {

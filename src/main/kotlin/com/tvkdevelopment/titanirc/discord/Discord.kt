@@ -7,12 +7,14 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.common.entity.optional.Optional
 import dev.kord.core.Kord
 import dev.kord.core.behavior.channel.asChannelOfOrNull
+import dev.kord.core.behavior.requestMembers
 import dev.kord.core.entity.channel.MessageChannel
 import dev.kord.core.event.channel.ChannelUpdateEvent
 import dev.kord.core.event.gateway.ConnectEvent
 import dev.kord.core.event.gateway.DisconnectEvent
 import dev.kord.core.event.gateway.ReadyEvent
 import dev.kord.core.event.guild.GuildCreateEvent
+import dev.kord.core.event.guild.MemberJoinEvent
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
 import dev.kord.gateway.DefaultGateway
@@ -40,6 +42,10 @@ class Discord(
     private val slashMeListeners = mutableListOf<BridgeClient.SlashMeListener>()
     private val topicListeners = mutableListOf<BridgeClient.TopicListener>()
 
+    private val mutableMemberRegistry = MutableMemberRegistry()
+    val memberRegistry: MemberRegistry = mutableMemberRegistry
+
+    @OptIn(PrivilegedIntent::class)
     override fun connect() {
         scope.launch {
             Kord(configuration.discordToken) {
@@ -71,6 +77,19 @@ class Discord(
                 on<GuildCreateEvent> {
                     Log.i("Discord server joined: ${guild.data.name}")
                     guild.editSelfNickname(nick)
+                    guild
+                        .requestMembers()
+                        .collect { event ->
+                            event.members.forEach {
+                                if (!it.isBot) {
+                                    mutableMemberRegistry.add(guild, it)
+                                }
+                            }
+                        }
+                }
+
+                on<MemberJoinEvent> {
+                    mutableMemberRegistry.add(member.getGuild(), member)
                 }
 
                 on<MessageCreateEvent> {
@@ -107,8 +126,8 @@ class Discord(
                 }
 
                 login {
-                    @OptIn(PrivilegedIntent::class)
                     intents += Intent.MessageContent
+                    intents += Intent.GuildMembers
                 }
             }
         }
