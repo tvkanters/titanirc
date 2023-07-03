@@ -9,6 +9,7 @@ import dev.kord.core.Kord
 import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.entity.channel.MessageChannel
 import dev.kord.core.event.channel.ChannelUpdateEvent
+import dev.kord.core.event.gateway.ConnectEvent
 import dev.kord.core.event.gateway.DisconnectEvent
 import dev.kord.core.event.gateway.ReadyEvent
 import dev.kord.core.event.guild.GuildCreateEvent
@@ -53,12 +54,17 @@ class Discord(
                 }
             }.apply {
                 on<ReadyEvent> {
+                    Log.i("Discord ready")
+                    bot = kord
+                }
+
+                on<ConnectEvent> {
                     Log.i("Discord connected")
                     bot = kord
                 }
 
                 on<DisconnectEvent> {
-                    Log.i("Discord disconnected")
+                    Log.i("Discord disconnected: ${this::class.simpleName}")
                     bot = null
                 }
 
