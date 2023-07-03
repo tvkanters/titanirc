@@ -52,7 +52,7 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
                         }
                     }
                     isAutoReconnect = true
-                    autoReconnectAttempts = 100
+                    autoReconnectAttempts = 10000
                     autoReconnectDelay = AdaptingDelay(2_000L, 30_000L).also { addListener(it) }
                     isUserModeHideRealHost = true
                     isAutoNickChange = true
