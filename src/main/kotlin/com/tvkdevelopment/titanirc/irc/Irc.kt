@@ -24,7 +24,7 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
     private val messageSender = IrcMessageSender(configuration, ::bot)
 
     private var bot: PircBotX? = null
-    private var maxLineLength: Int = QUAKENET_MAXLINELENGTH
+    private var maxLineLength: Int = QUAKENET_MAX_LINE_LENGTH
 
     private val messageListeners = mutableListOf<BridgeClient.MessageListener>()
     private val slashMeListeners = mutableListOf<BridgeClient.SlashMeListener>()
@@ -97,7 +97,11 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
     }
 
     private fun sendMessage(channel: String, prefix: String, message: String) {
-        message.splitMessageForIrc(maxLineLength, prefix = prefix)
+        message
+            .conditionalTransform(message.count { it == '\n' } >= MAX_LINES_BEFORE_JOINING) {
+                it.replace(REGEX_NEW_LINE_REPLACE, " ")
+            }
+            .splitMessageForIrc(maxLineLength, prefix = prefix)
             .forEach { messageSender.sendMessage(channel, it) }
     }
 
@@ -110,8 +114,15 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
     }
 
     companion object {
-        private const val QUAKENET_MAXLINELENGTH = 443
+        private const val QUAKENET_MAX_LINE_LENGTH = 443
         private val DISCONNECT_RESTART_DELAY = 30.seconds
         private val CRASH_RESTART_DELAY = 5.seconds
+
+        private const val MAX_LINES_BEFORE_JOINING = 5
+
+        private val REGEX_NEW_LINE_REPLACE = Regex("\n+")
+
+        private fun <T> T.conditionalTransform(condition: Boolean, transform: (T) -> T): T =
+            if (condition) transform(this) else this
     }
 }
