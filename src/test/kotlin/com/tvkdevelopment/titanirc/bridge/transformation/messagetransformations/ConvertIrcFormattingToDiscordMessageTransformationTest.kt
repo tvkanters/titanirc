@@ -6,7 +6,7 @@ import kotlin.test.assertEquals
 
 class ConvertIrcFormattingToDiscordMessageTransformationTest {
 
-    private val sut = IrcFormattingToDiscordMessageTransformation()
+    private val sut = ConvertIrcFormattingToDiscordMessageTransformation()
 
     @Test
     fun testBold() {
@@ -78,6 +78,66 @@ class ConvertIrcFormattingToDiscordMessageTransformationTest {
 
         // THEN
         assertEquals("t_es_${Colors.NORMAL}t", result)
+    }
+
+    @Test
+    fun testSpoilers() {
+        // GIVEN
+        val message = "\u00031,1test"
+
+        // WHEN
+        val result = sut.transform(message)
+
+        // THEN
+        assertEquals("||test||", result)
+    }
+
+    @Test
+    fun testSpoilersMiddle() {
+        // GIVEN
+        val message = "t\u00031,1es\u00031,1t"
+
+        // WHEN
+        val result = sut.transform(message)
+
+        // THEN
+        assertEquals("t||es||t", result)
+    }
+
+    @Test
+    fun testSpoilersClear() {
+        // GIVEN
+        val message = "t\u00031,1es${Colors.NORMAL}t"
+
+        // WHEN
+        val result = sut.transform(message)
+
+        // THEN
+        assertEquals("t||es||${Colors.NORMAL}t", result)
+    }
+
+    @Test
+    fun testSpoilersClearWithEmptyColor() {
+        // GIVEN
+        val message = "t\u00031,1es\u0003t"
+
+        // WHEN
+        val result = sut.transform(message)
+
+        // THEN
+        assertEquals("t||es||\u0003t", result)
+    }
+
+    @Test
+    fun testSpoilersClearWithDifferentColor() {
+        // GIVEN
+        val message = "t\u00031,1es\u00032,2t"
+
+        // WHEN
+        val result = sut.transform(message)
+
+        // THEN
+        assertEquals("t||es||\u00032,2t", result)
     }
 
     @Test

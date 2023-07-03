@@ -17,7 +17,7 @@ class ConvertDiscordFormattingToIrcMessageTransformation : MessageTransformation
         )
 
         private class Formatting(discordSymbol: String, private val ircSymbol: String) {
-            private val regex = Regex.escape(discordSymbol).let { Regex("""$it([^$it]+)$it?""") }
+            private val regex = Regex.escape(discordSymbol).let { Regex("""$it((?:(?!$it).)+)$it""") }
 
             fun apply(message: String) =
                 message.replace(regex, "$ircSymbol$1$ircSymbol")

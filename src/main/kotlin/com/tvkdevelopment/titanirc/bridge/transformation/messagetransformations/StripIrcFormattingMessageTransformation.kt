@@ -8,6 +8,6 @@ class StripIrcFormattingMessageTransformation : MessageTransformation {
         message.replace(FORMATTING_REGEX, "")
 
     companion object {
-        private val FORMATTING_REGEX = Regex("""$NORMAL|$BOLD|$ITALICS|$UNDERLINE|$REVERSE|\u0003\d\d?(?:,\d\d?)?""")
+        private val FORMATTING_REGEX = Regex("""$NORMAL|$BOLD|$ITALICS|$UNDERLINE|$REVERSE|\u0003(?:\d\d?(?:,\d\d?)?)?""")
     }
 }

@@ -9,15 +9,19 @@ class ConvertIrcFormattingToDiscordMessageTransformation : MessageTransformation
 
     companion object {
         private val FORMATTINGS = listOf(
-            Formatting(Colors.BOLD, "**"),
-            Formatting(Colors.ITALICS, "_"),
-            Formatting("\u00031,1", "||"),
+            Formatting(Colors.BOLD, discordSymbol = "**"),
+            Formatting(Colors.ITALICS, discordSymbol = "_"),
+            Formatting("\u00031,1", listOf(Colors.NORMAL, "\u0003", "\u00031,1"), discordSymbol = "||"),
             // Underlines are disabled because they can conflict with italics
             //Formatting(Colors.UNDERLINE, "__"),
         )
 
-        private class Formatting(private val ircSymbol: String, private val discordSymbol: String) {
-            private val regex = Regex("""$ircSymbol([^${Colors.NORMAL}$ircSymbol]+)$ircSymbol?""")
+        private class Formatting(
+            private val ircSymbol: String,
+            ircClosingSymbols: List<String> = listOf(Colors.NORMAL, ircSymbol),
+            private val discordSymbol: String,
+        ) {
+            private val regex = Regex("""$ircSymbol((?:(?!${ircClosingSymbols.joinToString("|")}).)+)(?:$ircSymbol)?""")
 
             fun apply(message: String) =
                 message.replace(regex) {
