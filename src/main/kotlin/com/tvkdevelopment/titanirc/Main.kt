@@ -21,7 +21,7 @@ object Main {
         val configuration = TitanircConfigurationPrivate
 
         if (configuration.isDevEnv) {
-            System.setProperty(SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "WARN")
+            System.setProperty(SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "VERBOSE")
             BasicConfigurator.configure()
         }
 

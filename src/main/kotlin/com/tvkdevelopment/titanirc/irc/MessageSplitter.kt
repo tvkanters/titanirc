@@ -1,16 +1,17 @@
 package com.tvkdevelopment.titanirc.irc
 
-fun String.splitMessageForIrc(lineBasicCharMax: Int, prefix: String? = null): String =
+fun String.splitMessageForIrc(lineBasicCharMax: Int, prefix: String? = null): List<String> =
     split('\n')
         .filter { it.isNotBlank() }
-        .joinToString("\n") { it.splitLineForIrc(lineBasicCharMax, prefix) }
+        .flatMap { it.splitLineForIrc(lineBasicCharMax, prefix) }
 
-private fun String.splitLineForIrc(lineBasicCharMax: Int, prefix: String?): String {
+private fun String.splitLineForIrc(lineBasicCharMax: Int, prefix: String?): List<String> {
     val messageChars = this.toCharArray()
     val charSize = if (messageChars.any { it.code >= 128 }) 2 else 1
     val prefixLength = (prefix?.length ?: 0) * charSize
     val wordBasicCharMax = lineBasicCharMax - prefixLength * charSize
 
+    val lines = mutableListOf<String>()
     val splitMessageBuilder = StringBuilder()
     val wordBuilder = StringBuilder()
 
@@ -19,6 +20,10 @@ private fun String.splitLineForIrc(lineBasicCharMax: Int, prefix: String?): Stri
     var wordAddedToLine = false
 
     fun prepareNewLine() {
+        if (splitMessageBuilder.isNotBlank()) {
+            lines += splitMessageBuilder.toString()
+        }
+        splitMessageBuilder.clear()
         prefix?.let { splitMessageBuilder.append(it) }
         lineBasicCharCount = prefixLength
         wordAddedToLine = false
@@ -34,7 +39,6 @@ private fun String.splitLineForIrc(lineBasicCharMax: Int, prefix: String?): Stri
                 if (wordAddedToLine) {
                     // If the buffered word (plus space) doesn't fit on the line, add it to the next
                     if (lineBasicCharCount + 1 > lineBasicCharMax) {
-                        splitMessageBuilder.append("\n")
                         prepareNewLine()
                         lineBasicCharCount += wordBasicCharCount
                     } else {
@@ -71,13 +75,13 @@ private fun String.splitLineForIrc(lineBasicCharMax: Int, prefix: String?): Stri
     // Add the final word
     lineBasicCharCount += wordBasicCharCount
     if (lineBasicCharCount > lineBasicCharMax) {
-        splitMessageBuilder.append('\n')
         prepareNewLine()
     } else if (splitMessageBuilder.length > prefixLength) {
         splitMessageBuilder.append(' ')
     }
 
     splitMessageBuilder.append(wordBuilder)
+    lines += splitMessageBuilder.toString()
 
-    return splitMessageBuilder.toString()
+    return lines
 }

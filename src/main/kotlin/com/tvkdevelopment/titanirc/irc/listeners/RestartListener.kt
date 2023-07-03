@@ -6,8 +6,9 @@ import org.pircbotx.hooks.Event
 import org.pircbotx.hooks.Listener
 import org.pircbotx.hooks.events.DisconnectEvent
 import org.pircbotx.hooks.events.SocketConnectEvent
+import kotlin.time.Duration
 
-class RestartListener(private val restartDelayMs: Long, private val restartFunction: () -> Unit) : Listener {
+class RestartListener(private val restartDelay: Duration, private val restartFunction: () -> Unit) : Listener {
 
     private var restartJob: Job? = null
 
@@ -15,13 +16,16 @@ class RestartListener(private val restartDelayMs: Long, private val restartFunct
     override fun onEvent(event: Event?) {
         when (event) {
             is SocketConnectEvent -> {
-                restartJob?.cancel()
-                restartJob = null
+                restartJob?.apply {
+                    Log.i("Reconnected - cancelling restart job")
+                    cancel()
+                    restartJob = null
+                }
             }
             is DisconnectEvent -> {
                 restartJob?.cancel()
                 restartJob = GlobalScope.launch {
-                    delay(restartDelayMs)
+                    delay(restartDelay)
                     Log.i("IRC restarting")
                     restartFunction()
                 }

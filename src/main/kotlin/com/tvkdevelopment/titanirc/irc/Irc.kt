@@ -12,6 +12,7 @@ import org.pircbotx.Configuration
 import org.pircbotx.PircBotX
 import org.pircbotx.delay.AdaptingDelay
 import org.pircbotx.hooks.managers.SequentialListenerManager
+import kotlin.time.Duration.Companion.seconds
 
 @OptIn(DelicateCoroutinesApi::class)
 class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
@@ -19,6 +20,8 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
     override val name = "IRC"
 
     private val scope = CoroutineScope(newSingleThreadContext("Irc"))
+    private var connectJob: Job? = null
+    private val messageSender = IrcMessageSender(configuration, ::bot)
 
     private var bot: PircBotX? = null
     private var maxLineLength: Int = QUAKENET_MAXLINELENGTH
@@ -28,15 +31,17 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
     private val topicListeners = mutableListOf<BridgeClient.TopicListener>()
 
     override fun connect() {
-        scope.launch {
+        connectJob?.cancel()
+        connectJob = scope.launch {
             bot?.close()
-            PircBotX(
-                Configuration.Builder().apply {
+            try {
+                PircBotX(Configuration.Builder().apply {
                     name = configuration.ircNick
                     login = configuration.ircUsername
                     realName = "Dopelives bridge"
                     configuration.ircPassword?.let {
-                        nickservCustomMessage = "PRIVMSG Q@CServe.quakenet.org :AUTH ${configuration.ircUsername} $it"
+                        nickservCustomMessage =
+                            "PRIVMSG Q@CServe.quakenet.org :AUTH ${configuration.ircUsername} $it"
                     }
 
                     addServer("port80c.se.quakenet.org")
@@ -60,31 +65,23 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
                     setListenerManager(SequentialListenerManager.newDefault())
 
                     addListener(LogListener())
-                    addListener(RestartListener(60_000L, ::connect))
+                    addListener(RestartListener(DISCONNECT_RESTART_DELAY, ::connect))
                     addListener(NickFixListener(name))
                     addListener(IrcBridgeListener(messageListeners, slashMeListeners, topicListeners))
-                }.buildConfiguration()
-            )
-                .also { bot = it }
-                .startBot()
-        }
-    }
-
-    private fun onBot(block: PircBotX.() -> Unit) {
-        try {
-            bot?.block()
-        } catch (e: Exception) {
-            Log.e(e)
+                    addListener(messageSender)
+                }.buildConfiguration())
+                    .also { bot = it }
+                    .startBot()
+            } catch (e: Exception) {
+                Log.e(e)
+                delay(CRASH_RESTART_DELAY)
+                connect()
+            }
         }
     }
 
     override fun relayMessage(channel: String, nick: String, message: String) {
-        onBot {
-            sendIRC().message(
-                channel,
-                message.splitMessageForIrc(maxLineLength, prefix = "<$nick> ")
-            )
-        }
+        sendMessage(channel, "<$nick> ", message)
     }
 
     override fun addRelayMessageListener(listener: BridgeClient.MessageListener) {
@@ -92,24 +89,20 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
     }
 
     override fun relaySlashMe(channel: String, nick: String, message: String) {
-        onBot {
-            sendIRC().message(
-                channel,
-                message.splitMessageForIrc(maxLineLength, prefix = "* $nick ")
-            )
-        }
+        sendMessage(channel, "* $nick ", message)
     }
 
     override fun addRelaySlashMeListener(listener: BridgeClient.SlashMeListener) {
         slashMeListeners += listener
     }
 
+    private fun sendMessage(channel: String, prefix: String, message: String) {
+        message.splitMessageForIrc(maxLineLength, prefix = prefix)
+            .forEach { messageSender.sendMessage(channel, it) }
+    }
+
     override fun setTopic(channel: String, topic: String) {
-        onBot {
-            userChannelDao.getChannel(channel)
-                .takeIf { it.topic != topic }
-                ?.apply { send().setTopic(topic) }
-        }
+        messageSender.setTopic(channel, topic)
     }
 
     override fun addTopicListener(listener: BridgeClient.TopicListener) {
@@ -118,5 +111,7 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
 
     companion object {
         private const val QUAKENET_MAXLINELENGTH = 443
+        private val DISCONNECT_RESTART_DELAY = 30.seconds
+        private val CRASH_RESTART_DELAY = 5.seconds
     }
 }

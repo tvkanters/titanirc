@@ -14,7 +14,7 @@ class MessageSplitterTest {
         val splitMessage = message.splitMessageForIrc(10)
 
         // THEN
-        assertEquals("This is a\ntoo long\nmessage", splitMessage)
+        assertEquals(listOf("This is a", "too long", "message"), splitMessage)
     }
 
     @Test
@@ -26,7 +26,7 @@ class MessageSplitterTest {
         val splitMessage = message.splitMessageForIrc(12, prefix = "<a> ")
 
         // THEN
-        assertEquals("<a> This is\n<a> a too\n<a> long\n<a> message", splitMessage)
+        assertEquals(listOf("<a> This is", "<a> a too", "<a> long", "<a> message"), splitMessage)
     }
 
     @Test
@@ -38,7 +38,7 @@ class MessageSplitterTest {
         val splitMessage = message.splitMessageForIrc(12, prefix = "<a> ")
 
         // THEN
-        assertEquals("<a> This is\n<a> a too\n<a> long\n<a> message\n<a> with new\n<a> lines", splitMessage)
+        assertEquals(listOf("<a> This is", "<a> a too", "<a> long", "<a> message", "<a> with new", "<a> lines"), splitMessage)
     }
 
     @Test
@@ -50,7 +50,7 @@ class MessageSplitterTest {
         val splitMessage = message.splitMessageForIrc(15)
 
         // THEN
-        assertEquals("https://www.…", splitMessage)
+        assertEquals(listOf("https://www.…"), splitMessage)
     }
 
     @Test
@@ -62,7 +62,7 @@ class MessageSplitterTest {
         val splitMessage = message.splitMessageForIrc(15, prefix = "<a> ")
 
         // THEN
-        assertEquals("<a> https://…", splitMessage)
+        assertEquals(listOf("<a> https://…"), splitMessage)
     }
 
     @Test
@@ -74,6 +74,6 @@ class MessageSplitterTest {
         val splitMessage = message.splitMessageForIrc(15)
 
         // THEN
-        assertEquals("Тхис ис\nа ту\nлонг\nмесач", splitMessage)
+        assertEquals(listOf("Тхис ис", "а ту", "лонг", "месач"), splitMessage)
     }
 }
