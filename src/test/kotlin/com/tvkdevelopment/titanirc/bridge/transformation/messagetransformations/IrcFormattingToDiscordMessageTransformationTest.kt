@@ -4,9 +4,9 @@ import org.junit.jupiter.api.Test
 import org.pircbotx.Colors
 import kotlin.test.assertEquals
 
-class ConvertIrcFormattingToDiscordMessageTransformationTest {
+class IrcFormattingToDiscordMessageTransformationTest {
 
-    private val sut = ConvertIrcFormattingToDiscordMessageTransformation()
+    private val sut = IrcFormattingToDiscordMessageTransformation()
 
     @Test
     fun testBold() {

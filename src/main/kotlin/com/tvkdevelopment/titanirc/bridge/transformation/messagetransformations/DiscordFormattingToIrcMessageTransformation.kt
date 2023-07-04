@@ -3,7 +3,7 @@ package com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations
 import com.tvkdevelopment.titanirc.bridge.transformation.MessageTransformation
 import org.pircbotx.Colors
 
-class ConvertDiscordFormattingToIrcMessageTransformation : MessageTransformation {
+class DiscordFormattingToIrcMessageTransformation : MessageTransformation {
     override fun transform(sourceChannel: String, targetChannel: String, message: String): String =
         FORMATTINGS.fold(message) { transformedMessage, formatting -> formatting.apply(transformedMessage) }
 
@@ -17,10 +17,12 @@ class ConvertDiscordFormattingToIrcMessageTransformation : MessageTransformation
         )
 
         private class Formatting(discordSymbol: String, private val ircSymbol: String) {
-            private val regex = Regex.escape(discordSymbol).let { Regex("""$it((?:(?!$it).)+)$it""") }
+            private val regex = Regex.escape(discordSymbol).let {
+                Regex("""((?:^| )(?:(?<!://)[^ ])*?)$it((?:(?!$it).)+)$it""")
+            }
 
             fun apply(message: String) =
-                message.replace(regex, "$ircSymbol$1$ircSymbol")
+                message.replace(regex, "$1$ircSymbol$2$ircSymbol")
         }
     }
 }
