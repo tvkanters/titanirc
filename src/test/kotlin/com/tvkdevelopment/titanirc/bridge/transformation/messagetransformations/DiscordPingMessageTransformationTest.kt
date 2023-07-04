@@ -14,10 +14,9 @@ class DiscordPingMessageTransformationTest {
     private val guild = mockkGuild(GUILD_ID, setOf(CHANNEL_ID))
     private val guildOther = mockkGuild(GUILD_ID_OTHER, setOf(CHANNEL_ID_OTHER))
     private val memberRegistry = MutableMemberRegistry().apply {
-        add(guild, mockkMember(ID_SHORT, NAME_SHORT))
-        add(guild, mockkMember(ID_LONG, NAME_LONG))
-        add(guild, mockkMember(ID_SPACE, NAME_SPACE))
-        add(guildOther, mockkMember(ID_LONG_OTHER_GUILD, NAME_LONG))
+        add(guild, mockkMember(USER_ID, USER_NAME))
+        add(guild, mockkMember(USER_ID_SPACE, USER_NAME_SPACE))
+        add(guildOther, mockkMember(USER_ID_OTHER_GUILD, USER_NAME))
     }
     private val sut = DiscordPingMessageTransformation(memberRegistry)
 
@@ -30,91 +29,187 @@ class DiscordPingMessageTransformationTest {
         val result = sut.transform(CHANNEL_ID.toString(), message)
 
         // THEN
-        assertEquals("hello hello", result)
+        assertEquals(message, result)
     }
 
     @Test
-    fun testShortNameSeparated() {
+    fun testNameSeparated() {
         // GIVEN
-        val message = "$NAME_SHORT, hello"
+        val message = "$USER_NAME, hello"
 
         // WHEN
         val result = sut.transform(CHANNEL_ID.toString(), message)
 
         // THEN
-        assertEquals("<@$ID_SHORT>, hello", result)
+        assertEquals("<@$USER_ID>, hello", result)
     }
 
     @Test
-    fun testShortNameNotSeparated() {
+    fun testNameNotSeparated() {
         // GIVEN
-        val message = "$NAME_SHORT hello"
+        val message = "$USER_NAME hello"
 
         // WHEN
         val result = sut.transform(CHANNEL_ID.toString(), message)
 
         // THEN
-        assertEquals("$NAME_SHORT hello", result)
+        assertEquals(message, result)
     }
 
     @Test
-    fun testLongNameSeparated() {
+    fun testNameLowercase() {
         // GIVEN
-        val message = "$NAME_LONG: hello"
+        val message = "${USER_NAME.lowercase()}, hello"
 
         // WHEN
         val result = sut.transform(CHANNEL_ID.toString(), message)
 
         // THEN
-        assertEquals("<@$ID_LONG>: hello", result)
+        assertEquals("<@$USER_ID>, hello", result)
     }
 
     @Test
-    fun testLongNameNotSeparated() {
+    fun testNameChunk() {
         // GIVEN
-        val message = "$NAME_LONG hello"
+        val message = "${USER_NAME}arilla, hello"
 
         // WHEN
         val result = sut.transform(CHANNEL_ID.toString(), message)
 
         // THEN
-        assertEquals("<@$ID_LONG> hello", result)
+        assertEquals(message, result)
     }
 
     @Test
     fun testSpacedName() {
         // GIVEN
-        val message = "Hans hello"
+        val message = "$USER_NAME_SPACE_FIRST, hello"
 
         // WHEN
         val result = sut.transform(CHANNEL_ID.toString(), message)
 
         // THEN
-        assertEquals("<@$ID_SPACE> hello", result)
+        assertEquals("<@$USER_ID_SPACE>, hello", result)
     }
 
     @Test
     fun testGarbageName() {
         // GIVEN
-        val message = "$NAME_GARBAGE hello"
+        val message = "$USER_NAME_GARBAGE hello"
 
         // WHEN
         val result = sut.transform(CHANNEL_ID.toString(), message)
 
         // THEN
-        assertEquals("$NAME_GARBAGE hello", result)
+        assertEquals(message, result)
     }
 
     @Test
     fun testOtherGuild() {
         // GIVEN
-        val message = "$NAME_LONG hello"
+        val message = "$USER_NAME: hello"
 
         // WHEN
         val result = sut.transform(CHANNEL_ID_OTHER.toString(), message)
 
         // THEN
-        assertEquals("<@$ID_LONG_OTHER_GUILD> hello", result)
+        assertEquals("<@$USER_ID_OTHER_GUILD>: hello", result)
+    }
+
+    @Test
+    fun testNameMiddleOfSentence() {
+        // GIVEN
+        val message = "Hello $USER_NAME"
+
+        // WHEN
+        val result = sut.transform(CHANNEL_ID.toString(), message)
+
+        // THEN
+        assertEquals(message, result)
+    }
+
+    @Test
+    fun testNameMiddleOfSentenceWithComma() {
+        // GIVEN
+        val message = "Hello $USER_NAME, hi"
+
+        // WHEN
+        val result = sut.transform(CHANNEL_ID.toString(), message)
+
+        // THEN
+        assertEquals(message, result)
+    }
+
+    @Test
+    fun testAtName() {
+        // GIVEN
+        val message = "Hello @$USER_NAME"
+
+        // WHEN
+        val result = sut.transform(CHANNEL_ID.toString(), message)
+
+        // THEN
+        assertEquals("Hello <@$USER_ID>", result)
+    }
+
+    @Test
+    fun testAtNameStart() {
+        // GIVEN
+        val message = "@$USER_NAME, hello"
+
+        // WHEN
+        val result = sut.transform(CHANNEL_ID.toString(), message)
+
+        // THEN
+        assertEquals("<@$USER_ID>, hello", result)
+    }
+
+    @Test
+    fun testAtNameCommas() {
+        // GIVEN
+        val message = "Hello @$USER_NAME, @$USER_NAME_SPACE_FIRST, hi"
+
+        // WHEN
+        val result = sut.transform(CHANNEL_ID.toString(), message)
+
+        // THEN
+        assertEquals("Hello <@$USER_ID>, <@$USER_ID_SPACE>, hi", result)
+    }
+
+    @Test
+    fun testAtNameInWord() {
+        // GIVEN
+        val message = "Hello hi@$USER_NAME"
+
+        // WHEN
+        val result = sut.transform(CHANNEL_ID.toString(), message)
+
+        // THEN
+        assertEquals(message, result)
+    }
+
+    @Test
+    fun testAtNameInUrl() {
+        // GIVEN
+        val message = "Hello https://twitter.com/@$USER_NAME"
+
+        // WHEN
+        val result = sut.transform(CHANNEL_ID.toString(), message)
+
+        // THEN
+        assertEquals(message, result)
+    }
+
+    @Test
+    fun testAtNameGluedToCommas() {
+        // GIVEN
+        val message = "Hello,@$USER_NAME"
+
+        // WHEN
+        val result = sut.transform(CHANNEL_ID.toString(), message)
+
+        // THEN
+        assertEquals(message, result)
     }
 
     companion object {
@@ -124,15 +219,14 @@ class DiscordPingMessageTransformationTest {
         private const val CHANNEL_ID = 111L
         private const val CHANNEL_ID_OTHER = 222L
 
-        private const val NAME_SHORT = "a"
-        private const val NAME_LONG = "Larry"
-        private const val NAME_SPACE = "Hans Bob"
-        private const val NAME_GARBAGE = "%&^ABC"
+        private const val USER_NAME = "Larry"
+        private const val USER_NAME_SPACE = "Hans Bob"
+        private const val USER_NAME_SPACE_FIRST = "Hans"
+        private const val USER_NAME_GARBAGE = "%&^ABC"
 
-        private const val ID_SHORT = 123L
-        private const val ID_LONG = 456L
-        private const val ID_SPACE = 789L
-        private const val ID_LONG_OTHER_GUILD = 234L
+        private const val USER_ID = 123L
+        private const val USER_ID_SPACE = 789L
+        private const val USER_ID_OTHER_GUILD = 234L
 
         fun mockkGuild(id: Long, channelIds: Set<Long>) = niceMockk<Guild> {
             every { this@niceMockk.id } returns Snowflake(id)
