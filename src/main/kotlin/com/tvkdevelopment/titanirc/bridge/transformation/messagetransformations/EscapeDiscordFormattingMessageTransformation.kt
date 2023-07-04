@@ -7,6 +7,6 @@ class EscapeDiscordFormattingMessageTransformation : MessageTransformation {
         message.replace(REGEX, "\\\\$1")
 
     companion object {
-        private val REGEX = Regex("""([*_~])""")
+        private val REGEX = Regex("""([*_~`\\])""")
     }
 }
