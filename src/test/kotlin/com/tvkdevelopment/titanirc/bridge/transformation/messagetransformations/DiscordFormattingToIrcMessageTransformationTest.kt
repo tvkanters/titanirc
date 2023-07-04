@@ -440,4 +440,16 @@ class DiscordFormattingToIrcMessageTransformationTest {
         // THEN
         assertEquals(message, result)
     }
+
+    @Test
+    fun testNonEscapingBackslash() {
+        // GIVEN
+        val message = "back\\slash"
+
+        // WHEN
+        val result = sut.transform("", "", message)
+
+        // THEN
+        assertEquals(message, result)
+    }
 }

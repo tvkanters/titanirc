@@ -12,7 +12,7 @@ class DiscordFormattingToIrcMessageTransformation : MessageTransformation {
             ?: message
 
     companion object {
-        private val REGEX_ESCAPE = Regex("""\\(.)""")
+        private val REGEX_ESCAPE = Regex("""\\([*_|~`#\\-])""")
 
         private val FORMATTINGS = listOf(
             Formatting("**", Colors.BOLD),
