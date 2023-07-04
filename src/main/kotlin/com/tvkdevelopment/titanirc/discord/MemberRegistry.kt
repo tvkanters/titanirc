@@ -9,10 +9,24 @@ interface MemberRegistry {
 }
 
 class MutableMemberRegistry : MemberRegistry {
-    private val members = mutableMapOf<Guild, MutableMap<String, Snowflake>>()
+    private val members = mutableMapOf<Guild, MutableMap<Snowflake, String>>()
+    private val memberIndex = mutableMapOf<Guild, MutableMap<String, Snowflake>>()
+        get() {
+            if (memberIndexInvalidated) {
+                members.forEach { (guild, member) ->
+                    val guildMemberIndex = field.getOrPut(guild) { mutableMapOf() }
+                    member.forEach { (id, name) ->
+                        guildMemberIndex[name] = id
+                    }
+                }
+                memberIndexInvalidated = false
+            }
+            return field
+        }
+    private var memberIndexInvalidated = false
 
     override fun getMembers(channel: String): Map<String, Snowflake> =
-        members.entries
+        memberIndex.entries
             .firstOrNull { (guild, _) -> guild.channelIds.any { it.toString() == channel } }
             ?.value
             ?: emptyMap()
@@ -23,7 +37,8 @@ class MutableMemberRegistry : MemberRegistry {
             .let { REGEX_NORMALIZE_MEMBER_NAME.matchAt(it, 0)?.groupValues?.get(1) }
             ?.takeIf { it.isNotEmpty() }
             ?.let { name ->
-                members.getOrPut(guild) { mutableMapOf() }[name] = member.id
+                members.getOrPut(guild) { mutableMapOf() }[member.id] = name
+                memberIndexInvalidated = true
             }
     }
 

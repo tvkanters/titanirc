@@ -16,6 +16,7 @@ import dev.kord.core.event.gateway.DisconnectEvent
 import dev.kord.core.event.gateway.ReadyEvent
 import dev.kord.core.event.guild.GuildCreateEvent
 import dev.kord.core.event.guild.MemberJoinEvent
+import dev.kord.core.event.guild.MemberUpdateEvent
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
 import dev.kord.gateway.DefaultGateway
@@ -94,6 +95,10 @@ class Discord(
                 }
 
                 on<MemberJoinEvent> {
+                    mutableMemberRegistry.add(member.getGuild(), member)
+                }
+
+                on<MemberUpdateEvent> {
                     mutableMemberRegistry.add(member.getGuild(), member)
                 }
 

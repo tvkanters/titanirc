@@ -212,6 +212,37 @@ class DiscordPingMessageTransformationTest {
         assertEquals(message, result)
     }
 
+    @Test
+    fun testUpdateName() {
+        // GIVEN
+        val message = "Hello, @$USER_NAME and @Fred"
+        val preconditionResult = sut.transform(CHANNEL_ID.toString(), message)
+        assertEquals("Hello, <@$USER_ID> and @Fred", preconditionResult)
+
+        // WHEN
+        memberRegistry.add(guild, mockkMember(USER_ID, "Fred"))
+        val result = sut.transform(CHANNEL_ID.toString(), message)
+
+        // THEN
+        assertEquals("Hello, <@$USER_ID> and <@$USER_ID>", result)
+    }
+
+    @Test
+    fun testUpdateOverlapped() {
+        // GIVEN a user takes another user's name
+        val message = "Hello, @$USER_NAME and @$USER_NAME_SPACE_FIRST"
+        sut.transform(CHANNEL_ID.toString(), message)
+        memberRegistry.add(guild, mockkMember(USER_ID, USER_NAME_SPACE))
+        sut.transform(CHANNEL_ID.toString(), message)
+
+        // WHEN the user reverts the name change
+        memberRegistry.add(guild, mockkMember(USER_ID, USER_NAME))
+        val result = sut.transform(CHANNEL_ID.toString(), message)
+
+        // THEN the stolen user's name is properly attributed again
+        assertEquals("Hello, <@$USER_ID> and <@$USER_ID_SPACE>", result)
+    }
+
     companion object {
         private const val GUILD_ID = 987L
         private const val GUILD_ID_OTHER = 654L
