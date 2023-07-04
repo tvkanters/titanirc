@@ -45,11 +45,23 @@ class Bridge private constructor(
         nick: String,
         message: String,
     ) {
-        val targetChannel = channelMapping.getTargetChannel(sourceClient, targetClient, sourceChannel) ?: return
-        val transformedMessage =
-            messageTransformationMapping.transform(sourceClient, targetClient, targetChannel, message)
+        try {
+            val targetChannel = channelMapping.getTargetChannel(sourceClient, targetClient, sourceChannel) ?: return
+            val transformedMessage =
+                messageTransformationMapping.transform(sourceClient, targetClient, targetChannel, message)
 
-        targetClient.relayMessage(targetChannel, nick, transformedMessage)
+            targetClient.relayMessage(targetChannel, nick, transformedMessage)
+        } catch (e: Exception) {
+            Log.e(
+                "Bridge exception in relayMessage: " +
+                    "sourceClient=${sourceClient.name}, " +
+                    "targetClient=${targetClient.name}, " +
+                    "sourceChannel=$sourceChannel, " +
+                    "nick=$nick, " +
+                    "message=$message",
+                e
+            )
+        }
     }
 
     private fun relaySlashMe(
@@ -59,11 +71,23 @@ class Bridge private constructor(
         nick: String,
         message: String,
     ) {
-        val targetChannel = channelMapping.getTargetChannel(sourceClient, targetClient, sourceChannel) ?: return
-        val transformedMessage =
-            messageTransformationMapping.transform(sourceClient, targetClient, targetChannel, message)
+        try {
+            val targetChannel = channelMapping.getTargetChannel(sourceClient, targetClient, sourceChannel) ?: return
+            val transformedMessage =
+                messageTransformationMapping.transform(sourceClient, targetClient, targetChannel, message)
 
-        targetClient.relaySlashMe(targetChannel, nick, transformedMessage)
+            targetClient.relaySlashMe(targetChannel, nick, transformedMessage)
+        } catch (e: Exception) {
+            Log.e(
+                "Bridge exception in relaySlashMe: " +
+                    "sourceClient=${sourceClient.name}, " +
+                    "targetClient=${targetClient.name}, " +
+                    "sourceChannel=$sourceChannel, " +
+                    "nick=$nick, " +
+                    "message=$message",
+                e
+            )
+        }
     }
 
     private fun setTopic(
@@ -72,9 +96,20 @@ class Bridge private constructor(
         sourceChannel: String,
         topic: String
     ) {
-        val targetChannel = channelMapping.getTargetChannel(sourceClient, targetClient, sourceChannel) ?: return
+        try {
+            val targetChannel = channelMapping.getTargetChannel(sourceClient, targetClient, sourceChannel) ?: return
 
-        targetClient.setTopic(targetChannel, topic)
+            targetClient.setTopic(targetChannel, topic)
+        } catch (e: Exception) {
+            Log.e(
+                "Bridge exception in relayMessage: " +
+                    "sourceClient=${sourceClient.name}, " +
+                    "targetClient=${targetClient.name}, " +
+                    "sourceChannel=$sourceChannel, " +
+                    "topic=$topic",
+                e
+            )
+        }
     }
 
     companion object {

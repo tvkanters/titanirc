@@ -34,7 +34,7 @@ class DiscordPingMessageTransformationTest {
     }
 
     @Test
-    fun testShortnameSeparated() {
+    fun testShortNameSeparated() {
         // GIVEN
         val message = "$NAME_SHORT, hello"
 

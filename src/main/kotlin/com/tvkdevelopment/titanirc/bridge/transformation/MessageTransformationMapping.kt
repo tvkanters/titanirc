@@ -1,6 +1,7 @@
 package com.tvkdevelopment.titanirc.bridge.transformation
 
 import com.tvkdevelopment.titanirc.bridge.BridgeClient
+import com.tvkdevelopment.titanirc.util.Log
 
 class MessageTransformationMapping(vararg links: MessageTransformationLink) {
 
@@ -21,7 +22,19 @@ class MessageTransformationMapping(vararg links: MessageTransformationLink) {
     ): String =
         transformations[sourceClient]?.get(targetClient)
             ?.fold(message) { transformedMessage, transformation ->
-                transformation.transform(targetChannel, transformedMessage)
+                try {
+                    transformation.transform(targetChannel, transformedMessage)
+                } catch (e: Exception) {
+                    Log.e(
+                        "Transform exception: " +
+                            "transformation=${transformation::class.simpleName}, " +
+                            "sourceClient=${sourceClient.name}, " +
+                            "targetClient=${targetClient.name}, " +
+                            "message=$message",
+                        e
+                    )
+                    transformedMessage
+                }
             }
             ?: message
 

@@ -49,4 +49,12 @@ object Log {
         }
         e(exceptionAsString)
     }
+
+    fun e(message: Any?, e: Exception) {
+        val exceptionAsString = StringWriter().let {
+            e.printStackTrace(PrintWriter(it))
+            it.toString()
+        }
+        e("$message\n$exceptionAsString")
+    }
 }
