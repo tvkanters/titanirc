@@ -3,10 +3,10 @@ package com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations
 import com.tvkdevelopment.titanirc.bridge.transformation.MessageTransformation
 import com.tvkdevelopment.titanirc.discord.MemberRegistry
 
-class DiscordPingMessageTransformation(private val memberRegistry: MemberRegistry) : MessageTransformation {
+class NicknameToDiscordMemberMessageTransformation(private val memberRegistry: MemberRegistry) : MessageTransformation {
 
-    override fun transform(channel: String, message: String): String {
-        val members = memberRegistry.getMembers(channel)
+    override fun transform(sourceChannel: String, targetChannel: String, message: String): String {
+        val members = memberRegistry.getMembersByNormalizedName(targetChannel)
         return message.replace(REGEX_POTENTIAL_MEMBER_NAME) { match ->
             match.groupValues
                 .drop(1)

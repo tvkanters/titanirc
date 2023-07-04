@@ -50,7 +50,7 @@ object Main {
                         StripIrcFormattingMessageTransformation(),
                         StripSmolFiMessageTransformation(),
                         AddTwitterFixMessageTransformation(),
-                        DiscordPingMessageTransformation(discord.memberRegistry),
+                        NicknameToDiscordMemberMessageTransformation(discord.memberRegistry),
                     )
                 ),
                 MessageTransformationLink(
@@ -58,6 +58,7 @@ object Main {
                     listOf(
                         ConvertDiscordFormattingToIrcMessageTransformation(),
                         AddSmolFiMessageTransformation(),
+                        DiscordMemberToNicknameMessageTransformation(discord.memberRegistry)
                     )
                 )
             )

@@ -9,7 +9,7 @@ import io.mockk.every
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class DiscordPingMessageTransformationTest {
+class NicknameToDiscordMemberMessageTransformationTest {
 
     private val guild = mockkGuild(GUILD_ID, setOf(CHANNEL_ID))
     private val guildOther = mockkGuild(GUILD_ID_OTHER, setOf(CHANNEL_ID_OTHER))
@@ -18,7 +18,7 @@ class DiscordPingMessageTransformationTest {
         add(guild, mockkMember(USER_ID_SPACE, USER_NAME_SPACE))
         add(guildOther, mockkMember(USER_ID_OTHER_GUILD, USER_NAME))
     }
-    private val sut = DiscordPingMessageTransformation(memberRegistry)
+    private val sut = NicknameToDiscordMemberMessageTransformation(memberRegistry)
 
     @Test
     fun testNoPing() {
@@ -26,7 +26,7 @@ class DiscordPingMessageTransformationTest {
         val message = "hello hello"
 
         // WHEN
-        val result = sut.transform(CHANNEL_ID.toString(), message)
+        val result = sut.transform("", CHANNEL_ID.toString(), message)
 
         // THEN
         assertEquals(message, result)
@@ -38,7 +38,7 @@ class DiscordPingMessageTransformationTest {
         val message = "$USER_NAME, hello"
 
         // WHEN
-        val result = sut.transform(CHANNEL_ID.toString(), message)
+        val result = sut.transform("", CHANNEL_ID.toString(), message)
 
         // THEN
         assertEquals("<@$USER_ID>, hello", result)
@@ -50,7 +50,7 @@ class DiscordPingMessageTransformationTest {
         val message = "$USER_NAME hello"
 
         // WHEN
-        val result = sut.transform(CHANNEL_ID.toString(), message)
+        val result = sut.transform("", CHANNEL_ID.toString(), message)
 
         // THEN
         assertEquals(message, result)
@@ -62,7 +62,7 @@ class DiscordPingMessageTransformationTest {
         val message = "${USER_NAME.lowercase()}, hello"
 
         // WHEN
-        val result = sut.transform(CHANNEL_ID.toString(), message)
+        val result = sut.transform("", CHANNEL_ID.toString(), message)
 
         // THEN
         assertEquals("<@$USER_ID>, hello", result)
@@ -74,7 +74,7 @@ class DiscordPingMessageTransformationTest {
         val message = "${USER_NAME}arilla, hello"
 
         // WHEN
-        val result = sut.transform(CHANNEL_ID.toString(), message)
+        val result = sut.transform("", CHANNEL_ID.toString(), message)
 
         // THEN
         assertEquals(message, result)
@@ -86,7 +86,7 @@ class DiscordPingMessageTransformationTest {
         val message = "$USER_NAME_SPACE_FIRST, hello"
 
         // WHEN
-        val result = sut.transform(CHANNEL_ID.toString(), message)
+        val result = sut.transform("", CHANNEL_ID.toString(), message)
 
         // THEN
         assertEquals("<@$USER_ID_SPACE>, hello", result)
@@ -98,7 +98,7 @@ class DiscordPingMessageTransformationTest {
         val message = "$USER_NAME_GARBAGE hello"
 
         // WHEN
-        val result = sut.transform(CHANNEL_ID.toString(), message)
+        val result = sut.transform("", CHANNEL_ID.toString(), message)
 
         // THEN
         assertEquals(message, result)
@@ -110,7 +110,7 @@ class DiscordPingMessageTransformationTest {
         val message = "$USER_NAME: hello"
 
         // WHEN
-        val result = sut.transform(CHANNEL_ID_OTHER.toString(), message)
+        val result = sut.transform("", CHANNEL_ID_OTHER.toString(), message)
 
         // THEN
         assertEquals("<@$USER_ID_OTHER_GUILD>: hello", result)
@@ -122,7 +122,7 @@ class DiscordPingMessageTransformationTest {
         val message = "Hello $USER_NAME"
 
         // WHEN
-        val result = sut.transform(CHANNEL_ID.toString(), message)
+        val result = sut.transform("", CHANNEL_ID.toString(), message)
 
         // THEN
         assertEquals(message, result)
@@ -134,7 +134,7 @@ class DiscordPingMessageTransformationTest {
         val message = "Hello $USER_NAME, hi"
 
         // WHEN
-        val result = sut.transform(CHANNEL_ID.toString(), message)
+        val result = sut.transform("", CHANNEL_ID.toString(), message)
 
         // THEN
         assertEquals(message, result)
@@ -146,7 +146,7 @@ class DiscordPingMessageTransformationTest {
         val message = "Hello @$USER_NAME"
 
         // WHEN
-        val result = sut.transform(CHANNEL_ID.toString(), message)
+        val result = sut.transform("", CHANNEL_ID.toString(), message)
 
         // THEN
         assertEquals("Hello <@$USER_ID>", result)
@@ -158,7 +158,7 @@ class DiscordPingMessageTransformationTest {
         val message = "@$USER_NAME, hello"
 
         // WHEN
-        val result = sut.transform(CHANNEL_ID.toString(), message)
+        val result = sut.transform("", CHANNEL_ID.toString(), message)
 
         // THEN
         assertEquals("<@$USER_ID>, hello", result)
@@ -170,7 +170,7 @@ class DiscordPingMessageTransformationTest {
         val message = "Hello @$USER_NAME, @$USER_NAME_SPACE_FIRST, hi"
 
         // WHEN
-        val result = sut.transform(CHANNEL_ID.toString(), message)
+        val result = sut.transform("", CHANNEL_ID.toString(), message)
 
         // THEN
         assertEquals("Hello <@$USER_ID>, <@$USER_ID_SPACE>, hi", result)
@@ -182,7 +182,7 @@ class DiscordPingMessageTransformationTest {
         val message = "Hello hi@$USER_NAME"
 
         // WHEN
-        val result = sut.transform(CHANNEL_ID.toString(), message)
+        val result = sut.transform("", CHANNEL_ID.toString(), message)
 
         // THEN
         assertEquals(message, result)
@@ -194,7 +194,7 @@ class DiscordPingMessageTransformationTest {
         val message = "Hello https://twitter.com/@$USER_NAME"
 
         // WHEN
-        val result = sut.transform(CHANNEL_ID.toString(), message)
+        val result = sut.transform("", CHANNEL_ID.toString(), message)
 
         // THEN
         assertEquals(message, result)
@@ -206,7 +206,7 @@ class DiscordPingMessageTransformationTest {
         val message = "Hello,@$USER_NAME"
 
         // WHEN
-        val result = sut.transform(CHANNEL_ID.toString(), message)
+        val result = sut.transform("", CHANNEL_ID.toString(), message)
 
         // THEN
         assertEquals(message, result)
@@ -216,12 +216,12 @@ class DiscordPingMessageTransformationTest {
     fun testUpdateName() {
         // GIVEN
         val message = "Hello, @$USER_NAME and @Fred"
-        val preconditionResult = sut.transform(CHANNEL_ID.toString(), message)
+        val preconditionResult = sut.transform("", CHANNEL_ID.toString(), message)
         assertEquals("Hello, <@$USER_ID> and @Fred", preconditionResult)
 
         // WHEN
         memberRegistry.add(guild, mockkMember(USER_ID, "Fred"))
-        val result = sut.transform(CHANNEL_ID.toString(), message)
+        val result = sut.transform("", CHANNEL_ID.toString(), message)
 
         // THEN
         assertEquals("Hello, <@$USER_ID> and <@$USER_ID>", result)
@@ -231,13 +231,13 @@ class DiscordPingMessageTransformationTest {
     fun testUpdateOverlapped() {
         // GIVEN a user takes another user's name
         val message = "Hello, @$USER_NAME and @$USER_NAME_SPACE_FIRST"
-        sut.transform(CHANNEL_ID.toString(), message)
+        sut.transform("", CHANNEL_ID.toString(), message)
         memberRegistry.add(guild, mockkMember(USER_ID, USER_NAME_SPACE))
-        sut.transform(CHANNEL_ID.toString(), message)
+        sut.transform("", CHANNEL_ID.toString(), message)
 
         // WHEN the user reverts the name change
         memberRegistry.add(guild, mockkMember(USER_ID, USER_NAME))
-        val result = sut.transform(CHANNEL_ID.toString(), message)
+        val result = sut.transform("", CHANNEL_ID.toString(), message)
 
         // THEN the stolen user's name is properly attributed again
         assertEquals("Hello, <@$USER_ID> and <@$USER_ID_SPACE>", result)

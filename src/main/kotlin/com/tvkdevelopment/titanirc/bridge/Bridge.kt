@@ -48,7 +48,7 @@ class Bridge private constructor(
         try {
             val targetChannel = channelMapping.getTargetChannel(sourceClient, targetClient, sourceChannel) ?: return
             val transformedMessage =
-                messageTransformationMapping.transform(sourceClient, targetClient, targetChannel, message)
+                messageTransformationMapping.transform(sourceClient, targetClient, sourceChannel, targetChannel, message)
 
             targetClient.relayMessage(targetChannel, nick, transformedMessage)
         } catch (e: Exception) {
@@ -74,7 +74,7 @@ class Bridge private constructor(
         try {
             val targetChannel = channelMapping.getTargetChannel(sourceClient, targetClient, sourceChannel) ?: return
             val transformedMessage =
-                messageTransformationMapping.transform(sourceClient, targetClient, targetChannel, message)
+                messageTransformationMapping.transform(sourceClient, targetClient, sourceChannel, targetChannel, message)
 
             targetClient.relaySlashMe(targetChannel, nick, transformedMessage)
         } catch (e: Exception) {

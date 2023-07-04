@@ -139,7 +139,7 @@ class BridgeTest {
             MessageTransformationMapping(
                 MessageTransformationLink(
                     mockClient1 to mockClient2,
-                    listOf(MessageTransformation { _, it -> "$it transformed" })
+                    listOf(MessageTransformation { _, _, it -> "$it transformed" })
                 )
             )
         )
@@ -161,7 +161,7 @@ class BridgeTest {
             MessageTransformationMapping(
                 MessageTransformationLink(
                     mockClient1 to mockClient2,
-                    listOf(MessageTransformation { _, it -> "$it transformed" })
+                    listOf(MessageTransformation { _, _, it -> "$it transformed" })
                 )
             )
         )
@@ -184,8 +184,8 @@ class BridgeTest {
                 MessageTransformationLink(
                     mockClient1 to mockClient2,
                     listOf(
-                        MessageTransformation { _, it -> "$it 1" },
-                        MessageTransformation { _, it -> "$it 2" },
+                        MessageTransformation { _, _, it -> "$it 1" },
+                        MessageTransformation { _, _, it -> "$it 2" },
                     )
                 )
             )

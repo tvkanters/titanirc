@@ -13,7 +13,7 @@ class AddTwitterFixMessageTransformationTest {
         val message = "Hi https://twitter.com/bob/1234"
 
         // WHEN
-        val transformedMessage = sut.transform("", message)
+        val transformedMessage = sut.transform("", "", message)
 
         // THEN
         assertEquals("Hi https://vxtwitter.com/bob/1234", transformedMessage)
@@ -25,7 +25,7 @@ class AddTwitterFixMessageTransformationTest {
         val message = "Hi http://twitter.com/bob/1234"
 
         // WHEN
-        val transformedMessage = sut.transform("", message)
+        val transformedMessage = sut.transform("", "", message)
 
         // THEN
         assertEquals("Hi https://vxtwitter.com/bob/1234", transformedMessage)
@@ -37,7 +37,7 @@ class AddTwitterFixMessageTransformationTest {
         val message = "Hi https://www.twitter.com/bob/1234"
 
         // WHEN
-        val transformedMessage = sut.transform("", message)
+        val transformedMessage = sut.transform("", "", message)
 
         // THEN
         assertEquals("Hi https://vxtwitter.com/bob/1234", transformedMessage)
@@ -49,7 +49,7 @@ class AddTwitterFixMessageTransformationTest {
         val message = "Hi https://vxtwitter.com/bob/1234"
 
         // WHEN
-        val transformedMessage = sut.transform("", message)
+        val transformedMessage = sut.transform("", "", message)
 
         // THEN
         assertEquals("Hi https://vxtwitter.com/bob/1234", transformedMessage)

@@ -4,7 +4,7 @@ import com.tvkdevelopment.titanirc.bridge.transformation.MessageTransformation
 
 class AddSmolFiMessageTransformation : MessageTransformation {
 
-    override fun transform(channel: String, message: String): String =
+    override fun transform(sourceChannel: String, targetChannel: String, message: String): String =
         message.replace(REGEX, "https://smol.fi/e/?v=https://media.discordapp.net/attachments/$1")
 
     companion object {

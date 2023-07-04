@@ -17,19 +17,22 @@ class MessageTransformationMapping(vararg links: MessageTransformationLink) {
     fun transform(
         sourceClient: BridgeClient,
         targetClient: BridgeClient,
+        sourceChannel: String,
         targetChannel: String,
         message: String,
     ): String =
         transformations[sourceClient]?.get(targetClient)
             ?.fold(message) { transformedMessage, transformation ->
                 try {
-                    transformation.transform(targetChannel, transformedMessage)
+                    transformation.transform(sourceChannel, targetChannel, transformedMessage)
                 } catch (e: Exception) {
                     Log.e(
                         "Transform exception: " +
                             "transformation=${transformation::class.simpleName}, " +
                             "sourceClient=${sourceClient.name}, " +
                             "targetClient=${targetClient.name}, " +
+                            "sourceChannel=$sourceChannel, " +
+                            "targetChannel=$targetChannel, " +
                             "message=$message",
                         e
                     )

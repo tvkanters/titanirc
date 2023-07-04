@@ -14,7 +14,7 @@ class StripIrcFormattingMessageTransformationTest {
         val message = "mes${Colors.BOLD}s${Colors.BLUE}a${Colors.NORMAL}ge"
 
         // WHEN
-        val transformedMessage = sut.transform("", message)
+        val transformedMessage = sut.transform("", "", message)
 
         // THEN
         assertEquals("message", transformedMessage)
@@ -26,7 +26,7 @@ class StripIrcFormattingMessageTransformationTest {
         val message = "mes5,3sage"
 
         // WHEN
-        val transformedMessage = sut.transform("", message)
+        val transformedMessage = sut.transform("", "", message)
 
         // THEN
         assertEquals("message", transformedMessage)

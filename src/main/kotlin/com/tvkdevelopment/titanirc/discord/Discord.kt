@@ -91,15 +91,18 @@ class Discord(
                                     mutableMemberRegistry.add(guild, it)
                                 }
                             }
+                            Log.i("Discord member chunk added")
                         }
                 }
 
                 on<MemberJoinEvent> {
                     mutableMemberRegistry.add(member.getGuild(), member)
+                    Log.i("Discord member joined")
                 }
 
                 on<MemberUpdateEvent> {
                     mutableMemberRegistry.add(member.getGuild(), member)
+                    Log.i("Discord member updated")
                 }
 
                 on<MessageCreateEvent> {
