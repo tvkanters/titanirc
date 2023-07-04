@@ -1,7 +1,7 @@
 package com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations
 
 import org.junit.jupiter.api.Test
-import org.pircbotx.Colors
+import org.pircbotx.Colors.*
 import kotlin.test.assertEquals
 
 class IrcFormattingToDiscordMessageTransformationTest {
@@ -11,7 +11,7 @@ class IrcFormattingToDiscordMessageTransformationTest {
     @Test
     fun testBold() {
         // GIVEN
-        val message = "${Colors.BOLD}test"
+        val message = "${BOLD}test"
 
         // WHEN
         val result = sut.transform("", "", message)
@@ -23,7 +23,7 @@ class IrcFormattingToDiscordMessageTransformationTest {
     @Test
     fun testBoldMiddle() {
         // GIVEN
-        val message = "t${Colors.BOLD}es${Colors.BOLD}t"
+        val message = "t${BOLD}es${BOLD}t"
 
         // WHEN
         val result = sut.transform("", "", message)
@@ -35,19 +35,19 @@ class IrcFormattingToDiscordMessageTransformationTest {
     @Test
     fun testBoldClear() {
         // GIVEN
-        val message = "t${Colors.BOLD}es${Colors.NORMAL}t"
+        val message = "t${BOLD}es${NORMAL}t"
 
         // WHEN
         val result = sut.transform("", "", message)
 
         // THEN
-        assertEquals("t**es**${Colors.NORMAL}t", result)
+        assertEquals("t**es**${NORMAL}t", result)
     }
 
     @Test
     fun testItalics() {
         // GIVEN
-        val message = "${Colors.ITALICS}test"
+        val message = "${ITALICS}test"
 
         // WHEN
         val result = sut.transform("", "", message)
@@ -59,7 +59,7 @@ class IrcFormattingToDiscordMessageTransformationTest {
     @Test
     fun testItalicsMiddle() {
         // GIVEN
-        val message = "t${Colors.ITALICS}es${Colors.ITALICS}t"
+        val message = "t${ITALICS}es${ITALICS}t"
 
         // WHEN
         val result = sut.transform("", "", message)
@@ -71,13 +71,13 @@ class IrcFormattingToDiscordMessageTransformationTest {
     @Test
     fun testItalicsClear() {
         // GIVEN
-        val message = "t${Colors.ITALICS}es${Colors.NORMAL}t"
+        val message = "t${ITALICS}es${NORMAL}t"
 
         // WHEN
         val result = sut.transform("", "", message)
 
         // THEN
-        assertEquals("t_es_${Colors.NORMAL}t", result)
+        assertEquals("t_es_${NORMAL}t", result)
     }
 
     @Test
@@ -107,13 +107,13 @@ class IrcFormattingToDiscordMessageTransformationTest {
     @Test
     fun testSpoilersClear() {
         // GIVEN
-        val message = "t\u00031,1es${Colors.NORMAL}t"
+        val message = "t\u00031,1es${NORMAL}t"
 
         // WHEN
         val result = sut.transform("", "", message)
 
         // THEN
-        assertEquals("t||es||${Colors.NORMAL}t", result)
+        assertEquals("t||es||${NORMAL}t", result)
     }
 
     @Test
@@ -143,7 +143,7 @@ class IrcFormattingToDiscordMessageTransformationTest {
     @Test
     fun testNested() {
         // GIVEN
-        val message = "${Colors.ITALICS}te${Colors.BOLD}st"
+        val message = "${ITALICS}te${BOLD}st"
 
         // WHEN
         val result = sut.transform("", "", message)
@@ -155,7 +155,7 @@ class IrcFormattingToDiscordMessageTransformationTest {
     @Test
     fun testNestedMiddle() {
         // GIVEN
-        val message = "t${Colors.ITALICS}e${Colors.BOLD}s${Colors.BOLD}t${Colors.ITALICS}s"
+        val message = "t${ITALICS}e${BOLD}s${BOLD}t${ITALICS}s"
 
         // WHEN
         val result = sut.transform("", "", message)
@@ -165,14 +165,38 @@ class IrcFormattingToDiscordMessageTransformationTest {
     }
 
     @Test
-    fun testNestedAsymmtrical() {
+    fun testNestedAsymmetrical() {
         // GIVEN
-        val message = "t${Colors.ITALICS}e${Colors.BOLD}s${Colors.ITALICS}t${Colors.BOLD}s"
+        val message = "t${ITALICS}e${BOLD}s${ITALICS}t${BOLD}s"
 
         // WHEN
         val result = sut.transform("", "", message)
 
         // THEN
         assertEquals("t_e**s**_**t**s", result)
+    }
+
+    @Test
+    fun testHyperlink() {
+        // GIVEN
+        val message = "http://te${BOLD}st.com"
+
+        // WHEN
+        val result = sut.transform("", "", message)
+
+        // THEN
+        assertEquals(message, result)
+    }
+
+    @Test
+    fun testHyperlinkBold() {
+        // GIVEN
+        val message = "http://test.com te${BOLD}st"
+
+        // WHEN
+        val result = sut.transform("", "", message)
+
+        // THEN no formatting is parsed
+        assertEquals(message, result)
     }
 }

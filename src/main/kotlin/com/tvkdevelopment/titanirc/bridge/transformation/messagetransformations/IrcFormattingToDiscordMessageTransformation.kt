@@ -5,7 +5,10 @@ import org.pircbotx.Colors
 
 class IrcFormattingToDiscordMessageTransformation : MessageTransformation {
     override fun transform(sourceChannel: String, targetChannel: String, message: String): String =
-        FORMATTINGS.fold(message) { transformedMessage, formatting -> formatting.apply(transformedMessage) }
+        message
+            .takeUnless { it.contains("://") }
+            ?.let { FORMATTINGS.fold(it) { transformedMessage, formatting -> formatting.apply(transformedMessage) } }
+            ?: message
 
     companion object {
         private val FORMATTINGS = listOf(
@@ -21,7 +24,9 @@ class IrcFormattingToDiscordMessageTransformation : MessageTransformation {
             ircClosingSymbols: List<String> = listOf(Colors.NORMAL, ircSymbol),
             private val discordSymbol: String,
         ) {
-            private val regex = Regex("""$ircSymbol((?:(?!${ircClosingSymbols.joinToString("|")}).)+)(?:$ircSymbol)?""")
+            private val regex = ircClosingSymbols.joinToString("|").let { closingSymbols ->
+                Regex("""$ircSymbol((?:(?!$closingSymbols).)+)(?:$ircSymbol)?""")
+            }
 
             fun apply(message: String) =
                 message.replace(regex) {

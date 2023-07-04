@@ -425,19 +425,7 @@ class DiscordFormattingToIrcMessageTransformationTest {
         // WHEN
         val result = sut.transform("", "", message)
 
-        // THEN
-        assertEquals("https://test.com/test_test_test ${ITALICS}test$ITALICS", result)
-    }
-
-    @Test
-    fun testItalicsAndHyperlinkUnderscore() {
-        // GIVEN
-        val message = "_test_ https://test.com/test_test_test"
-
-        // WHEN
-        val result = sut.transform("", "", message)
-
-        // THEN
-        assertEquals("${ITALICS}test$ITALICS https://test.com/test_test_test", result)
+        // THEN no formatting is parsed
+        assertEquals(message, result)
     }
 }
