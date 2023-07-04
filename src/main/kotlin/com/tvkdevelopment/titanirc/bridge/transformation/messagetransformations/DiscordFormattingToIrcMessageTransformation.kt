@@ -8,9 +8,12 @@ class DiscordFormattingToIrcMessageTransformation : MessageTransformation {
         message
             .takeUnless { it.contains("://") }
             ?.let { FORMATTINGS.fold(it) { transformedMessage, formatting -> formatting.apply(transformedMessage) } }
+            ?.replace(REGEX_ESCAPE, "$1")
             ?: message
 
     companion object {
+        private val REGEX_ESCAPE = Regex("""\\(.)""")
+
         private val FORMATTINGS = listOf(
             Formatting("**", Colors.BOLD),
             Formatting("__", Colors.UNDERLINE),

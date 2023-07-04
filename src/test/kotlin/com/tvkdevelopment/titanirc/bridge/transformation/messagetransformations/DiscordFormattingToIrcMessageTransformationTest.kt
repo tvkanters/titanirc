@@ -77,7 +77,7 @@ class DiscordFormattingToIrcMessageTransformationTest {
         val result = sut.transform("", "", message)
 
         // THEN
-        assertEquals("\\*${ITALICS}test${ITALICS}*", result)
+        assertEquals("*${ITALICS}test${ITALICS}*", result)
     }
 
     @Test
@@ -89,7 +89,7 @@ class DiscordFormattingToIrcMessageTransformationTest {
         val result = sut.transform("", "", message)
 
         // THEN
-        assertEquals(message, result)
+        assertEquals("**test**", result)
     }
 
     @Test
@@ -101,7 +101,7 @@ class DiscordFormattingToIrcMessageTransformationTest {
         val result = sut.transform("", "", message)
 
         // THEN
-        assertEquals("\\\\${BOLD}test$BOLD", result)
+        assertEquals("\\${BOLD}test$BOLD", result)
     }
 
     @Test
@@ -113,7 +113,7 @@ class DiscordFormattingToIrcMessageTransformationTest {
         val result = sut.transform("", "", message)
 
         // THEN
-        assertEquals("\\\\\\*${ITALICS}test$ITALICS*", result)
+        assertEquals("\\*${ITALICS}test$ITALICS*", result)
     }
 
     @Test
@@ -125,7 +125,7 @@ class DiscordFormattingToIrcMessageTransformationTest {
         val result = sut.transform("", "", message)
 
         // THEN
-        assertEquals("${BOLD}test\\\\$BOLD", result)
+        assertEquals("${BOLD}test\\$BOLD", result)
     }
 
     @Test
@@ -197,7 +197,7 @@ class DiscordFormattingToIrcMessageTransformationTest {
         val result = sut.transform("", "", message)
 
         // THEN
-        assertEquals("\\_${ITALICS}test${ITALICS}_", result)
+        assertEquals("_${ITALICS}test${ITALICS}_", result)
     }
 
     @Test
@@ -209,7 +209,7 @@ class DiscordFormattingToIrcMessageTransformationTest {
         val result = sut.transform("", "", message)
 
         // THEN
-        assertEquals(message, result)
+        assertEquals("__test__", result)
     }
 
     @Test
@@ -257,7 +257,7 @@ class DiscordFormattingToIrcMessageTransformationTest {
         val result = sut.transform("", "", message)
 
         // THEN
-        assertEquals(message, result)
+        assertEquals("_test_", result)
     }
 
     @Test
@@ -269,7 +269,7 @@ class DiscordFormattingToIrcMessageTransformationTest {
         val result = sut.transform("", "", message)
 
         // THEN
-        assertEquals(message, result)
+        assertEquals("_test_", result)
     }
 
     @Test
@@ -305,7 +305,7 @@ class DiscordFormattingToIrcMessageTransformationTest {
         val result = sut.transform("", "", message)
 
         // THEN
-        assertEquals(message, result)
+        assertEquals("*test*", result)
     }
 
     @Test
@@ -317,7 +317,7 @@ class DiscordFormattingToIrcMessageTransformationTest {
         val result = sut.transform("", "", message)
 
         // THEN
-        assertEquals(message, result)
+        assertEquals("*test*", result)
     }
 
     @Test
@@ -389,7 +389,7 @@ class DiscordFormattingToIrcMessageTransformationTest {
         val result = sut.transform("", "", message)
 
         // THEN
-        assertEquals(message, result)
+        assertEquals("||test||", result)
     }
 
     @Test
@@ -401,7 +401,7 @@ class DiscordFormattingToIrcMessageTransformationTest {
         val result = sut.transform("", "", message)
 
         // THEN
-        assertEquals(message, result)
+        assertEquals("||test||", result)
     }
 
 
