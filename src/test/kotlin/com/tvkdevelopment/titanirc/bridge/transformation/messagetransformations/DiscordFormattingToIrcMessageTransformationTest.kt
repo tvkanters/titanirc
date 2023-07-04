@@ -69,6 +69,66 @@ class DiscordFormattingToIrcMessageTransformationTest {
     }
 
     @Test
+    fun testBoldEscapedStart() {
+        // GIVEN
+        val message = "\\**test**"
+
+        // WHEN
+        val result = sut.transform("", "", message)
+
+        // THEN
+        assertEquals("\\*${ITALICS}test${ITALICS}*", result)
+    }
+
+    @Test
+    fun testBoldEscapedEnd() {
+        // GIVEN
+        val message = "**test\\**"
+
+        // WHEN
+        val result = sut.transform("", "", message)
+
+        // THEN
+        assertEquals(message, result)
+    }
+
+    @Test
+    fun testBoldEscapedStartEscaped() {
+        // GIVEN
+        val message = "\\\\**test**"
+
+        // WHEN
+        val result = sut.transform("", "", message)
+
+        // THEN
+        assertEquals("\\\\${BOLD}test$BOLD", result)
+    }
+
+    @Test
+    fun testBoldEscapedStartEscapedEscaped() {
+        // GIVEN
+        val message = "\\\\\\**test**"
+
+        // WHEN
+        val result = sut.transform("", "", message)
+
+        // THEN
+        assertEquals("\\\\\\*${ITALICS}test$ITALICS*", result)
+    }
+
+    @Test
+    fun testBoldEscapedEndEscaped() {
+        // GIVEN
+        val message = "**test\\\\**"
+
+        // WHEN
+        val result = sut.transform("", "", message)
+
+        // THEN
+        assertEquals("${BOLD}test\\\\$BOLD", result)
+    }
+
+    @Test
     fun testUnderline() {
         // GIVEN
         val message = "__test__"
@@ -129,6 +189,30 @@ class DiscordFormattingToIrcMessageTransformationTest {
     }
 
     @Test
+    fun testUnderlineEscapedStart() {
+        // GIVEN
+        val message = "\\__test__"
+
+        // WHEN
+        val result = sut.transform("", "", message)
+
+        // THEN
+        assertEquals("\\_${ITALICS}test${ITALICS}_", result)
+    }
+
+    @Test
+    fun testUnderlineEscapedEnd() {
+        // GIVEN
+        val message = "__test\\__"
+
+        // WHEN
+        val result = sut.transform("", "", message)
+
+        // THEN
+        assertEquals(message, result)
+    }
+
+    @Test
     fun testItalicsUnderscore() {
         // GIVEN
         val message = "_test_"
@@ -164,6 +248,29 @@ class DiscordFormattingToIrcMessageTransformationTest {
         assertEquals("${ITALICS}t${ITALICS}e_st", result)
     }
 
+    @Test
+    fun testItalicsEscapedStart() {
+        // GIVEN
+        val message = "\\_test_"
+
+        // WHEN
+        val result = sut.transform("", "", message)
+
+        // THEN
+        assertEquals(message, result)
+    }
+
+    @Test
+    fun testItalicsEscapedEnd() {
+        // GIVEN
+        val message = "_test\\_"
+
+        // WHEN
+        val result = sut.transform("", "", message)
+
+        // THEN
+        assertEquals(message, result)
+    }
 
     @Test
     fun testItalicsAsterisk() {
@@ -181,6 +288,30 @@ class DiscordFormattingToIrcMessageTransformationTest {
     fun testItalicsAsteriskUnclosed() {
         // GIVEN
         val message = "*test"
+
+        // WHEN
+        val result = sut.transform("", "", message)
+
+        // THEN
+        assertEquals(message, result)
+    }
+
+    @Test
+    fun testItalicsAsteriskEscapedStart() {
+        // GIVEN
+        val message = "\\*test*"
+
+        // WHEN
+        val result = sut.transform("", "", message)
+
+        // THEN
+        assertEquals(message, result)
+    }
+
+    @Test
+    fun testItalicsAsteriskEscapedEnd() {
+        // GIVEN
+        val message = "*test\\*"
 
         // WHEN
         val result = sut.transform("", "", message)
@@ -248,6 +379,31 @@ class DiscordFormattingToIrcMessageTransformationTest {
         // THEN
         assertEquals("\u00031,1te|st\u00031,1", result)
     }
+
+    @Test
+    fun testSpoilersEscapedStart() {
+        // GIVEN
+        val message = "\\||test||"
+
+        // WHEN
+        val result = sut.transform("", "", message)
+
+        // THEN
+        assertEquals(message, result)
+    }
+
+    @Test
+    fun testSpoilersEscapedEnd() {
+        // GIVEN
+        val message = "||test\\||"
+
+        // WHEN
+        val result = sut.transform("", "", message)
+
+        // THEN
+        assertEquals(message, result)
+    }
+
 
     @Test
     fun testHyperlinkUnderscore() {
