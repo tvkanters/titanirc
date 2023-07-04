@@ -6,7 +6,7 @@ import org.pircbotx.Colors
 class DiscordFormattingToIrcMessageTransformation : MessageTransformation {
     override fun transform(sourceChannel: String, targetChannel: String, message: String): String =
         message
-            .takeUnless { it.contains("://") }
+            .takeUnless { it.contains("://") || it.contains('`') }
             ?.let { FORMATTINGS.fold(it) { transformedMessage, formatting -> formatting.apply(transformedMessage) } }
             ?.replace(REGEX_ESCAPE, "$1")
             ?: message

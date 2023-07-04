@@ -428,4 +428,16 @@ class DiscordFormattingToIrcMessageTransformationTest {
         // THEN no formatting is parsed
         assertEquals(message, result)
     }
+
+    @Test
+    fun testCodeSnippet() {
+        // GIVEN
+        val message = "`this || that || it`"
+
+        // WHEN
+        val result = sut.transform("", "", message)
+
+        // THEN
+        assertEquals(message, result)
+    }
 }
