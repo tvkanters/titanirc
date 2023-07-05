@@ -199,6 +199,30 @@ class DecodeDiscordSnowflakeMessageTransformationTest {
         assertEquals("Hello, #lewd", result)
     }
 
+    @Test
+    fun testEmoji() {
+        // GIVEN
+        val message = "<:pepe:123>"
+
+        // WHEN
+        val result = sut.transform(CHANNEL_ID.toString(), "", message)
+
+        // THEN
+        assertEquals(":pepe:", result)
+    }
+
+    @Test
+    fun testAnimatedEmoji() {
+        // GIVEN
+        val message = "<a:pepe:123>"
+
+        // WHEN
+        val result = sut.transform(CHANNEL_ID.toString(), "", message)
+
+        // THEN
+        assertEquals(":pepe:", result)
+    }
+
     companion object {
         private const val GUILD_ID = 987L
         private const val GUILD_ID_OTHER = 654L
