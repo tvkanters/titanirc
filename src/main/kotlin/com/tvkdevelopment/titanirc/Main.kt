@@ -51,6 +51,7 @@ object Main {
                         StripSmolFiMessageTransformation(),
                         AddTwitterFixMessageTransformation(),
                         NicknameToDiscordMemberMessageTransformation(discord.snowflakeRegistry),
+                        HashtagToDiscordChannelMessageTransformation(discord.snowflakeRegistry),
                     )
                 ),
                 MessageTransformationLink(

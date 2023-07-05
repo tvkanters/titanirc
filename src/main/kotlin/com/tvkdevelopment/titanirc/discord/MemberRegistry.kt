@@ -9,24 +9,15 @@ interface MemberRegistry {
 }
 
 class MutableMemberRegistry : MemberRegistry {
-    private val mutableMembersById = mutableMapOf<Snowflake, MemberInfo>()
-    override val membersByNormalizedName = mutableMapOf<String, Snowflake>()
-        get() {
-            if (membersByNameInvalidated) {
-                mutableMembersById.forEach { (id, info) ->
-                    info.normalizedName?.let { field[it] = id }
-                }
-                membersByNameInvalidated = false
-            }
-            return field
-        }
-    private var membersByNameInvalidated = false
+    private val index = MutableIndexedRegistry<Snowflake, MemberInfo, String> { it.normalizedName }
 
-    override val membersById: Map<Snowflake, MemberInfo> = mutableMembersById
+    override val membersByNormalizedName
+        get() = index.itemsByNormalizedValue
+
+    override val membersById: Map<Snowflake, MemberInfo> = index.itemsByKey
 
     operator fun plusAssign(member: Member) {
-        mutableMembersById[member.id] = MemberInfo(member)
-        membersByNameInvalidated = true
+        index[member.id] = MemberInfo(member)
     }
 }
 
@@ -34,12 +25,12 @@ data class MemberInfo(val effectiveName: String) {
     val normalizedName: String? =
         effectiveName
             .lowercase()
-            .let { REGEX_NORMALIZE_MEMBER_NAME.matchAt(it, 0)?.groupValues?.get(1) }
+            .let { REGEX_NORMALIZE_NAME.matchAt(it, 0)?.groupValues?.get(1) }
             ?.takeIf { it.isNotEmpty() }
 
     constructor(member: Member) : this(member.effectiveName)
 
     companion object {
-        private val REGEX_NORMALIZE_MEMBER_NAME = Regex("^([a-z0-9_-]+)")
+        private val REGEX_NORMALIZE_NAME = Regex("^([a-z0-9_-]+)")
     }
 }

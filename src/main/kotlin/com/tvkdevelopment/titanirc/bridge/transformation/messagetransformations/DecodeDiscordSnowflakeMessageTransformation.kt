@@ -16,6 +16,8 @@ class DecodeDiscordSnowflakeMessageTransformation(private val snowflakeRegistry:
                     when (match.groupValues[1]) {
                         SYMBOL_USERNAME ->
                             snowflakeRegistry.memberRegistry.membersById[snowflake]?.effectiveName
+                        SYMBOL_CHANNEL ->
+                            snowflakeRegistry.channelRegistry.channelsById[snowflake]?.name?.let { "#$it" }
                         else ->
                             null
                     }
@@ -30,6 +32,6 @@ class DecodeDiscordSnowflakeMessageTransformation(private val snowflakeRegistry:
         private const val SYMBOL_ROLE = "@&"
         private const val FALLBACK_NAME = "???"
 
-        private val REGEX = Regex("""<($SYMBOL_USERNAME)(\d+)>""", RegexOption.IGNORE_CASE)
+        private val REGEX = Regex("""<($SYMBOL_USERNAME|$SYMBOL_CHANNEL)(\d+)>""", RegexOption.IGNORE_CASE)
     }
 }

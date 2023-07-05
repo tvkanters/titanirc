@@ -82,6 +82,10 @@ class Discord(
 
                 on<GuildCreateEvent> {
                     Log.i("Discord server joined: ${guild.data.name}")
+
+                    val channelRegistry = mutableSnowflakeRegistry.forGuild(guild).channelRegistry
+                    guild.channels.collect { channelRegistry += it }
+
                     guild.editSelfNickname(nick)
                     guild
                         .requestMembers()
@@ -124,6 +128,13 @@ class Discord(
                 }
 
                 on<ChannelUpdateEvent> {
+                    Log.i("Discord channel updated: ${channel.data.name.value}")
+
+                    channel.data.guildId.value
+                        ?.let { mutableSnowflakeRegistry.forGuild(it) }
+                        ?.channelRegistry
+                        ?.plusAssign(channel)
+
                     val topic = channel.topicValue
                     if (topic != old.topicValue) {
                         val channelString = channel.id.toString()
