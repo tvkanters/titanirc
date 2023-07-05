@@ -11,9 +11,9 @@ import dev.kord.core.behavior.requestMembers
 import dev.kord.core.entity.channel.MessageChannel
 import dev.kord.core.event.Event
 import dev.kord.core.event.channel.ChannelUpdateEvent
-import dev.kord.core.event.gateway.ConnectEvent
 import dev.kord.core.event.gateway.DisconnectEvent
 import dev.kord.core.event.gateway.ReadyEvent
+import dev.kord.core.event.gateway.ResumedEvent
 import dev.kord.core.event.guild.GuildCreateEvent
 import dev.kord.core.event.guild.MemberJoinEvent
 import dev.kord.core.event.guild.MemberUpdateEvent
@@ -65,18 +65,18 @@ class Discord(
                     Log.i("Event: $this")
                 }
 
-                on<DisconnectEvent> {
-                    Log.i("Discord disconnected: ${this::class.simpleName}")
-//                    bot = null
-                }
-
                 on<ReadyEvent> {
                     Log.i("Discord ready")
                     bot = kord
                 }
 
-                on<ConnectEvent> {
-                    Log.i("Discord connected")
+                on<DisconnectEvent> {
+                    Log.i("Discord disconnected: ${this::class.simpleName}")
+                    bot = null
+                }
+
+                on<ResumedEvent> {
+                    Log.i("Discord resumed")
                     bot = kord
                 }
 
@@ -86,23 +86,23 @@ class Discord(
                     guild
                         .requestMembers()
                         .collect { event ->
+                            Log.i("Discord member chunk added")
                             event.members.forEach {
                                 if (!it.isBot) {
                                     mutableMemberRegistry.add(guild, it)
                                 }
                             }
-                            Log.i("Discord member chunk added")
                         }
                 }
 
                 on<MemberJoinEvent> {
-                    mutableMemberRegistry.add(member.getGuild(), member)
                     Log.i("Discord member joined")
+                    mutableMemberRegistry.add(member.getGuild(), member)
                 }
 
                 on<MemberUpdateEvent> {
-                    mutableMemberRegistry.add(member.getGuild(), member)
                     Log.i("Discord member updated")
+                    mutableMemberRegistry.add(member.getGuild(), member)
                 }
 
                 on<MessageCreateEvent> {
