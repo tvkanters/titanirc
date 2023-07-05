@@ -58,10 +58,27 @@ object Main {
                     listOf(
                         DiscordFormattingToIrcMessageTransformation(),
                         AddSmolFiMessageTransformation(),
-                        DiscordMemberToNicknameMessageTransformation(discord.memberRegistry)
+                        DiscordMemberToNicknameMessageTransformation(discord.memberRegistry),
                     )
                 )
-            )
+            ),
+            topicTransformationMapping = MessageTransformationMapping(
+                MessageTransformationLink(
+                    irc to discord,
+                    listOf(
+                        EscapeDiscordFormattingMessageTransformation(),
+                        IrcFormattingToDiscordMessageTransformation(),
+                        StripIrcFormattingMessageTransformation(),
+                    )
+                ),
+                MessageTransformationLink(
+                    discord to irc,
+                    listOf(
+                        DiscordFormattingToIrcMessageTransformation(),
+                        DiscordMemberToNicknameMessageTransformation(discord.memberRegistry),
+                    )
+                )
+            ),
         )
 
         stayAlive()

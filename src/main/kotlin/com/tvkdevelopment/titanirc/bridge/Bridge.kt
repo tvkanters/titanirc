@@ -6,6 +6,7 @@ import com.tvkdevelopment.titanirc.util.Log
 class Bridge private constructor(
     private val channelMapping: ChannelMapping,
     private val messageTransformationMapping: MessageTransformationMapping,
+    private val topicTransformationMapping: MessageTransformationMapping,
 ) {
 
     private fun connect() {
@@ -48,7 +49,13 @@ class Bridge private constructor(
         try {
             val targetChannel = channelMapping.getTargetChannel(sourceClient, targetClient, sourceChannel) ?: return
             val transformedMessage =
-                messageTransformationMapping.transform(sourceClient, targetClient, sourceChannel, targetChannel, message)
+                messageTransformationMapping.transform(
+                    sourceClient,
+                    targetClient,
+                    sourceChannel,
+                    targetChannel,
+                    message,
+                )
 
             targetClient.relayMessage(targetChannel, nick, transformedMessage)
         } catch (e: Exception) {
@@ -74,7 +81,13 @@ class Bridge private constructor(
         try {
             val targetChannel = channelMapping.getTargetChannel(sourceClient, targetClient, sourceChannel) ?: return
             val transformedMessage =
-                messageTransformationMapping.transform(sourceClient, targetClient, sourceChannel, targetChannel, message)
+                messageTransformationMapping.transform(
+                    sourceClient,
+                    targetClient,
+                    sourceChannel,
+                    targetChannel,
+                    message,
+                )
 
             targetClient.relaySlashMe(targetChannel, nick, transformedMessage)
         } catch (e: Exception) {
@@ -98,8 +111,10 @@ class Bridge private constructor(
     ) {
         try {
             val targetChannel = channelMapping.getTargetChannel(sourceClient, targetClient, sourceChannel) ?: return
+            val transformedTopic =
+                topicTransformationMapping.transform(sourceClient, targetClient, sourceChannel, targetChannel, topic)
 
-            targetClient.setTopic(targetChannel, topic)
+            targetClient.setTopic(targetChannel, transformedTopic)
         } catch (e: Exception) {
             Log.e(
                 "Bridge exception in relayMessage: " +
@@ -115,8 +130,9 @@ class Bridge private constructor(
     companion object {
         fun connect(
             channelMapping: ChannelMapping,
-            transformationMapping: MessageTransformationMapping = MessageTransformationMapping(),
-        ) = Bridge(channelMapping, transformationMapping)
+            messageTransformationMapping: MessageTransformationMapping = MessageTransformationMapping(),
+            topicTransformationMapping: MessageTransformationMapping = MessageTransformationMapping(),
+        ) = Bridge(channelMapping, messageTransformationMapping, topicTransformationMapping)
             .apply { connect() }
     }
 }
