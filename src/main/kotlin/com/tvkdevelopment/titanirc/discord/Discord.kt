@@ -111,8 +111,6 @@ class Discord(
                         ?.let { member ->
                             val attachedUrls =
                                 message.attachments.map { it.url }
-                                    .plus(message.embeds.mapNotNull { it.url })
-                                    .distinct()
                                     .filterNot { message.content.contains(it) }
                             val messageToSend =
                                 listOf(message.content)
