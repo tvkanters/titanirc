@@ -44,8 +44,8 @@ class Discord(
     private val slashMeListeners = mutableListOf<BridgeClient.SlashMeListener>()
     private val topicListeners = mutableListOf<BridgeClient.TopicListener>()
 
-    private val mutableMemberRegistry = MutableMemberRegistry()
-    val memberRegistry: MemberRegistry = mutableMemberRegistry
+    private val mutableSnowflakeRegistry = MutableSnowflakeRegistry()
+    val snowflakeRegistry: SnowflakeRegistry = mutableSnowflakeRegistry
 
     @OptIn(PrivilegedIntent::class)
     override fun connect() {
@@ -89,7 +89,7 @@ class Discord(
                             Log.i("Discord member chunk added")
                             event.members.forEach {
                                 if (!it.isBot) {
-                                    mutableMemberRegistry.add(guild, it)
+                                    mutableSnowflakeRegistry.forGuild(guild).memberRegistry += it
                                 }
                             }
                         }
@@ -97,12 +97,12 @@ class Discord(
 
                 on<MemberJoinEvent> {
                     Log.i("Discord member joined")
-                    mutableMemberRegistry.add(member.getGuild(), member)
+                    mutableSnowflakeRegistry.forGuild(member.getGuild()).memberRegistry += member
                 }
 
                 on<MemberUpdateEvent> {
                     Log.i("Discord member updated")
-                    mutableMemberRegistry.add(member.getGuild(), member)
+                    mutableSnowflakeRegistry.forGuild(member.getGuild()).memberRegistry += member
                 }
 
                 on<MessageCreateEvent> {

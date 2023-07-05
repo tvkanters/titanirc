@@ -1,24 +1,20 @@
 package com.tvkdevelopment.titanirc.discord
 
 import dev.kord.common.entity.Snowflake
-import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Member
 
 interface MemberRegistry {
-    fun getMembersById(channel: String): Map<Snowflake, MemberInfo>
-    fun getMembersByNormalizedName(channel: String): Map<String, Snowflake>
+    val membersById: Map<Snowflake, MemberInfo>
+    val membersByNormalizedName: Map<String, Snowflake>
 }
 
 class MutableMemberRegistry : MemberRegistry {
-    private val membersById = mutableMapOf<Guild, MutableMap<Snowflake, MemberInfo>>()
-    private val membersByNormalizedName = mutableMapOf<Guild, MutableMap<String, Snowflake>>()
+    private val mutableMembersById = mutableMapOf<Snowflake, MemberInfo>()
+    override val membersByNormalizedName = mutableMapOf<String, Snowflake>()
         get() {
             if (membersByNameInvalidated) {
-                membersById.forEach { (guild, member) ->
-                    val guildMemberIndex = field.getOrPut(guild) { mutableMapOf() }
-                    member.forEach { (id, info) ->
-                        info.normalizedName?.let { guildMemberIndex[it] = id }
-                    }
+                mutableMembersById.forEach { (id, info) ->
+                    info.normalizedName?.let { field[it] = id }
                 }
                 membersByNameInvalidated = false
             }
@@ -26,19 +22,10 @@ class MutableMemberRegistry : MemberRegistry {
         }
     private var membersByNameInvalidated = false
 
-    override fun getMembersById(channel: String): Map<Snowflake, MemberInfo> =
-        membersById.forChannel(channel) ?: emptyMap()
+    override val membersById: Map<Snowflake, MemberInfo> = mutableMembersById
 
-    override fun getMembersByNormalizedName(channel: String): Map<String, Snowflake> =
-        membersByNormalizedName.forChannel(channel) ?: emptyMap()
-
-    private fun <V> Map<Guild, V>.forChannel(channel: String): V? =
-        entries
-            .firstOrNull { (guild, _) -> guild.channelIds.any { it.toString() == channel } }
-            ?.value
-
-    fun add(guild: Guild, member: Member) {
-        membersById.getOrPut(guild) { mutableMapOf() }[member.id] = MemberInfo(member)
+    operator fun plusAssign(member: Member) {
+        mutableMembersById[member.id] = MemberInfo(member)
         membersByNameInvalidated = true
     }
 }

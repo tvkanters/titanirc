@@ -1,12 +1,15 @@
 package com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations
 
 import com.tvkdevelopment.titanirc.bridge.transformation.MessageTransformation
-import com.tvkdevelopment.titanirc.discord.MemberRegistry
+import com.tvkdevelopment.titanirc.discord.SnowflakeRegistry
 
-class NicknameToDiscordMemberMessageTransformation(private val memberRegistry: MemberRegistry) : MessageTransformation {
+class NicknameToDiscordMemberMessageTransformation(
+    private val snowflakeRegistry: SnowflakeRegistry,
+) : MessageTransformation {
 
     override fun transform(sourceChannel: String, targetChannel: String, message: String): String {
-        val members = memberRegistry.getMembersByNormalizedName(targetChannel)
+        val members = snowflakeRegistry.forChannel(targetChannel)?.memberRegistry?.membersByNormalizedName
+            ?: return message
         return message.replace(REGEX_POTENTIAL_MEMBER_NAME) { match ->
             match.groupValues
                 .drop(1)
@@ -20,6 +23,6 @@ class NicknameToDiscordMemberMessageTransformation(private val memberRegistry: M
 
     companion object {
         private val REGEX_POTENTIAL_MEMBER_NAME =
-            Regex("""(?:^([a-z0-9_-]+)(?=[:,])|(?<=^| )@([a-z0-9_-]+))""", RegexOption.IGNORE_CASE)
+            Regex("""^([a-z0-9_-]+)(?=[:,])|(?<=^| )@([a-z0-9_-]+)""", RegexOption.IGNORE_CASE)
     }
 }

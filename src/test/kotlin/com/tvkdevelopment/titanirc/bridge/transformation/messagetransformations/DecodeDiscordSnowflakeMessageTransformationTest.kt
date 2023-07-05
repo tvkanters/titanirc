@@ -1,6 +1,6 @@
 package com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations
 
-import com.tvkdevelopment.titanirc.discord.MutableMemberRegistry
+import com.tvkdevelopment.titanirc.discord.MutableSnowflakeRegistry
 import com.tvkdevelopment.titanirc.niceMockk
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.entity.Guild
@@ -9,16 +9,16 @@ import io.mockk.every
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class DiscordMemberToNicknameMessageTransformationTest {
+class DecodeDiscordSnowflakeMessageTransformationTest {
 
     private val guild = mockkGuild(GUILD_ID, setOf(CHANNEL_ID))
     private val guildOther = mockkGuild(GUILD_ID_OTHER, setOf(CHANNEL_ID_OTHER))
-    private val memberRegistry = MutableMemberRegistry().apply {
-        add(guild, mockkMember(USER_ID, USER_NAME))
-        add(guild, mockkMember(USER_ID_SPACE, USER_NAME_SPACE))
-        add(guildOther, mockkMember(USER_ID_OTHER_GUILD, USER_NAME))
+    private val snowflakeRegistry = MutableSnowflakeRegistry().apply {
+        forGuild(guild).memberRegistry += mockkMember(USER_ID, USER_NAME)
+        forGuild(guild).memberRegistry += mockkMember(USER_ID_SPACE, USER_NAME_SPACE)
+        forGuild(guildOther).memberRegistry += mockkMember(USER_ID_OTHER_GUILD, USER_NAME)
     }
-    private val sut = DiscordMemberToNicknameMessageTransformation(memberRegistry)
+    private val sut = DecodeDiscordSnowflakeMessageTransformation(snowflakeRegistry)
 
     @Test
     fun testNoPing() {
@@ -112,7 +112,7 @@ class DiscordMemberToNicknameMessageTransformationTest {
         assertEquals("Hello, $USER_NAME", preconditionResult)
 
         // WHEN
-        memberRegistry.add(guild, mockkMember(USER_ID, "Fred"))
+        snowflakeRegistry.forGuild(guild).memberRegistry += mockkMember(USER_ID, "Fred")
         val result = sut.transform(CHANNEL_ID.toString(), "", message)
 
         // THEN

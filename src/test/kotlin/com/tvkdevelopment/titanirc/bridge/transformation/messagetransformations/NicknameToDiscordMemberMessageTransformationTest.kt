@@ -1,6 +1,6 @@
 package com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations
 
-import com.tvkdevelopment.titanirc.discord.MutableMemberRegistry
+import com.tvkdevelopment.titanirc.discord.MutableSnowflakeRegistry
 import com.tvkdevelopment.titanirc.niceMockk
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.entity.Guild
@@ -13,12 +13,12 @@ class NicknameToDiscordMemberMessageTransformationTest {
 
     private val guild = mockkGuild(GUILD_ID, setOf(CHANNEL_ID))
     private val guildOther = mockkGuild(GUILD_ID_OTHER, setOf(CHANNEL_ID_OTHER))
-    private val memberRegistry = MutableMemberRegistry().apply {
-        add(guild, mockkMember(USER_ID, USER_NAME))
-        add(guild, mockkMember(USER_ID_SPACE, USER_NAME_SPACE))
-        add(guildOther, mockkMember(USER_ID_OTHER_GUILD, USER_NAME))
+    private val snowflakeRegistry = MutableSnowflakeRegistry().apply {
+        forGuild(guild).memberRegistry += mockkMember(USER_ID, USER_NAME)
+        forGuild(guild).memberRegistry += mockkMember(USER_ID_SPACE, USER_NAME_SPACE)
+        forGuild(guildOther).memberRegistry += mockkMember(USER_ID_OTHER_GUILD, USER_NAME)
     }
-    private val sut = NicknameToDiscordMemberMessageTransformation(memberRegistry)
+    private val sut = NicknameToDiscordMemberMessageTransformation(snowflakeRegistry)
 
     @Test
     fun testNoPing() {
@@ -220,7 +220,7 @@ class NicknameToDiscordMemberMessageTransformationTest {
         assertEquals("Hello, <@$USER_ID> and @Fred", preconditionResult)
 
         // WHEN
-        memberRegistry.add(guild, mockkMember(USER_ID, "Fred"))
+        snowflakeRegistry.forGuild(guild).memberRegistry += mockkMember(USER_ID, "Fred")
         val result = sut.transform("", CHANNEL_ID.toString(), message)
 
         // THEN
@@ -232,11 +232,11 @@ class NicknameToDiscordMemberMessageTransformationTest {
         // GIVEN a user takes another user's name
         val message = "Hello, @$USER_NAME and @$USER_NAME_SPACE_FIRST"
         sut.transform("", CHANNEL_ID.toString(), message)
-        memberRegistry.add(guild, mockkMember(USER_ID, USER_NAME_SPACE))
+        snowflakeRegistry.forGuild(guild).memberRegistry += mockkMember(USER_ID, USER_NAME_SPACE)
         sut.transform("", CHANNEL_ID.toString(), message)
 
         // WHEN the user reverts the name change
-        memberRegistry.add(guild, mockkMember(USER_ID, USER_NAME))
+        snowflakeRegistry.forGuild(guild).memberRegistry += mockkMember(USER_ID, USER_NAME)
         val result = sut.transform("", CHANNEL_ID.toString(), message)
 
         // THEN the stolen user's name is properly attributed again

@@ -50,7 +50,7 @@ object Main {
                         StripIrcFormattingMessageTransformation(),
                         StripSmolFiMessageTransformation(),
                         AddTwitterFixMessageTransformation(),
-                        NicknameToDiscordMemberMessageTransformation(discord.memberRegistry),
+                        NicknameToDiscordMemberMessageTransformation(discord.snowflakeRegistry),
                     )
                 ),
                 MessageTransformationLink(
@@ -58,7 +58,7 @@ object Main {
                     listOf(
                         DiscordFormattingToIrcMessageTransformation(),
                         AddSmolFiMessageTransformation(),
-                        DiscordMemberToNicknameMessageTransformation(discord.memberRegistry),
+                        DecodeDiscordSnowflakeMessageTransformation(discord.snowflakeRegistry),
                     )
                 )
             ),
@@ -75,7 +75,7 @@ object Main {
                     discord to irc,
                     listOf(
                         DiscordFormattingToIrcMessageTransformation(),
-                        DiscordMemberToNicknameMessageTransformation(discord.memberRegistry),
+                        DecodeDiscordSnowflakeMessageTransformation(discord.snowflakeRegistry),
                     )
                 )
             ),
