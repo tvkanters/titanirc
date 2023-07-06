@@ -28,6 +28,7 @@ class SnowflakeDecodeMessageTransformation(private val snowflakeRegistry: Snowfl
 
                             MENTION_SYMBOL_CHANNEL ->
                                 snowflakeRegistry.channelRegistry.itemsById[snowflake]?.originalName?.let { "#$it" }
+                                    ?.let { EMOJI_REPLACEMENT[it] ?: it }
 
                             else ->
                                 null
@@ -47,5 +48,11 @@ class SnowflakeDecodeMessageTransformation(private val snowflakeRegistry: Snowfl
             )
 
         private val REGEX_EMOJI = Regex("""<a?(:[a-z0-9_-]+:)\d+>""", RegexOption.IGNORE_CASE)
+
+        private val EMOJI_REPLACEMENT = mapOf(
+            ":upset:" to ">:^|",
+            ":pensive_cowboy" to "\uD83D\uDE14",
+            ":this:" to "^",
+        )
     }
 }
