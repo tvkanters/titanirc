@@ -5,6 +5,7 @@ import com.tvkdevelopment.titanirc.niceMockk
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Member
+import dev.kord.core.entity.Role
 import io.mockk.every
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -17,6 +18,8 @@ class NicknameToDiscordMemberMessageTransformationTest {
         forGuild(guild).memberRegistry += mockkMember(USER_ID, USER_NAME)
         forGuild(guild).memberRegistry += mockkMember(USER_ID_SPACE, USER_NAME_SPACE)
         forGuild(guildOther).memberRegistry += mockkMember(USER_ID_OTHER_GUILD, USER_NAME)
+
+        forGuild(guild).roleRegistry += mockkRole(ROLE_ID, ROLE_NAME)
     }
     private val sut = NicknameToDiscordMemberMessageTransformation(snowflakeRegistry)
 
@@ -243,6 +246,30 @@ class NicknameToDiscordMemberMessageTransformationTest {
         assertEquals("Hello, <@$USER_ID> and <@$USER_ID_SPACE>", result)
     }
 
+    @Test
+    fun testRoleAt() {
+        // GIVEN
+        val message = "@$ROLE_NAME"
+
+        // WHEN
+        val result = sut.transform("", CHANNEL_ID.toString(), message)
+
+        // THEN
+        assertEquals("<@&$ROLE_ID>", result)
+    }
+
+    @Test
+    fun testRoleStart() {
+        // GIVEN
+        val message = "$ROLE_NAME, hi"
+
+        // WHEN
+        val result = sut.transform("", CHANNEL_ID.toString(), message)
+
+        // THEN
+        assertEquals(message, result)
+    }
+
     companion object {
         private const val GUILD_ID = 987L
         private const val GUILD_ID_OTHER = 654L
@@ -250,14 +277,17 @@ class NicknameToDiscordMemberMessageTransformationTest {
         private const val CHANNEL_ID = 111L
         private const val CHANNEL_ID_OTHER = 222L
 
+        private const val USER_ID = 123L
+        private const val USER_ID_SPACE = 789L
+        private const val USER_ID_OTHER_GUILD = 234L
+
         private const val USER_NAME = "Larry"
         private const val USER_NAME_SPACE = "Hans Bob"
         private const val USER_NAME_SPACE_FIRST = "Hans"
         private const val USER_NAME_GARBAGE = "%&^ABC"
 
-        private const val USER_ID = 123L
-        private const val USER_ID_SPACE = 789L
-        private const val USER_ID_OTHER_GUILD = 234L
+        private const val ROLE_ID = 666L
+        private const val ROLE_NAME = "Mods"
 
         fun mockkGuild(id: Long, channelIds: Set<Long>) = niceMockk<Guild> {
             every { this@niceMockk.id } returns Snowflake(id)
@@ -267,6 +297,11 @@ class NicknameToDiscordMemberMessageTransformationTest {
         fun mockkMember(id: Long, name: String) = niceMockk<Member> {
             every { this@niceMockk.id } returns Snowflake(id)
             every { this@niceMockk.effectiveName } returns name
+        }
+
+        fun mockkRole(id: Long, name: String) = niceMockk<Role> {
+            every { this@niceMockk.id } returns Snowflake(id)
+            every { this@niceMockk.name } returns name
         }
     }
 }

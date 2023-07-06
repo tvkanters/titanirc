@@ -6,6 +6,7 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.common.entity.optional.Optional
 import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Member
+import dev.kord.core.entity.Role
 import dev.kord.core.entity.channel.Channel
 import io.mockk.every
 import org.junit.jupiter.api.Test
@@ -22,6 +23,8 @@ class DecodeDiscordSnowflakeMessageTransformationTest {
         forGuild(guild).memberRegistry += mockkMember(USER_ID, USER_NAME)
         forGuild(guild).memberRegistry += mockkMember(USER_ID_SPACE, USER_NAME_SPACE)
         forGuild(guildOther).memberRegistry += mockkMember(USER_ID_OTHER_GUILD, USER_NAME)
+
+        forGuild(guild).roleRegistry += mockkRole(ROLE_ID, ROLE_NAME)
     }
     private val sut = DecodeDiscordSnowflakeMessageTransformation(snowflakeRegistry)
 
@@ -223,6 +226,18 @@ class DecodeDiscordSnowflakeMessageTransformationTest {
         assertEquals(":pepe:", result)
     }
 
+    @Test
+    fun testRole() {
+        // GIVEN
+        val message = "<@&$ROLE_ID>"
+
+        // WHEN
+        val result = sut.transform(CHANNEL_ID.toString(), "", message)
+
+        // THEN
+        assertEquals("@$ROLE_NAME", result)
+    }
+
     companion object {
         private const val GUILD_ID = 987L
         private const val GUILD_ID_OTHER = 654L
@@ -233,12 +248,15 @@ class DecodeDiscordSnowflakeMessageTransformationTest {
         private const val CHANNEL_NAME = "freamonsmind"
         private const val CHANNEL_NAME_OTHER = "frezidsmind"
 
-        private const val USER_NAME = "Larry"
-        private const val USER_NAME_SPACE = "Hans Bob"
-
         private const val USER_ID = 123L
         private const val USER_ID_SPACE = 789L
         private const val USER_ID_OTHER_GUILD = 234L
+
+        private const val USER_NAME = "Larry"
+        private const val USER_NAME_SPACE = "Hans Bob"
+
+        private const val ROLE_ID = 666L
+        private const val ROLE_NAME = "Mods"
 
         fun mockkGuild(id: Long, channelIds: Set<Long>) = niceMockk<Guild> {
             every { this@niceMockk.id } returns Snowflake(id)
@@ -253,6 +271,11 @@ class DecodeDiscordSnowflakeMessageTransformationTest {
         fun mockkMember(id: Long, name: String) = niceMockk<Member> {
             every { this@niceMockk.id } returns Snowflake(id)
             every { this@niceMockk.effectiveName } returns name
+        }
+
+        fun mockkRole(id: Long, name: String) = niceMockk<Role> {
+            every { this@niceMockk.id } returns Snowflake(id)
+            every { this@niceMockk.name } returns name
         }
     }
 }

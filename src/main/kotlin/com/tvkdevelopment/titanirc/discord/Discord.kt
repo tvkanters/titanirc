@@ -19,6 +19,7 @@ import dev.kord.core.event.guild.GuildCreateEvent
 import dev.kord.core.event.guild.MemberJoinEvent
 import dev.kord.core.event.guild.MemberUpdateEvent
 import dev.kord.core.event.message.MessageCreateEvent
+import dev.kord.core.event.role.RoleUpdateEvent
 import dev.kord.core.on
 import dev.kord.gateway.DefaultGateway
 import dev.kord.gateway.Intent
@@ -88,6 +89,7 @@ class Discord(
 
                     val guildSnowflakeRegistry = mutableSnowflakeRegistry.forGuild(guild)
                     guild.channels.collect { guildSnowflakeRegistry.channelRegistry += it }
+                    guild.roles.collect { guildSnowflakeRegistry.roleRegistry += it }
                     guild.emojis.collect { guildSnowflakeRegistry.emojiRegistry += it }
                     guild.requestMembers()
                         .collect { event ->
@@ -145,6 +147,10 @@ class Discord(
                         }
                         topicListeners.forEach { it.onTopicChanged(channelString, topic) }
                     }
+                }
+
+                on<RoleUpdateEvent> {
+                    mutableSnowflakeRegistry.forGuild(guildId)?.roleRegistry?.plusAssign(role)
                 }
 
                 on<EmojisUpdateEvent> {
