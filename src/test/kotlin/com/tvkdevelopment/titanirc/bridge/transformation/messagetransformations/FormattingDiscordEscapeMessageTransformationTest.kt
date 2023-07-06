@@ -3,9 +3,9 @@ package com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class EscapeDiscordFormattingMessageTransformationTest {
+class FormattingDiscordEscapeMessageTransformationTest {
 
-    private val sut = EscapeDiscordFormattingMessageTransformation()
+    private val sut = FormattingDiscordEscapeMessageTransformation()
 
     @Test
     fun testEscape() {

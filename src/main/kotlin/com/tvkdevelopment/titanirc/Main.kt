@@ -7,9 +7,7 @@ import com.tvkdevelopment.titanirc.bridge.transformation.MessageTransformationLi
 import com.tvkdevelopment.titanirc.bridge.transformation.MessageTransformationMapping
 import com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations.*
 import com.tvkdevelopment.titanirc.discord.Discord
-import com.tvkdevelopment.titanirc.discord.TopicRoles
 import com.tvkdevelopment.titanirc.irc.Irc
-import com.tvkdevelopment.titanirc.util.TopicUtil
 import org.apache.log4j.BasicConfigurator
 import org.slf4j.simple.SimpleLogger
 
@@ -26,13 +24,7 @@ object Main {
         }
 
         val irc = Irc(configuration)
-        val discord = Discord(
-            configuration,
-            nick = "\uD83D\uDCAC",
-            TopicRoles(
-                "418911279625797652" to { topic -> "806471250406670367".takeIf { TopicUtil.getStreamInfo(topic) != null } },
-            )
-        )
+        val discord = Discord(configuration)
 
         Bridge.connect(
             ChannelMapping(
@@ -45,21 +37,21 @@ object Main {
                 MessageTransformationLink(
                     irc to discord,
                     listOf(
-                        EscapeDiscordFormattingMessageTransformation(),
-                        IrcFormattingToDiscordMessageTransformation(),
-                        StripIrcFormattingMessageTransformation(),
-                        StripSmolFiMessageTransformation(),
-                        AddTwitterFixMessageTransformation(),
-                        NicknameToDiscordMemberMessageTransformation(discord.snowflakeRegistry),
-                        HashtagToDiscordChannelMessageTransformation(discord.snowflakeRegistry),
+                        FormattingDiscordEscapeMessageTransformation(),
+                        FormattingIrcToDiscordMessageTransformation(),
+                        FormattingIrcStripMessageTransformation(),
+                        SmolFiStripMessageTransformation(),
+                        TwitterFixAddMessageTransformation(),
+                        SnowflakeEncodeMemberMessageTransformation(discord.snowflakeRegistry),
+                        SnowflakeEncodeChannelMessageTransformation(discord.snowflakeRegistry),
                     )
                 ),
                 MessageTransformationLink(
                     discord to irc,
                     listOf(
-                        DiscordFormattingToIrcMessageTransformation(),
-                        AddSmolFiMessageTransformation(),
-                        DecodeDiscordSnowflakeMessageTransformation(discord.snowflakeRegistry),
+                        FormattingDiscordToIrcMessageTransformation(),
+                        SmolFiPrependMessageTransformation(),
+                        SnowflakeDecodeMessageTransformation(discord.snowflakeRegistry),
                     )
                 )
             ),
@@ -67,16 +59,16 @@ object Main {
                 MessageTransformationLink(
                     irc to discord,
                     listOf(
-                        EscapeDiscordFormattingMessageTransformation(),
-                        IrcFormattingToDiscordMessageTransformation(),
-                        StripIrcFormattingMessageTransformation(),
+                        FormattingDiscordEscapeMessageTransformation(),
+                        FormattingIrcToDiscordMessageTransformation(),
+                        FormattingIrcStripMessageTransformation(),
                     )
                 ),
                 MessageTransformationLink(
                     discord to irc,
                     listOf(
-                        DiscordFormattingToIrcMessageTransformation(),
-                        DecodeDiscordSnowflakeMessageTransformation(discord.snowflakeRegistry),
+                        FormattingDiscordToIrcMessageTransformation(),
+                        SnowflakeDecodeMessageTransformation(discord.snowflakeRegistry),
                     )
                 )
             ),

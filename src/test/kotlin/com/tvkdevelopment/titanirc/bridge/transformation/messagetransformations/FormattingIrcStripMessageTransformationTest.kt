@@ -4,9 +4,9 @@ import org.junit.jupiter.api.Test
 import org.pircbotx.Colors
 import kotlin.test.assertEquals
 
-class StripIrcFormattingMessageTransformationTest {
+class FormattingIrcStripMessageTransformationTest {
 
-    private val sut = StripIrcFormattingMessageTransformation()
+    private val sut = FormattingIrcStripMessageTransformation()
 
     @Test
     fun testStripFormatting() {

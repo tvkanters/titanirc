@@ -10,7 +10,7 @@ import io.mockk.every
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class HashtagToDiscordChannelMessageTransformationTest {
+class SnowflakeEncodeChannelMessageTransformationTest {
 
     private val guild = mockkGuild(GUILD_ID, setOf(CHANNEL_ID))
     private val guildOther = mockkGuild(GUILD_ID_OTHER, setOf(CHANNEL_ID_OTHER))
@@ -18,7 +18,7 @@ class HashtagToDiscordChannelMessageTransformationTest {
         forGuild(guild).channelRegistry += mockkChannel(CHANNEL_ID, CHANNEL_NAME)
         forGuild(guildOther).channelRegistry += mockkChannel(CHANNEL_ID_OTHER, CHANNEL_NAME_OTHER)
     }
-    private val sut = HashtagToDiscordChannelMessageTransformation(snowflakeRegistry)
+    private val sut = SnowflakeEncodeChannelMessageTransformation(snowflakeRegistry)
 
     @Test
     fun testNoChannel() {

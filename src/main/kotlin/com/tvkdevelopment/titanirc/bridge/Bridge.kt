@@ -13,24 +13,26 @@ class Bridge private constructor(
         channelMapping.clients.forEach { sourceClient ->
             val targetClients = channelMapping.clients - sourceClient
 
-            sourceClient.addRelayMessageListener { sourceChannel, nick, message ->
-                targetClients.forEach { targetClient ->
-                    relayMessage(sourceClient, targetClient, sourceChannel, nick, message)
+            sourceClient.addBridgeListener(object : BridgeClient.Listener {
+                override fun onMessage(channel: String, nick: String, message: String) {
+                    targetClients.forEach { targetClient ->
+                        relayMessage(sourceClient, targetClient, channel, nick, message)
+                    }
                 }
-            }
 
-            sourceClient.addRelaySlashMeListener { sourceChannel, nick, message ->
-                targetClients.forEach { targetClient ->
-                    relaySlashMe(sourceClient, targetClient, sourceChannel, nick, message)
+                override fun onSlashMe(channel: String, nick: String, message: String) {
+                    targetClients.forEach { targetClient ->
+                        relaySlashMe(sourceClient, targetClient, channel, nick, message)
+                    }
                 }
-            }
 
-            sourceClient.addTopicListener { sourceChannel, topic ->
-                Log.i("Bridge topic update: client=${sourceClient.name}, channel=$sourceChannel, topic=$topic")
-                targetClients.forEach { targetClient ->
-                    setTopic(sourceClient, targetClient, sourceChannel, topic)
+                override fun onTopicChanged(channel: String, topic: String) {
+                    Log.i("Bridge topic update: client=${sourceClient.name}, channel=$channel, topic=$topic")
+                    targetClients.forEach { targetClient ->
+                        setTopic(sourceClient, targetClient, channel, topic)
+                    }
                 }
-            }
+            })
         }
 
         channelMapping.clients.forEach {

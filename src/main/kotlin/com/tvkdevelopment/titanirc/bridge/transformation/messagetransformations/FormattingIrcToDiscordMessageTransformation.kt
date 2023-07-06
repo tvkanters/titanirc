@@ -3,7 +3,7 @@ package com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations
 import com.tvkdevelopment.titanirc.bridge.transformation.MessageTransformation
 import org.pircbotx.Colors
 
-class IrcFormattingToDiscordMessageTransformation : MessageTransformation {
+class FormattingIrcToDiscordMessageTransformation : MessageTransformation {
     override fun transform(sourceChannel: String, targetChannel: String, message: String): String =
         message
             .takeUnless { it.contains("://") }

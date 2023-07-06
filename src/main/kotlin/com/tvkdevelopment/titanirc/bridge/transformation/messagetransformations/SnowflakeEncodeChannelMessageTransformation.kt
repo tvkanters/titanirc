@@ -2,8 +2,9 @@ package com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations
 
 import com.tvkdevelopment.titanirc.bridge.transformation.MessageTransformation
 import com.tvkdevelopment.titanirc.discord.SnowflakeRegistry
+import com.tvkdevelopment.titanirc.discord.mentionChannel
 
-class HashtagToDiscordChannelMessageTransformation(
+class SnowflakeEncodeChannelMessageTransformation(
     private val snowflakeRegistry: SnowflakeRegistry,
 ) : MessageTransformation {
 
@@ -14,7 +15,7 @@ class HashtagToDiscordChannelMessageTransformation(
             match.groupValues[1]
                 .lowercase()
                 .let { channels[it] }
-                ?.let { "<#$it>" }
+                ?.mentionChannel
                 ?: match.groupValues[0]
         }
     }

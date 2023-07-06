@@ -3,8 +3,10 @@ package com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations
 import com.tvkdevelopment.titanirc.bridge.transformation.MessageTransformation
 import com.tvkdevelopment.titanirc.discord.GuildSnowflakeRegistry
 import com.tvkdevelopment.titanirc.discord.SnowflakeRegistry
+import com.tvkdevelopment.titanirc.discord.mentionMember
+import com.tvkdevelopment.titanirc.discord.mentionRole
 
-class NicknameToDiscordMemberMessageTransformation(
+class SnowflakeEncodeMemberMessageTransformation(
     private val snowflakeRegistry: SnowflakeRegistry,
 ) : MessageTransformation {
 
@@ -24,8 +26,8 @@ class NicknameToDiscordMemberMessageTransformation(
             .takeIf { it.isNotEmpty() }
             ?.lowercase()
             ?.let { normalizedName ->
-                memberRegistry.itemsByNormalizedName[normalizedName]?.let { "<@$it>" }
-                    ?: roleRegistry.takeIf { allowRoles }?.itemsByNormalizedName?.get(normalizedName)?.let { "<@&$it>" }
+                memberRegistry.itemsByNormalizedName[normalizedName]?.mentionMember
+                    ?: roleRegistry.takeIf { allowRoles }?.itemsByNormalizedName?.get(normalizedName)?.mentionRole
             }
 
     companion object {

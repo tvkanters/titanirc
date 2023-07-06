@@ -3,9 +3,9 @@ package com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class AddSmolFiMessageTransformationTest {
+class SmolFiPrependMessageTransformationTest {
 
-    private val sut = AddSmolFiMessageTransformation()
+    private val sut = SmolFiPrependMessageTransformation()
 
     @Test
     fun testTransformation() {

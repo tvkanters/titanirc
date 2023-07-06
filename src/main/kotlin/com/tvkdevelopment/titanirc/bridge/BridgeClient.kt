@@ -6,27 +6,17 @@ interface BridgeClient {
 
     fun connect()
 
-    fun relayMessage(channel: String, nick: String, message: String)
+    fun addBridgeListener(listener: Listener)
 
-    fun addRelayMessageListener(listener: MessageListener)
-
-    fun interface MessageListener {
+    interface Listener {
         fun onMessage(channel: String, nick: String, message: String)
-    }
-
-    fun addRelaySlashMeListener(listener: SlashMeListener)
-
-    fun interface SlashMeListener {
         fun onSlashMe(channel: String, nick: String, message: String)
+        fun onTopicChanged(channel: String, topic: String)
     }
+
+    fun relayMessage(channel: String, nick: String, message: String)
 
     fun relaySlashMe(channel: String, nick: String, message: String)
 
     fun setTopic(channel: String, topic: String)
-
-    fun addTopicListener(listener: TopicListener)
-
-    fun interface TopicListener {
-        fun onTopicChanged(channel: String, topic: String)
-    }
 }

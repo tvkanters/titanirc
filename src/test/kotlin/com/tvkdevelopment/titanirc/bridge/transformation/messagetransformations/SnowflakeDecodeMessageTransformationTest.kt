@@ -12,7 +12,7 @@ import io.mockk.every
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class DecodeDiscordSnowflakeMessageTransformationTest {
+class SnowflakeDecodeMessageTransformationTest {
 
     private val guild = mockkGuild(GUILD_ID, setOf(CHANNEL_ID))
     private val guildOther = mockkGuild(GUILD_ID_OTHER, setOf(CHANNEL_ID_OTHER))
@@ -26,7 +26,7 @@ class DecodeDiscordSnowflakeMessageTransformationTest {
 
         forGuild(guild).roleRegistry += mockkRole(ROLE_ID, ROLE_NAME)
     }
-    private val sut = DecodeDiscordSnowflakeMessageTransformation(snowflakeRegistry)
+    private val sut = SnowflakeDecodeMessageTransformation(snowflakeRegistry)
 
     @Test
     fun testNoSnowflake() {

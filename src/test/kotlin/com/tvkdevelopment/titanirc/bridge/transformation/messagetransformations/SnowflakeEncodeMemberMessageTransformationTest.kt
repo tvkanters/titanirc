@@ -10,7 +10,7 @@ import io.mockk.every
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class NicknameToDiscordMemberMessageTransformationTest {
+class SnowflakeEncodeMemberMessageTransformationTest {
 
     private val guild = mockkGuild(GUILD_ID, setOf(CHANNEL_ID))
     private val guildOther = mockkGuild(GUILD_ID_OTHER, setOf(CHANNEL_ID_OTHER))
@@ -21,7 +21,7 @@ class NicknameToDiscordMemberMessageTransformationTest {
 
         forGuild(guild).roleRegistry += mockkRole(ROLE_ID, ROLE_NAME)
     }
-    private val sut = NicknameToDiscordMemberMessageTransformation(snowflakeRegistry)
+    private val sut = SnowflakeEncodeMemberMessageTransformation(snowflakeRegistry)
 
     @Test
     fun testNoPing() {

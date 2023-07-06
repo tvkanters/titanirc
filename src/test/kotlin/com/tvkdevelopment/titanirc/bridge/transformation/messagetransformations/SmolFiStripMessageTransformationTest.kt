@@ -3,9 +3,9 @@ package com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class StripSmolFiMessageTransformationTest {
+class SmolFiStripMessageTransformationTest {
 
-    private val sut = StripSmolFiMessageTransformation()
+    private val sut = SmolFiStripMessageTransformation()
 
     @Test
     fun testTransformationHttps() {

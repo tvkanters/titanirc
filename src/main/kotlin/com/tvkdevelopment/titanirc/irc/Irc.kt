@@ -26,9 +26,7 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
     private var bot: PircBotX? = null
     private var maxLineLength: Int = QUAKENET_MAX_LINE_LENGTH
 
-    private val messageListeners = mutableListOf<BridgeClient.MessageListener>()
-    private val slashMeListeners = mutableListOf<BridgeClient.SlashMeListener>()
-    private val topicListeners = mutableListOf<BridgeClient.TopicListener>()
+    private val bridgeListeners = mutableListOf<BridgeClient.Listener>()
 
     override fun connect() {
         connectJob?.cancel()
@@ -67,7 +65,7 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
                     addListener(LogListener())
                     addListener(RestartListener(DISCONNECT_RESTART_DELAY, ::connect))
                     addListener(NickFixListener(name))
-                    addListener(IrcBridgeListener(messageListeners, slashMeListeners, topicListeners))
+                    addListener(IrcBridgeListener(bridgeListeners))
                     addListener(messageSender)
                 }.buildConfiguration())
                     .also { bot = it }
@@ -80,20 +78,16 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
         }
     }
 
+    override fun addBridgeListener(listener: BridgeClient.Listener) {
+        bridgeListeners += listener
+    }
+
     override fun relayMessage(channel: String, nick: String, message: String) {
         sendMessage(channel, "<$nick> ", message)
     }
 
-    override fun addRelayMessageListener(listener: BridgeClient.MessageListener) {
-        messageListeners += listener
-    }
-
     override fun relaySlashMe(channel: String, nick: String, message: String) {
         sendMessage(channel, "* $nick ", message)
-    }
-
-    override fun addRelaySlashMeListener(listener: BridgeClient.SlashMeListener) {
-        slashMeListeners += listener
     }
 
     private fun sendMessage(channel: String, prefix: String, message: String) {
@@ -107,10 +101,6 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
 
     override fun setTopic(channel: String, topic: String) {
         messageSender.setTopic(channel, topic)
-    }
-
-    override fun addTopicListener(listener: BridgeClient.TopicListener) {
-        topicListeners += listener
     }
 
     companion object {

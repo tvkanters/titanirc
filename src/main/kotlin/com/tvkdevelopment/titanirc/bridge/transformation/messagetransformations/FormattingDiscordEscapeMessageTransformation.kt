@@ -2,7 +2,7 @@ package com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations
 
 import com.tvkdevelopment.titanirc.bridge.transformation.MessageTransformation
 
-class EscapeDiscordFormattingMessageTransformation : MessageTransformation {
+class FormattingDiscordEscapeMessageTransformation : MessageTransformation {
     override fun transform(sourceChannel: String, targetChannel: String, message: String): String =
         buildString {
             var illegalStringPosition = 0

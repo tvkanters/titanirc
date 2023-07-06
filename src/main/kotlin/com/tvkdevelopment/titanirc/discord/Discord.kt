@@ -2,24 +2,17 @@ package com.tvkdevelopment.titanirc.discord
 
 import com.tvkdevelopment.titanirc.TitanircConfiguration
 import com.tvkdevelopment.titanirc.bridge.BridgeClient
+import com.tvkdevelopment.titanirc.discord.eventhandlers.*
 import com.tvkdevelopment.titanirc.util.Log
 import dev.kord.common.entity.Snowflake
 import dev.kord.common.entity.optional.Optional
 import dev.kord.core.Kord
-import dev.kord.core.behavior.channel.asChannelOfOrNull
-import dev.kord.core.behavior.requestMembers
 import dev.kord.core.entity.channel.MessageChannel
 import dev.kord.core.event.Event
-import dev.kord.core.event.channel.ChannelUpdateEvent
 import dev.kord.core.event.gateway.DisconnectEvent
 import dev.kord.core.event.gateway.ReadyEvent
 import dev.kord.core.event.gateway.ResumedEvent
-import dev.kord.core.event.guild.EmojisUpdateEvent
 import dev.kord.core.event.guild.GuildCreateEvent
-import dev.kord.core.event.guild.MemberJoinEvent
-import dev.kord.core.event.guild.MemberUpdateEvent
-import dev.kord.core.event.message.MessageCreateEvent
-import dev.kord.core.event.role.RoleUpdateEvent
 import dev.kord.core.on
 import dev.kord.gateway.DefaultGateway
 import dev.kord.gateway.Intent
@@ -33,8 +26,6 @@ import kotlin.time.Duration.Companion.seconds
 @OptIn(DelicateCoroutinesApi::class)
 class Discord(
     private val configuration: TitanircConfiguration,
-    private val nick: String,
-    private val topicRoles: TopicRoles,
 ) : BridgeClient {
 
     override val name = "Discord"
@@ -42,12 +33,18 @@ class Discord(
     private val scope = CoroutineScope(newSingleThreadContext("Discord"))
     private var bot: Kord? = null
 
-    private val messageListeners = mutableListOf<BridgeClient.MessageListener>()
-    private val slashMeListeners = mutableListOf<BridgeClient.SlashMeListener>()
-    private val topicListeners = mutableListOf<BridgeClient.TopicListener>()
+    private val bridgeListeners = mutableListOf<BridgeClient.Listener>()
 
     private val mutableSnowflakeRegistry = MutableSnowflakeRegistry()
     val snowflakeRegistry: SnowflakeRegistry = mutableSnowflakeRegistry
+
+    private val eventHandlers = listOf<DiscordEventHandler>(
+        BridgeDiscordEventHandler(configuration, bridgeListeners),
+        MemberSyncDiscordEventHandler(mutableSnowflakeRegistry),
+        ChannelSyncDiscordEventHandler(mutableSnowflakeRegistry),
+        EmojiSyncDiscordEventHandler(mutableSnowflakeRegistry),
+        RoleSyncDiscordEventHandler(mutableSnowflakeRegistry)
+    )
 
     @OptIn(PrivilegedIntent::class)
     override fun connect() {
@@ -84,78 +81,11 @@ class Discord(
 
                 on<GuildCreateEvent> {
                     Log.i("Discord server joined: ${guild.data.name}")
-
-                    guild.editSelfNickname(nick)
-
-                    val guildSnowflakeRegistry = mutableSnowflakeRegistry.forGuild(guild)
-                    guild.channels.collect { guildSnowflakeRegistry.channelRegistry += it }
-                    guild.roles.collect { guildSnowflakeRegistry.roleRegistry += it }
-                    guild.emojis.collect { guildSnowflakeRegistry.emojiRegistry += it }
-                    guild.requestMembers()
-                        .collect { event ->
-                            Log.i("Discord member chunk added")
-                            event.members.forEach {
-                                if (!it.isBot) {
-                                    guildSnowflakeRegistry.memberRegistry += it
-                                }
-                            }
-                        }
+                    guild.editSelfNickname(configuration.discordNick)
                 }
 
-                on<MemberJoinEvent> {
-                    Log.i("Discord member joined")
-                    mutableSnowflakeRegistry.forGuild(member.getGuild()).memberRegistry += member
-                }
-
-                on<MemberUpdateEvent> {
-                    Log.i("Discord member updated")
-                    mutableSnowflakeRegistry.forGuild(member.getGuild()).memberRegistry += member
-                }
-
-                on<MessageCreateEvent> {
-                    member
-                        ?.takeUnless { it.isBot }
-                        ?.let { member ->
-                            val messageToSend = with(message) {
-                                listOf(content)
-                                    .plus(stickers.map { "[${it.name} sticker]" })
-                                    .plus(attachments.map { it.url }.filter { it !in content })
-                                    .filter { it.isNotBlank() }
-                                    .joinToString(" ")
-                            }
-                            messageListeners.forEach {
-                                it.onMessage(message.channel.id.toString(), member.effectiveName, messageToSend)
-                            }
-                        }
-                }
-
-                on<ChannelUpdateEvent> {
-                    Log.i("Discord channel updated: ${channel.data.name.value}")
-
-                    channel.data.guildId.value
-                        ?.let { mutableSnowflakeRegistry.forGuild(it) }
-                        ?.channelRegistry
-                        ?.plusAssign(channel)
-
-                    val topic = channel.topicValue
-                    if (topic != old.topicValue) {
-                        val channelString = channel.id.toString()
-                        if (old != null && topic.isNotBlank()) {
-                            val topicRole = topicRoles.getRole(channelString, topic)
-                            channel.asChannelOfOrNull<MessageChannel>()
-                                ?.createMessage(":bell: ${topicRole?.let { "<@&$it>" } ?: "Topic"} updated: $topic")
-                        }
-                        topicListeners.forEach { it.onTopicChanged(channelString, topic) }
-                    }
-                }
-
-                on<RoleUpdateEvent> {
-                    mutableSnowflakeRegistry.forGuild(guildId)?.roleRegistry?.plusAssign(role)
-                }
-
-                on<EmojisUpdateEvent> {
-                    mutableSnowflakeRegistry.forGuild(guildId)?.emojiRegistry
-                        ?.let { emojiRegistry -> emojis.forEach { emojiRegistry += it } }
+                eventHandlers.forEach {
+                    it.apply { register() }
                 }
 
                 login {
@@ -164,6 +94,10 @@ class Discord(
                 }
             }
         }
+    }
+
+    override fun addBridgeListener(listener: BridgeClient.Listener) {
+        bridgeListeners += listener
     }
 
     private fun onBot(block: suspend Kord.() -> Unit) {
@@ -187,18 +121,10 @@ class Discord(
         }
     }
 
-    override fun addRelayMessageListener(listener: BridgeClient.MessageListener) {
-        messageListeners += listener
-    }
-
     override fun relaySlashMe(channel: String, nick: String, message: String) {
         onBot {
             sendMessage(channel, "\\* $nick $message")
         }
-    }
-
-    override fun addRelaySlashMeListener(listener: BridgeClient.SlashMeListener) {
-        slashMeListeners += listener
     }
 
     override fun setTopic(channel: String, topic: String) {
@@ -207,10 +133,6 @@ class Discord(
                 ?.takeIf { it.topicValue != topic }
                 ?.apply { rest.channel.patchChannel(id, ChannelModifyPatchRequest(topic = Optional(topic))) }
         }
-    }
-
-    override fun addTopicListener(listener: BridgeClient.TopicListener) {
-        topicListeners += listener
     }
 
     companion object {

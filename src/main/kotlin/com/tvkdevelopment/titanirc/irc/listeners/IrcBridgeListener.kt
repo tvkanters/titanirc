@@ -10,9 +10,7 @@ import org.pircbotx.hooks.events.MessageEvent
 import org.pircbotx.hooks.events.TopicEvent
 
 class IrcBridgeListener(
-    private val messageListeners: List<BridgeClient.MessageListener>,
-    private val slashMeListeners: List<BridgeClient.SlashMeListener>,
-    private val topicListeners: List<BridgeClient.TopicListener>,
+    private val listeners: List<BridgeClient.Listener>,
 ) : Listener {
 
     override fun onEvent(event: Event?) {
@@ -24,19 +22,19 @@ class IrcBridgeListener(
                 onSlashMe(event.user, event.channel, event.message)
 
             is TopicEvent ->
-                topicListeners.forEach { it.onTopicChanged(event.channel.name, event.topic) }
+                listeners.forEach { it.onTopicChanged(event.channel.name, event.topic) }
         }
     }
 
     private fun onMessage(user: User?, channel: Channel?, message: String) {
         val nick = user?.nick ?: return
         val channelName = channel?.name ?: return
-        messageListeners.forEach { it.onMessage(channelName, nick, message) }
+        listeners.forEach { it.onMessage(channelName, nick, message) }
     }
 
     private fun onSlashMe(user: User?, channel: Channel?, message: String) {
         val nick = user?.nick ?: return
         val channelName = channel?.name ?: return
-        slashMeListeners.forEach { it.onSlashMe(channelName, nick, message) }
+        listeners.forEach { it.onSlashMe(channelName, nick, message) }
     }
 }
