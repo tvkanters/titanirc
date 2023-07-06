@@ -114,14 +114,13 @@ class Discord(
                     member
                         ?.takeUnless { it.isBot }
                         ?.let { member ->
-                            val attachedUrls =
-                                message.attachments.map { it.url }
-                                    .filterNot { message.content.contains(it) }
-                            val messageToSend =
-                                listOf(message.content)
-                                    .plus(attachedUrls)
+                            val messageToSend = with(message) {
+                                listOf(content)
+                                    .plus(stickers.map { "[${it.name} sticker]" })
+                                    .plus(attachments.map { it.url }.filter { it !in content })
                                     .filter { it.isNotBlank() }
                                     .joinToString(" ")
+                            }
                             messageListeners.forEach {
                                 it.onMessage(message.channel.id.toString(), member.effectiveName, messageToSend)
                             }
