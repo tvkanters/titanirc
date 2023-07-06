@@ -29,9 +29,11 @@ class MutableSnowflakeRegistry : SnowflakeRegistry {
 interface GuildSnowflakeRegistry {
     val memberRegistry: MemberRegistry
     val channelRegistry: ChannelRegistry
+    val emojiRegistry: EmojiRegistry
 }
 
 class MutableGuildSnowflakeRegistry: GuildSnowflakeRegistry {
     override val memberRegistry = MutableMemberRegistry()
     override val channelRegistry = MutableChannelRegistry()
+    override val emojiRegistry = MutableEmojiRegistry()
 }

@@ -14,6 +14,7 @@ import dev.kord.core.event.channel.ChannelUpdateEvent
 import dev.kord.core.event.gateway.DisconnectEvent
 import dev.kord.core.event.gateway.ReadyEvent
 import dev.kord.core.event.gateway.ResumedEvent
+import dev.kord.core.event.guild.EmojisUpdateEvent
 import dev.kord.core.event.guild.GuildCreateEvent
 import dev.kord.core.event.guild.MemberJoinEvent
 import dev.kord.core.event.guild.MemberUpdateEvent
@@ -83,17 +84,17 @@ class Discord(
                 on<GuildCreateEvent> {
                     Log.i("Discord server joined: ${guild.data.name}")
 
-                    val channelRegistry = mutableSnowflakeRegistry.forGuild(guild).channelRegistry
-                    guild.channels.collect { channelRegistry += it }
-
                     guild.editSelfNickname(nick)
-                    guild
-                        .requestMembers()
+
+                    val guildSnowflakeRegistry = mutableSnowflakeRegistry.forGuild(guild)
+                    guild.channels.collect { guildSnowflakeRegistry.channelRegistry += it }
+                    guild.emojis.collect { guildSnowflakeRegistry.emojiRegistry += it }
+                    guild.requestMembers()
                         .collect { event ->
                             Log.i("Discord member chunk added")
                             event.members.forEach {
                                 if (!it.isBot) {
-                                    mutableSnowflakeRegistry.forGuild(guild).memberRegistry += it
+                                    guildSnowflakeRegistry.memberRegistry += it
                                 }
                             }
                         }
@@ -145,6 +146,11 @@ class Discord(
                         }
                         topicListeners.forEach { it.onTopicChanged(channelString, topic) }
                     }
+                }
+
+                on<EmojisUpdateEvent> {
+                    mutableSnowflakeRegistry.forGuild(guildId)?.emojiRegistry
+                        ?.let { emojiRegistry -> emojis.forEach { emojiRegistry += it } }
                 }
 
                 login {
