@@ -12,27 +12,17 @@ import org.junit.jupiter.api.Test
 
 class BridgeTest {
 
-    private val mockClient1Listeners = MockClientListeners()
-    private val mockClient2Listeners = MockClientListeners()
-    private val mockClient3Listeners = MockClientListeners()
-
-    private class MockClientListeners {
-        val messageListeners = mutableListOf<BridgeClient.MessageListener>()
-        val slashMeListeners = mutableListOf<BridgeClient.SlashMeListener>()
-        val topicListeners = mutableListOf<BridgeClient.TopicListener>()
-    }
+    private val mockClient1Listeners = mutableListOf<BridgeClient.Listener>()
+    private val mockClient2Listeners = mutableListOf<BridgeClient.Listener>()
+    private val mockClient3Listeners = mutableListOf<BridgeClient.Listener>()
 
     private val mockClient1 = mockClient(mockClient1Listeners)
     private val mockClient2 = mockClient(mockClient2Listeners)
     private val mockClient3 = mockClient(mockClient3Listeners)
 
-    private fun mockClient(
-        listeners: MockClientListeners,
-    ) =
+    private fun mockClient(listeners: MutableList<BridgeClient.Listener>) =
         niceMockk<BridgeClient> {
-            every { addRelayMessageListener(capture(listeners.messageListeners)) } just Runs
-            every { addRelaySlashMeListener(capture(listeners.slashMeListeners)) } just Runs
-            every { addTopicListener(capture(listeners.topicListeners)) } just Runs
+            every { addBridgeListener(capture(listeners)) } just Runs
         }
 
     @Test
@@ -45,7 +35,7 @@ class BridgeTest {
         )
 
         // WHEN
-        mockClient1Listeners.messageListeners.forEach { it.onMessage("a1", "nick", "message") }
+        mockClient1Listeners.forEach { it.onMessage("a1", "nick", "message") }
 
         // THEN
         verify(exactly = 0) { mockClient1.relayMessage(any(), any(), any()) }
@@ -62,7 +52,7 @@ class BridgeTest {
         )
 
         // WHEN
-        mockClient1Listeners.messageListeners.forEach { it.onMessage("a1", "nick", "message") }
+        mockClient1Listeners.forEach { it.onMessage("a1", "nick", "message") }
 
         // THEN
         verify(exactly = 0) { mockClient1.relayMessage(any(), any(), any()) }
@@ -81,7 +71,7 @@ class BridgeTest {
         )
 
         // WHEN
-        mockClient1Listeners.messageListeners.forEach { it.onMessage("b1", "nick", "message") }
+        mockClient1Listeners.forEach { it.onMessage("b1", "nick", "message") }
 
         // THEN
         verify(exactly = 0) { mockClient1.relayMessage(any(), any(), any()) }
@@ -101,7 +91,7 @@ class BridgeTest {
         )
 
         // WHEN
-        mockClient2Listeners.messageListeners.forEach { it.onMessage("b2", "nick", "message") }
+        mockClient2Listeners.forEach { it.onMessage("b2", "nick", "message") }
 
         // THEN
         verify { mockClient1.relayMessage("b1", "nick", "message") }
@@ -121,7 +111,7 @@ class BridgeTest {
         )
 
         // WHEN
-        mockClient1Listeners.messageListeners.forEach { it.onMessage("b1", "nick", "message") }
+        mockClient1Listeners.forEach { it.onMessage("b1", "nick", "message") }
 
         // THEN
         verify(exactly = 0) { mockClient1.relayMessage(any(), any(), any()) }
@@ -145,7 +135,7 @@ class BridgeTest {
         )
 
         // WHEN
-        mockClient1Listeners.messageListeners.forEach { it.onMessage("a1", "nick", "message") }
+        mockClient1Listeners.forEach { it.onMessage("a1", "nick", "message") }
 
         // THEN
         verify { mockClient2.relayMessage("a2", "nick", "message transformed") }
@@ -167,7 +157,7 @@ class BridgeTest {
         )
 
         // WHEN
-        mockClient2Listeners.messageListeners.forEach { it.onMessage("a2", "nick", "message") }
+        mockClient2Listeners.forEach { it.onMessage("a2", "nick", "message") }
 
         // THEN
         verify { mockClient1.relayMessage("a1", "nick", "message") }
@@ -192,7 +182,7 @@ class BridgeTest {
         )
 
         // WHEN
-        mockClient1Listeners.messageListeners.forEach { it.onMessage("a1", "nick", "message") }
+        mockClient1Listeners.forEach { it.onMessage("a1", "nick", "message") }
 
         // THEN
         verify { mockClient2.relayMessage("a2", "nick", "message 1 2") }
@@ -208,7 +198,7 @@ class BridgeTest {
         )
 
         // WHEN
-        mockClient1Listeners.slashMeListeners.forEach { it.onSlashMe("a1", "nick", "slaps") }
+        mockClient1Listeners.forEach { it.onSlashMe("a1", "nick", "slaps") }
 
         // THEN
         verify(exactly = 0) { mockClient1.relaySlashMe(any(), any(), any()) }
@@ -225,7 +215,7 @@ class BridgeTest {
         )
 
         // WHEN
-        mockClient1Listeners.topicListeners.forEach { it.onTopicChanged("a1", "topic") }
+        mockClient1Listeners.forEach { it.onTopicChanged("a1", "topic") }
 
         // THEN
         verify(exactly = 0) { mockClient1.setTopic(any(), any()) }
