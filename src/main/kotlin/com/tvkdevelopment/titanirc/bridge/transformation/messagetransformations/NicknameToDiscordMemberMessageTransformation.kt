@@ -8,7 +8,7 @@ class NicknameToDiscordMemberMessageTransformation(
 ) : MessageTransformation {
 
     override fun transform(sourceChannel: String, targetChannel: String, message: String): String {
-        val members = snowflakeRegistry.forChannel(targetChannel)?.memberRegistry?.membersByNormalizedName
+        val members = snowflakeRegistry.forChannel(targetChannel)?.memberRegistry?.itemsByNormalizedName
             ?: return message
         return message.replace(REGEX_POTENTIAL_MEMBER_NAME) { match ->
             match.groupValues

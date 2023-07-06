@@ -8,7 +8,7 @@ class HashtagToDiscordChannelMessageTransformation(
 ) : MessageTransformation {
 
     override fun transform(sourceChannel: String, targetChannel: String, message: String): String {
-        val channels = snowflakeRegistry.forChannel(targetChannel)?.channelRegistry?.channelsByNormalizedName
+        val channels = snowflakeRegistry.forChannel(targetChannel)?.channelRegistry?.itemsByNormalizedName
             ?: return message
         return message.replace(REGEX_POTENTIAL_MEMBER_NAME) { match ->
             match.groupValues[1]

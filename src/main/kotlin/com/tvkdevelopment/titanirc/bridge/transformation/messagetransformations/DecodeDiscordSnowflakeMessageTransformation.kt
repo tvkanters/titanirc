@@ -18,10 +18,10 @@ class DecodeDiscordSnowflakeMessageTransformation(private val snowflakeRegistry:
                         val snowflake = Snowflake(id)
                         when (match.groupValues[1]) {
                             SYMBOL_USERNAME ->
-                                snowflakeRegistry.memberRegistry.membersById[snowflake]?.effectiveName
+                                snowflakeRegistry.memberRegistry.itemsById[snowflake]?.originalName
 
                             SYMBOL_CHANNEL ->
-                                snowflakeRegistry.channelRegistry.channelsById[snowflake]?.name?.let { "#$it" }
+                                snowflakeRegistry.channelRegistry.itemsById[snowflake]?.originalName?.let { "#$it" }
 
                             else ->
                                 null
