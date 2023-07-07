@@ -30,7 +30,7 @@ dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.2")
     implementation("com.github.pircbotx:pircbotx:2.3.1")
-    implementation("org.slf4j:slf4j-log4j12:1.7.30")
+    implementation("org.slf4j:slf4j-log4j12:2.0.7")
     implementation("org.slf4j:slf4j-simple:2.0.7")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
 

@@ -16,7 +16,7 @@ import kotlin.time.Duration.Companion.minutes
 /**
  * Offers sending messages to IRC with flood protection.
  */
-@OptIn(DelicateCoroutinesApi::class)
+@OptIn(DelicateCoroutinesApi::class, ExperimentalCoroutinesApi::class)
 class IrcMessageSender(
     private val configuration: TitanircConfiguration,
     private val getBot: () -> PircBotX?

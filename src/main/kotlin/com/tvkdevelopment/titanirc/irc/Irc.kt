@@ -14,7 +14,7 @@ import org.pircbotx.delay.AdaptingDelay
 import org.pircbotx.hooks.managers.SequentialListenerManager
 import kotlin.time.Duration.Companion.seconds
 
-@OptIn(DelicateCoroutinesApi::class)
+@OptIn(DelicateCoroutinesApi::class, ExperimentalCoroutinesApi::class)
 class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
 
     override val name = "IRC"
