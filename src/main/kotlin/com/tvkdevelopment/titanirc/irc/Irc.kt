@@ -75,14 +75,18 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
     }
 
     override fun relayMessage(channel: String, nick: String, message: String) {
-        sendMessage(channel, "<$nick> ", message)
+        sendMessage(
+            channel,
+            "<$nick> ".takeUnless { message.startsWith('!') },
+            message,
+        )
     }
 
     override fun relaySlashMe(channel: String, nick: String, message: String) {
         sendMessage(channel, "* $nick ", message)
     }
 
-    private fun sendMessage(channel: String, prefix: String, message: String) {
+    private fun sendMessage(channel: String, prefix: String?, message: String) {
         message
             .conditionalTransform(message.count { it == '\n' } >= MAX_LINES_BEFORE_JOINING) {
                 it.replace(REGEX_NEW_LINE_REPLACE, " ")
