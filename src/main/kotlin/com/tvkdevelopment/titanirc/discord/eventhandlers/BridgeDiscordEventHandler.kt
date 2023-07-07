@@ -7,12 +7,16 @@ import com.tvkdevelopment.titanirc.discord.mentionRole
 import com.tvkdevelopment.titanirc.discord.replyLabel
 import com.tvkdevelopment.titanirc.discord.topicValue
 import com.tvkdevelopment.titanirc.util.Log
+import dev.kord.common.entity.MessageType
 import dev.kord.core.Kord
 import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.entity.channel.MessageChannel
+import dev.kord.core.entity.effectiveName
 import dev.kord.core.event.channel.ChannelUpdateEvent
+import dev.kord.core.event.channel.thread.TextChannelThreadCreateEvent
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
+import kotlinx.coroutines.flow.firstOrNull
 
 class BridgeDiscordEventHandler(
     private val configuration: TitanircConfiguration,
@@ -21,23 +25,22 @@ class BridgeDiscordEventHandler(
 
     override fun Kord.register() {
         on<MessageCreateEvent> {
-            member
-                ?.takeUnless { it.isBot }
-                ?.let { member ->
-                    val messageToSend = with(message) {
-                        mutableListOf<String>()
-                            .asSequence()
-                            .plus(referencedMessage?.replyLabel)
-                            .plus(content)
-                            .plus(stickers.map { it.label })
-                            .plus(attachments.map { it.url }.filter { it !in content })
-                            .filterNot { it.isNullOrBlank() }
-                            .joinToString(" ")
-                    }
-                    listeners.forEach {
-                        it.onMessage(message.channel.id.toString(), member.effectiveName, messageToSend)
-                    }
-                }
+            val member = member?.takeUnless { it.isBot } ?: return@on
+            val message = message.takeIf { it.type in RELAYED_MESSAGE_TYPES } ?: return@on
+            val messageToSend = with(message) {
+                mutableListOf<String>()
+                    .asSequence()
+                    .plus(referencedMessage?.replyLabel)
+                    .plus(content)
+                    .plus(stickers.map { it.label })
+                    .plus(attachments.map { it.url }.filter { it !in content })
+                    .filterNot { it.isNullOrBlank() }
+                    .joinToString(" ")
+            }
+
+            listeners.forEach {
+                it.onMessage(message.channel.id.toString(), member.effectiveName, messageToSend)
+            }
         }
 
         on<ChannelUpdateEvent> {
@@ -52,8 +55,30 @@ class BridgeDiscordEventHandler(
                         ?.createMessage(":bell: ${topicRole?.mentionRole ?: "Topic"} updated: $topic")
                 }
 
-                listeners.forEach { it.onTopicChanged(channelString, topic) }
+                listeners.forEach {
+                    it.onTopicChanged(channelString, topic)
+                }
             }
         }
+
+        on<TextChannelThreadCreateEvent> {
+            val lastMessage = channel.messages.firstOrNull { it.data.referencedMessage.value != null }
+            val referencedMessage = lastMessage?.referencedMessage ?: return@on
+
+            val channelString = referencedMessage.channel.id.toString()
+            val ownerName = channel.owner.asUserOrNull()?.effectiveName ?: return@on
+            val message = "created a thread ${referencedMessage.replyLabel}"
+
+            listeners.forEach {
+                it.onSlashMe(channelString, ownerName, message)
+            }
+        }
+    }
+
+    companion object {
+        private val RELAYED_MESSAGE_TYPES = setOf(
+            MessageType.Default,
+            MessageType.Reply,
+        )
     }
 }
