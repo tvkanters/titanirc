@@ -43,16 +43,8 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
                     }
 
                     addServer("port80c.se.quakenet.org")
-                    when {
-                        configuration.isDevEnv -> {
-                            addAutoJoinChannel("#titanirc")
-                        }
-
-                        else -> {
-                            addAutoJoinChannel("#dopefish_lives")
-                            addAutoJoinChannel("#freamonsmind")
-                            addAutoJoinChannel("#dopefish_gdq")
-                        }
+                    configuration.ircChannels.forEach {
+                        addAutoJoinChannel(it)
                     }
                     isAutoReconnect = true
                     autoReconnectAttempts = 10000

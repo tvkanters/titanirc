@@ -9,6 +9,7 @@ interface TitanircConfiguration {
     val ircUsername: String
     val ircPassword: String?
     val ircNick: String
+    val ircChannels: Set<String>
 
     val discordToken: String
     val discordNick: String

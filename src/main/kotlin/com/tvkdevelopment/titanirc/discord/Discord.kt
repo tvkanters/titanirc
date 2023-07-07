@@ -23,7 +23,7 @@ import kotlinx.coroutines.*
 import kotlin.time.Duration.Companion.seconds
 
 
-@OptIn(DelicateCoroutinesApi::class)
+@OptIn(DelicateCoroutinesApi::class, ExperimentalCoroutinesApi::class)
 class Discord(
     private val configuration: TitanircConfiguration,
 ) : BridgeClient {
