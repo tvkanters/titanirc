@@ -13,8 +13,11 @@ class RoleSyncDiscordEventHandler(
 
     override fun Kord.register() {
         on<GuildCreateEvent> {
-            val registry = mutableSnowflakeRegistry.forGuild(guild).roleRegistry
-            guild.roles.collect { registry += it }
+            guild.roles.collect { role ->
+                role.guild.asGuildOrNull()?.let { guild ->
+                    mutableSnowflakeRegistry.forGuild(guild).roleRegistry += role
+                }
+            }
         }
 
         on<RoleCreateEvent> {

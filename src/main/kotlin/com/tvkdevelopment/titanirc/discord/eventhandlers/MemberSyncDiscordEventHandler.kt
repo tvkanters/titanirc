@@ -17,12 +17,13 @@ class MemberSyncDiscordEventHandler(
 
     override fun Kord.register() {
         on<GuildCreateEvent> {
-            val registry = mutableSnowflakeRegistry.forGuild(guild).memberRegistry
             guild.requestMembers()
                 .collect { event ->
                     event.members.forEach {
                         if (!it.isBot) {
-                            registry += it
+                            it.getGuildOrNull()?.let { guild ->
+                                mutableSnowflakeRegistry.forGuild(guild).memberRegistry += it
+                            }
                         }
                     }
                 }

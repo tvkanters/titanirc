@@ -13,8 +13,10 @@ class EmojiSyncDiscordEventHandler(
 
     override fun Kord.register() {
         on<GuildCreateEvent> {
-            val registry = mutableSnowflakeRegistry.forGuild(guild).emojiRegistry
-            guild.emojis.collect { registry += it }
+            mutableSnowflakeRegistry.forGuild(guild)
+            guild.emojis.collect { emoji ->
+                mutableSnowflakeRegistry.forGuild(emoji.guildId)?.emojiRegistry?.plusAssign(emoji)
+            }
         }
 
         on<EmojisUpdateEvent> {

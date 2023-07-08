@@ -14,8 +14,11 @@ class ChannelSyncDiscordEventHandler(
 
     override fun Kord.register() {
         on<GuildCreateEvent> {
-            val registry = mutableSnowflakeRegistry.forGuild(guild).channelRegistry
-            guild.channels.collect { registry += it }
+            guild.channels.collect { channel ->
+                channel.getGuildOrNull()?.let { guild ->
+                    mutableSnowflakeRegistry.forGuild(guild).channelRegistry += channel
+                }
+            }
         }
 
         on<ChannelCreateEvent> {
