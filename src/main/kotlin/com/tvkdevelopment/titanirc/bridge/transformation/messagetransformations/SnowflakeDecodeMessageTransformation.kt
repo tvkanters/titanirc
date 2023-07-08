@@ -5,6 +5,7 @@ import com.tvkdevelopment.titanirc.discord.MENTION_SYMBOL_CHANNEL
 import com.tvkdevelopment.titanirc.discord.MENTION_SYMBOL_MEMBER
 import com.tvkdevelopment.titanirc.discord.MENTION_SYMBOL_ROLE
 import com.tvkdevelopment.titanirc.discord.SnowflakeRegistry
+import com.tvkdevelopment.titanirc.util.ifNull
 import dev.kord.common.entity.Snowflake
 
 class SnowflakeDecodeMessageTransformation(private val snowflakeRegistry: SnowflakeRegistry) :
@@ -34,7 +35,8 @@ class SnowflakeDecodeMessageTransformation(private val snowflakeRegistry: Snowfl
                                 null
                         }
                     }
-                    ?: FALLBACK_NAME
+                    .ifNull { FALLBACK_NAME }
+                    .plus(match.groupValues[3])
             }
     }
 
@@ -43,7 +45,7 @@ class SnowflakeDecodeMessageTransformation(private val snowflakeRegistry: Snowfl
 
         private val REGEX =
             Regex(
-                """<($MENTION_SYMBOL_MEMBER|$MENTION_SYMBOL_ROLE|$MENTION_SYMBOL_CHANNEL)(\d+)>""",
+                """<($MENTION_SYMBOL_MEMBER|$MENTION_SYMBOL_ROLE|$MENTION_SYMBOL_CHANNEL)(\d+)>(?: ([,.!?:]))?""",
                 RegexOption.IGNORE_CASE
             )
 
