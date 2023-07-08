@@ -1,5 +1,6 @@
 package com.tvkdevelopment.titanirc.discord
 
+import com.tvkdevelopment.titanirc.util.ifNull
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.entity.Guild
 import dev.kord.core.entity.GuildEmoji
@@ -18,21 +19,28 @@ interface SnowflakeRegistry {
 
 class MutableSnowflakeRegistry : SnowflakeRegistry {
     private val guildSnowflakeRegistries = mutableMapOf<Guild, MutableGuildSnowflakeRegistry>()
+    private val guildIdIndex = mutableMapOf<Snowflake, MutableGuildSnowflakeRegistry>()
+    private val channelIndex = mutableMapOf<String, MutableGuildSnowflakeRegistry>()
 
     fun forGuild(guild: Guild): MutableGuildSnowflakeRegistry =
-        guildSnowflakeRegistries.getOrPut(guild) { MutableGuildSnowflakeRegistry() }
+        guildSnowflakeRegistries.getOrPut(guild) {
+            MutableGuildSnowflakeRegistry()
+                .also { guildIdIndex[guild.id] = it }
+        }
 
     fun forGuild(guildId: Snowflake): MutableGuildSnowflakeRegistry? =
-        guildSnowflakeRegistries
-            .entries
-            .firstOrNull { (guild, _) -> guild.id == guildId }
-            ?.value
+        guildIdIndex[guildId]
 
     override fun forChannel(channel: String): GuildSnowflakeRegistry? =
-        guildSnowflakeRegistries
-            .entries
-            .firstOrNull { (guild, _) -> guild.channelIds.any { it.toString() == channel } }
-            ?.value
+        channelIndex[channel]
+            .ifNull {
+                guildSnowflakeRegistries
+                    .entries
+                    .firstNotNullOfOrNull { (guild, registry) ->
+                        registry.takeIf { guild.channelIds.any { it.toString() == channel } }
+                    }
+                    ?.also { channelIndex[channel] = it }
+            }
 }
 
 interface GuildSnowflakeRegistry {
