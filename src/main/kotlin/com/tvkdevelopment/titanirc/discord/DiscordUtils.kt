@@ -11,15 +11,19 @@ import kotlin.time.Duration.Companion.minutes
 val Channel?.topicValue: String
     get() = this?.data?.topic?.value ?: ""
 
-val Message.replyLabel: String
-    get() =
-        mutableListOf<String>()
-            .asSequence()
-            .plus(author?.takeIf { !it.isBot }?.effectiveName ?: bridgeNickname)
-            .plus(Time.getRelativeTimeString(Time.currentTime - timestamp, short = true, minimumTimePassed = 2.minutes))
-            .filterNot { it.isNullOrEmpty() }
-            .joinToString(" ")
-            .let { "[^$it]" }
+suspend fun Message.getReplyLabel(): String =
+    mutableListOf<String>()
+        .asSequence()
+        .plus(
+            when {
+                author?.isBot == true -> bridgeNickname
+                else -> getAuthorAsMemberOrNull()?.effectiveName ?: author?.effectiveName
+            }
+        )
+        .plus(Time.getRelativeTimeString(Time.currentTime - timestamp, short = true, minimumTimePassed = 2.minutes))
+        .filterNot { it.isNullOrEmpty() }
+        .joinToString(" ")
+        .let { "[^$it]" }
 
 val Message.bridgeNickname: String?
     get() =

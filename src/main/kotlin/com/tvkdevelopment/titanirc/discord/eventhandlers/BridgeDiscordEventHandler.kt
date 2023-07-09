@@ -2,9 +2,9 @@ package com.tvkdevelopment.titanirc.discord.eventhandlers
 
 import com.tvkdevelopment.titanirc.TitanircConfiguration
 import com.tvkdevelopment.titanirc.bridge.BridgeClient
+import com.tvkdevelopment.titanirc.discord.getReplyLabel
 import com.tvkdevelopment.titanirc.discord.label
 import com.tvkdevelopment.titanirc.discord.mentionRole
-import com.tvkdevelopment.titanirc.discord.replyLabel
 import com.tvkdevelopment.titanirc.discord.topicValue
 import com.tvkdevelopment.titanirc.util.Log
 import dev.kord.common.entity.MessageType
@@ -30,7 +30,7 @@ class BridgeDiscordEventHandler(
             val messageToSend = with(message) {
                 mutableListOf<String>()
                     .asSequence()
-                    .plus(referencedMessage?.replyLabel)
+                    .plus(referencedMessage?.getReplyLabel())
                     .plus(content)
                     .plus(stickers.map { it.label })
                     .plus(attachments.map { it.url }.filter { it !in content })
@@ -67,7 +67,7 @@ class BridgeDiscordEventHandler(
 
             val channelString = referencedMessage.channel.id.toString()
             val ownerName = channel.owner.asUserOrNull()?.effectiveName ?: return@on
-            val message = "created a thread ${referencedMessage.replyLabel}"
+            val message = "created a thread ${referencedMessage.getReplyLabel()}"
 
             listeners.forEach {
                 it.onSlashMe(channelString, ownerName, message)
