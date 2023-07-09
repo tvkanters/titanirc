@@ -53,7 +53,7 @@ class IrcMessageSender(
         onBot {
             userChannelDao.getChannel(channel)
                 .takeIf { it.topic != topic }
-                ?.apply { sendRawLine("TOPIC $channel :$topic") }
+                ?.apply { sendRawLine("PRIVMSG Q :SETTOPIC $channel $topic") }
         }
     }
 

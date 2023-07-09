@@ -14,10 +14,13 @@ interface TitanircConfiguration {
     val discordToken: String
     val discordNick: String
         get() = "\uD83D\uDCAC"
-    val topicRoles: TopicRoles
+    val discordGuilds: Set<String>
+        get() = DEFAULT_GUILDS
+    val discordTopicRoles: TopicRoles
         get() = DEFAULT_TOPIC_ROLES
 }
 
-private val DEFAULT_TOPIC_ROLES = TopicRoles(
+val DEFAULT_GUILDS = setOf("119177492253769743")
+val DEFAULT_TOPIC_ROLES = TopicRoles(
     "418911279625797652" to { topic -> 806471250406670367UL.takeIf { TopicUtil.getStreamInfo(topic) != null } },
 )

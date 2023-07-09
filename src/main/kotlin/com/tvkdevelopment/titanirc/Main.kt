@@ -28,10 +28,15 @@ object Main {
 
         Bridge.connect(
             ChannelMapping(
-                ChannelLink(discord to "418911279625797652", irc to "#dopefish_lives"),
-                ChannelLink(discord to "381040418436939777", irc to "#freamonsmind"),
-                ChannelLink(discord to "399598970860732416", irc to "#dopefish_gdq"),
-                ChannelLink(discord to "1089194862915637412", irc to "#titanirc"),
+                setOf(
+                    ChannelLink(discord to "418911279625797652", irc to "#dopefish_lives"),
+                    ChannelLink(discord to "381040418436939777", irc to "#freamonsmind"),
+                    ChannelLink(discord to "399598970860732416", irc to "#dopefish_gdq"),
+                    ChannelLink(discord to "1089194862915637412", irc to "#titanirc"),
+                )
+                    .filter { link ->
+                        link.channels.none { it.client == irc && !configuration.ircChannels.contains(it.id) }
+                    }
             ),
             MessageTransformationMapping(
                 MessageTransformationLink(

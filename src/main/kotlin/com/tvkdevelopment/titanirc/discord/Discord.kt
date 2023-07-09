@@ -38,8 +38,8 @@ class Discord(
     private val mutableSnowflakeRegistry = MutableSnowflakeRegistry()
     val snowflakeRegistry: SnowflakeRegistry = mutableSnowflakeRegistry
 
-    private val eventHandlers = listOf<DiscordEventHandler>(
-        BridgeDiscordEventHandler(configuration, bridgeListeners),
+    private val eventHandlers = DiscordEventHandlers(
+        BridgeDiscordEventHandler(bridgeListeners),
         MemberSyncDiscordEventHandler(mutableSnowflakeRegistry),
         ChannelSyncDiscordEventHandler(mutableSnowflakeRegistry),
         EmojiSyncDiscordEventHandler(mutableSnowflakeRegistry),
@@ -84,9 +84,7 @@ class Discord(
                     guild.editSelfNickname(configuration.discordNick)
                 }
 
-                eventHandlers.forEach {
-                    it.apply { register() }
-                }
+                eventHandlers.register(this, configuration)
 
                 login {
                     intents += Intent.MessageContent
