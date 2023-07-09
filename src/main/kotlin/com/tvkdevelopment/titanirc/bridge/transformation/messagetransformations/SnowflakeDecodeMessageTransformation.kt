@@ -14,8 +14,10 @@ class SnowflakeDecodeMessageTransformation(private val snowflakeRegistry: Snowfl
     override fun transform(sourceChannel: String, targetChannel: String, message: String): String {
         val snowflakeRegistry = snowflakeRegistry.forChannel(sourceChannel) ?: return message
         return message
-            .replace(REGEX_EMOJI, "$1")
-            .replace(REGEX) { match ->
+            .replace(REGEX_EMOJI) { match ->
+                match.groupValues[1].let { EMOJI_REPLACEMENT[it] ?: it }
+            }
+            .replace(REGEX_SNOWFLAKE) { match ->
                 match.groupValues[2]
                     .toLongOrNull()
                     ?.let { id ->
@@ -43,7 +45,7 @@ class SnowflakeDecodeMessageTransformation(private val snowflakeRegistry: Snowfl
     companion object {
         private const val FALLBACK_NAME = "???"
 
-        private val REGEX =
+        private val REGEX_SNOWFLAKE =
             Regex(
                 """<($MENTION_SYMBOL_MEMBER|$MENTION_SYMBOL_ROLE|$MENTION_SYMBOL_CHANNEL)(\d+)>(?: ([,.!?:]))?""",
                 RegexOption.IGNORE_CASE
@@ -53,7 +55,7 @@ class SnowflakeDecodeMessageTransformation(private val snowflakeRegistry: Snowfl
 
         private val EMOJI_REPLACEMENT = mapOf(
             ":upset:" to ">:^|",
-            ":pensive_cowboy" to "\uD83D\uDE14",
+            ":pensive_cowboy:" to "\uD83D\uDE14",
             ":this:" to "^",
         )
     }
