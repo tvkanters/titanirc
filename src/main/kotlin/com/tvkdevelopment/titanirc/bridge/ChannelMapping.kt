@@ -2,6 +2,7 @@ package com.tvkdevelopment.titanirc.bridge
 
 
 class ChannelMapping(links: Collection<ChannelLink>) {
+    constructor(vararg links: ChannelLink) : this(links.toSet())
 
     val clients: Set<BridgeClient> = links.flatMap { link -> link.channels.map { it.client } }.toSet()
 
