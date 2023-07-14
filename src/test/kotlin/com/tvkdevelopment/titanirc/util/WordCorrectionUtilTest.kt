@@ -105,4 +105,44 @@ class WordCorrectionUtilTest {
 
         assertEquals("these are* those are*", diff)
     }
+
+    @Test
+    fun testCompletelyDifferentMessage() {
+        val old = "this is a test"
+        val new = "hi hello"
+
+        val diff = calculateWordCorrection(old, new)
+
+        assertEquals("hi hello*", diff)
+    }
+
+    @Test
+    fun testApostrophe() {
+        val old = "i'm a knob"
+        val new = "you're a knob"
+
+        val diff = calculateWordCorrection(old, new)
+
+        assertEquals("you're*", diff)
+    }
+
+    @Test
+    fun testPunctuation() {
+        val old = "you're a knob"
+        val new = "you're a knob!"
+
+        val diff = calculateWordCorrection(old, new)
+
+        assertNull(diff)
+    }
+
+    @Test
+    fun testOutlandish() {
+        val old = "you're a knob"
+        val new = "you're ä knåb öh ÖH!"
+
+        val diff = calculateWordCorrection(old, new)
+
+        assertEquals("ä knåb öh ÖH*", diff)
+    }
 }
