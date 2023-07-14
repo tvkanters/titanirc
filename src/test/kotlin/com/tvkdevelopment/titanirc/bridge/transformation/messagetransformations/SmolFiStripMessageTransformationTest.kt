@@ -10,19 +10,31 @@ class SmolFiStripMessageTransformationTest {
     @Test
     fun testTransformationHttps() {
         // GIVEN
-        val message = "Hi https://smol.fi/e/?v=http://google.com?test"
+        val message = "Hi https://smol.fi/e/?v=https://google.com?test"
 
         // WHEN
         val transformedMessage = sut.transform("", "", message)
 
         // THEN
-        assertEquals("Hi http://google.com?test", transformedMessage)
+        assertEquals("Hi https://google.com?test", transformedMessage)
     }
 
     @Test
     fun testTransformationHttp() {
         // GIVEN
-        val message = "Hi http://smol.fi/e/?v=https://google.com?test"
+        val message = "Hi http://smol.fi/e/?v=http://google.com?test"
+
+        // WHEN
+        val transformedMessage = sut.transform("", "", message)
+
+        // THEN
+        assertEquals("Hi https://google.com?test", transformedMessage)
+    }
+
+    @Test
+    fun testTransformationNoProtocol() {
+        // GIVEN
+        val message = "Hi http://smol.fi/e/?v=google.com?test"
 
         // WHEN
         val transformedMessage = sut.transform("", "", message)
