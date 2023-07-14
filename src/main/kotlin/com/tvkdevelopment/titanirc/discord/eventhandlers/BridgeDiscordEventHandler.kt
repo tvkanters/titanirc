@@ -1,6 +1,7 @@
 package com.tvkdevelopment.titanirc.discord.eventhandlers
 
 import com.tvkdevelopment.titanirc.bridge.BridgeClient
+import com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations.escapeDiscordFormatting
 import com.tvkdevelopment.titanirc.discord.eventhandlers.DiscordEventHandler.Registrar
 import com.tvkdevelopment.titanirc.discord.getReplyLabel
 import com.tvkdevelopment.titanirc.discord.label
@@ -98,6 +99,7 @@ class BridgeDiscordEventHandler(private val listeners: List<BridgeClient.Listene
             lastGuildMessages.add(lastMessageByAuthorIndex, originalMessage.copy(content = newContent))
 
             calculateWordCorrection(oldContent, newContent)
+                ?.escapeDiscordFormatting()
                 ?.let { correction ->
                     val authorName = originalMessage.member.effectiveName
                     listeners.forEach {
