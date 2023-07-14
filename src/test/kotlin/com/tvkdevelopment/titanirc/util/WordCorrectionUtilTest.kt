@@ -145,4 +145,34 @@ class WordCorrectionUtilTest {
 
         assertEquals("ä knåb öh ÖH*", diff)
     }
+
+    @Test
+    fun testRemoval() {
+        val old = "you're not cool"
+        val new = "you're cool!"
+
+        val diff = calculateWordCorrection(old, new)
+
+        assertEquals("-not*", diff)
+    }
+
+    @Test
+    fun testRemovalLong() {
+        val old = "you're not cool and certainly not awesome!"
+        val new = "you're cool and awesome!"
+
+        val diff = calculateWordCorrection(old, new)
+
+        assertEquals("-not* -certainly not*", diff)
+    }
+
+    @Test
+    fun testRemovalLongDuplicates() {
+        val old = "you're not cool and certainly not awesome!"
+        val new = "you're cool and certainly awesome!"
+
+        val diff = calculateWordCorrection(old, new)
+
+        assertEquals("-not*", diff)
+    }
 }

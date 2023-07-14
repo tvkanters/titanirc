@@ -29,38 +29,9 @@ fun calculateWordCorrection(original: String, edited: String): String? =
 
 private fun calculateWordCorrection(originalWords: List<String>, editedWords: List<String>): String? =
     calculateWordCorrection(IndexedWords(originalWords), IndexedWords(editedWords), hashMapOf())
-        .second
-        .takeIf { it.words.isNotEmpty() }
-        ?.let { corrections ->
-            val joinedCorrections = mutableListOf<String>()
-            val bundledCorrections = mutableListOf<String>()
-            fun processBundledCorrections() {
-                if (bundledCorrections.isNotEmpty()) {
-                    joinedCorrections += bundledCorrections.joinToString(" ")
-                    bundledCorrections.clear()
-                }
-            }
-
-            var indexEdited = corrections.index
-            var indexCorrections = 0
-
-            while (indexEdited < editedWords.size && indexCorrections < corrections.words.size) {
-                val editedWord = editedWords[indexEdited]
-                val correctionWord = corrections.words[indexCorrections]
-
-                if (editedWord == correctionWord) {
-                    bundledCorrections += correctionWord
-                    ++indexCorrections
-                } else {
-                    processBundledCorrections()
-                }
-                ++indexEdited
-            }
-            processBundledCorrections()
-
-            joinedCorrections
-                .distinct()
-                .joinToString(" ") { "$it*" }
+        .run {
+            second.toCorrections(editedWords)?.joinToString(" ") { "$it*" }
+                ?: first.toCorrections(originalWords)?.joinToString(" ") { "-$it*" }
         }
 
 private fun calculateWordCorrection(
@@ -94,4 +65,36 @@ private fun calculateWordCorrection(
             }
         }
     }
+}
+
+private fun IndexedWords.toCorrections(originalWords: List<String>): List<String>? {
+    val corrections = takeIf { it.words.isNotEmpty() } ?: return null
+
+    val joinedCorrections = mutableListOf<String>()
+    val bundledCorrections = mutableListOf<String>()
+    fun processBundledCorrections() {
+        if (bundledCorrections.isNotEmpty()) {
+            joinedCorrections += bundledCorrections.joinToString(" ")
+            bundledCorrections.clear()
+        }
+    }
+
+    var indexEdited = corrections.index
+    var indexCorrections = 0
+
+    while (indexEdited < originalWords.size && indexCorrections < corrections.words.size) {
+        val editedWord = originalWords[indexEdited]
+        val correctionWord = corrections.words[indexCorrections]
+
+        if (editedWord == correctionWord) {
+            bundledCorrections += correctionWord
+            ++indexCorrections
+        } else {
+            processBundledCorrections()
+        }
+        ++indexEdited
+    }
+    processBundledCorrections()
+
+    return joinedCorrections.distinct()
 }
