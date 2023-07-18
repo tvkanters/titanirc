@@ -60,8 +60,10 @@ class Discord(
                     }
                 }
             }.apply {
-                on<Event> {
-                    Log.i("Event: $this")
+                if (configuration.isDevEnv) {
+                    on<Event> {
+                        Log.i("Event: $this")
+                    }
                 }
 
                 on<ReadyEvent> {
