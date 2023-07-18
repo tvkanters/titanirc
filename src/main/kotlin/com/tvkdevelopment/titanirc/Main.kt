@@ -49,6 +49,7 @@ object Main {
                         TwitterFixAddMessageTransformation(),
                         SnowflakeEncodeMemberMessageTransformation(discord.snowflakeRegistry),
                         SnowflakeEncodeChannelMessageTransformation(discord.snowflakeRegistry),
+                        SnowflakeEncodeEmojiMessageTransformation(discord.snowflakeRegistry),
                     )
                 ),
                 MessageTransformationLink(

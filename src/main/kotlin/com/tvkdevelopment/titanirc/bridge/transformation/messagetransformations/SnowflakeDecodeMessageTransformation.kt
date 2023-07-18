@@ -31,7 +31,6 @@ class SnowflakeDecodeMessageTransformation(private val snowflakeRegistry: Snowfl
 
                             MENTION_SYMBOL_CHANNEL ->
                                 snowflakeRegistry.channelRegistry.itemsById[snowflake]?.originalName?.let { "#$it" }
-                                    ?.let { EMOJI_REPLACEMENT[it] ?: it }
 
                             else ->
                                 null
