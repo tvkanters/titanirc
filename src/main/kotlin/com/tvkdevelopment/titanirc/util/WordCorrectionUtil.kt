@@ -45,7 +45,7 @@ private fun calculateWordCorrection(
             a.isEmpty() || b.isEmpty() ->
                 IndexedWordPair(a, b)
 
-            a[0] == b[0] ->
+            a[0].lowercase() == b[0].lowercase() ->
                 calculateWordCorrection(a.drop(1), b.drop(1), lookup)
 
             else -> {

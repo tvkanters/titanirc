@@ -175,4 +175,14 @@ class WordCorrectionUtilTest {
 
         assertEquals("-not*", diff)
     }
+
+    @Test
+    fun testCasing() {
+        val old = "you're a knob"
+        val new = "you're a KNOB"
+
+        val diff = calculateWordCorrection(old, new)
+
+        assertNull(diff)
+    }
 }
