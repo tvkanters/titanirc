@@ -2,7 +2,7 @@ package com.tvkdevelopment.titanirc.util
 
 typealias IndexedWordPair = Pair<IndexedWords, IndexedWords>
 
-private val WORDS_SEPARATOR = Regex("""[^a-zà-ÿ0-9'_-]+""", RegexOption.IGNORE_CASE)
+private val WORDS_SEPARATOR = Regex("""[^a-zà-ÿ0-9'@:_-]+""", RegexOption.IGNORE_CASE)
 
 class IndexedWords(val index: Int, val words: List<String>) {
     constructor(words: List<String>) : this(0, words)

@@ -39,7 +39,7 @@ class Discord(
     val snowflakeRegistry: SnowflakeRegistry = mutableSnowflakeRegistry
 
     private val eventHandlers = DiscordEventHandlers(
-        BridgeDiscordEventHandler(bridgeListeners),
+        BridgeDiscordEventHandler(bridgeListeners, snowflakeRegistry),
         MemberSyncDiscordEventHandler(mutableSnowflakeRegistry),
         ChannelSyncDiscordEventHandler(mutableSnowflakeRegistry),
         EmojiSyncDiscordEventHandler(mutableSnowflakeRegistry),

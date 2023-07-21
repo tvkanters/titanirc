@@ -1,12 +1,10 @@
 package com.tvkdevelopment.titanirc.discord.eventhandlers
 
 import com.tvkdevelopment.titanirc.bridge.BridgeClient
+import com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations.SnowflakeDecodeMessageTransformation
 import com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations.escapeDiscordFormatting
+import com.tvkdevelopment.titanirc.discord.*
 import com.tvkdevelopment.titanirc.discord.eventhandlers.DiscordEventHandler.Registrar
-import com.tvkdevelopment.titanirc.discord.getReplyLabel
-import com.tvkdevelopment.titanirc.discord.label
-import com.tvkdevelopment.titanirc.discord.mentionRole
-import com.tvkdevelopment.titanirc.discord.topicValue
 import com.tvkdevelopment.titanirc.util.Log
 import com.tvkdevelopment.titanirc.util.addWithLimit
 import com.tvkdevelopment.titanirc.util.calculateWordCorrection
@@ -22,8 +20,12 @@ import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.event.message.MessageUpdateEvent
 import kotlinx.coroutines.flow.firstOrNull
 
-class BridgeDiscordEventHandler(private val listeners: List<BridgeClient.Listener>) : DiscordEventHandler {
+class BridgeDiscordEventHandler(
+    private val listeners: List<BridgeClient.Listener>,
+    snowflakeRegistry: SnowflakeRegistry
+) : DiscordEventHandler {
 
+    private val snowflakeDecodeMessageTransformation = SnowflakeDecodeMessageTransformation(snowflakeRegistry)
     private val lastMessages = mutableMapOf<Snowflake, MutableList<LastMessage>>()
 
     private data class LastMessage(val member: Member, val messageId: Snowflake, val content: String)
@@ -92,8 +94,13 @@ class BridgeDiscordEventHandler(private val listeners: List<BridgeClient.Listene
             val originalMessage =
                 lastGuildMessages.getOrNull(lastMessageByAuthorIndex)?.takeIf { it.messageId == new.id } ?: return@on
 
-            val oldContent = originalMessage.content.takeIf { it.isNotBlank() } ?: return@on
-            val newContent = new.content.value?.takeIf { it.isNotBlank() } ?: return@on
+            val channel = new.channelId.toString()
+            fun String.takeForWordCorrection() =
+                takeIf { it.isNotBlank() }
+                    ?.let { snowflakeDecodeMessageTransformation.transform(channel, channel, it) }
+
+            val oldContent = originalMessage.content.takeForWordCorrection() ?: return@on
+            val newContent = new.content.value?.takeForWordCorrection() ?: return@on
 
             lastGuildMessages.removeAt(lastMessageByAuthorIndex)
             lastGuildMessages.add(lastMessageByAuthorIndex, originalMessage.copy(content = newContent))
