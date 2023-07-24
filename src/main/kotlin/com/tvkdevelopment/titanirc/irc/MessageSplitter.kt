@@ -1,5 +1,7 @@
 package com.tvkdevelopment.titanirc.irc
 
+import com.tvkdevelopment.titanirc.util.limitLength
+
 fun String.splitMessageForIrc(lineBasicCharMax: Int, prefix: String? = null): List<String> =
     split('\n')
         .filter { it.isNotBlank() }
@@ -8,7 +10,8 @@ fun String.splitMessageForIrc(lineBasicCharMax: Int, prefix: String? = null): Li
 private fun String.splitLineForIrc(lineBasicCharMax: Int, prefix: String?): List<String> {
     val messageChars = this.toCharArray()
     val charSize = if (messageChars.any { it.code >= 128 }) 2 else 1
-    val prefixLength = (prefix?.length ?: 0) * charSize
+    val limitedPrefix = prefix?.limitLength(lineBasicCharMax)
+    val prefixLength = (limitedPrefix?.length ?: 0) * charSize
     val wordBasicCharMax = lineBasicCharMax - prefixLength * charSize
 
     val lines = mutableListOf<String>()
@@ -24,7 +27,7 @@ private fun String.splitLineForIrc(lineBasicCharMax: Int, prefix: String?): List
             lines += splitMessageBuilder.toString()
         }
         splitMessageBuilder.clear()
-        prefix?.let { splitMessageBuilder.append(it) }
+        limitedPrefix?.let { splitMessageBuilder.append(it) }
         lineBasicCharCount = prefixLength
         wordAddedToLine = false
     }
@@ -61,7 +64,7 @@ private fun String.splitLineForIrc(lineBasicCharMax: Int, prefix: String?): List
                 if (wordBasicCharCount <= wordBasicCharMax) {
                     wordBuilder.append(it)
                 } else {
-                    if (wordBuilder.last() != '…') {
+                    if (wordBuilder.length > 3 && wordBuilder.lastOrNull() != '…') {
                         // Ellipsis is unicode and counts as 4 chars
                         wordBuilder.delete(wordBuilder.length - 3, wordBuilder.length)
                         wordBuilder.append('…')
@@ -76,7 +79,7 @@ private fun String.splitLineForIrc(lineBasicCharMax: Int, prefix: String?): List
     lineBasicCharCount += wordBasicCharCount
     if (lineBasicCharCount > lineBasicCharMax) {
         prepareNewLine()
-    } else if (splitMessageBuilder.length > prefixLength) {
+    } else if (splitMessageBuilder.length * charSize > prefixLength) {
         splitMessageBuilder.append(' ')
     }
 

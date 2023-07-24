@@ -76,4 +76,28 @@ class MessageSplitterTest {
         // THEN
         assertEquals(listOf("Тхис ис", "а ту", "лонг", "месач"), splitMessage)
     }
+
+    @Test
+    fun testExtendedAsciiLongPrefix() {
+        // GIVEN
+        val message = "Тхис ис а месач"
+
+        // WHEN
+        val splitMessage = message.splitMessageForIrc(Int.MAX_VALUE, prefix = "<A very long name that exceeds the message> ")
+
+        // THEN
+        assertEquals(listOf("<A very long name that exceeds the message> Тхис ис а месач"), splitMessage)
+    }
+
+    @Test
+    fun testTooLongPrefix() {
+        // GIVEN
+        val message = "Message"
+
+        // WHEN
+        val splitMessage = message.splitMessageForIrc(10, prefix = "<A very long name that exceeds the line size> ")
+
+        // THEN
+        assertEquals(listOf("<A very lo"), splitMessage)
+    }
 }
