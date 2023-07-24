@@ -329,7 +329,7 @@ class FormattingDiscordToIrcMessageTransformationTest {
         val result = sut.transform("", "", message)
 
         // THEN
-        assertEquals("\u00031,1test\u00031,1", result)
+        assertEquals("\u00031,1test\u0003", result)
     }
 
     @Test
@@ -353,7 +353,7 @@ class FormattingDiscordToIrcMessageTransformationTest {
         val result = sut.transform("", "", message)
 
         // THEN
-        assertEquals("\u00031,1t\u00031,1e||st", result)
+        assertEquals("\u00031,1t\u0003e||st", result)
     }
 
     @Test
@@ -377,7 +377,7 @@ class FormattingDiscordToIrcMessageTransformationTest {
         val result = sut.transform("", "", message)
 
         // THEN
-        assertEquals("\u00031,1te|st\u00031,1", result)
+        assertEquals("\u00031,1te|st\u0003", result)
     }
 
     @Test

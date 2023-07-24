@@ -19,16 +19,20 @@ class FormattingDiscordToIrcMessageTransformation : MessageTransformation {
             Formatting("__", Colors.UNDERLINE),
             Formatting("_", Colors.ITALICS),
             Formatting("*", Colors.ITALICS),
-            Formatting("||", "\u00031,1"),
+            Formatting("||", "\u00031,1", "\u0003"),
         )
 
-        private class Formatting(discordSymbol: String, private val ircSymbol: String) {
+        private class Formatting(
+            discordSymbol: String,
+            private val ircSymbol: String,
+            private val ircClosingSymbol: String = ircSymbol,
+        ) {
             private val regex = Regex.escape(discordSymbol).let {
                 Regex("""((?<!\\)(?:\\\\)*)$it((?:(?!$it).)+(?<!\\)(?:\\\\)*)$it""")
             }
 
             fun apply(message: String) =
-                message.replace(regex, "$1$ircSymbol$2$ircSymbol")
+                message.replace(regex, "$1$ircSymbol$2$ircClosingSymbol")
         }
     }
 }
