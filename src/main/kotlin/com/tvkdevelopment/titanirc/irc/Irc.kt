@@ -100,7 +100,7 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
     }
 
     companion object {
-        private const val QUAKENET_MAX_LINE_LENGTH = 443
+        private const val QUAKENET_MAX_LINE_LENGTH = 440
         private val DISCONNECT_RESTART_DELAY = 30.seconds
         private val CRASH_RESTART_DELAY = 5.seconds
 
