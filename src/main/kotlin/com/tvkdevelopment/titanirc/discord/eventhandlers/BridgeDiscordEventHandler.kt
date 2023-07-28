@@ -18,6 +18,7 @@ import dev.kord.core.event.channel.ChannelUpdateEvent
 import dev.kord.core.event.channel.thread.TextChannelThreadCreateEvent
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.event.message.MessageUpdateEvent
+import dev.kord.core.event.message.ReactionAddEvent
 import kotlinx.coroutines.flow.firstOrNull
 
 class BridgeDiscordEventHandler(
@@ -113,6 +114,15 @@ class BridgeDiscordEventHandler(
                         it.onMessage(message.channel.id.toString(), authorName, correction)
                     }
                 }
+        }
+
+        on<ReactionAddEvent>({ guildId }) {
+            if (messageId == lastMessages[guildId]?.lastOrNull()?.messageId) {
+                val memberName = getUserAsMember()?.effectiveName ?: return@on
+                listeners.forEach {
+                    it.onMessage(message.channelId.toString(), memberName, emoji.mention)
+                }
+            }
         }
     }
 
