@@ -16,13 +16,12 @@ import kotlin.time.Duration.Companion.minutes
 /**
  * Offers sending messages to IRC with flood protection.
  */
-@OptIn(DelicateCoroutinesApi::class, ExperimentalCoroutinesApi::class)
 class IrcMessageSender(
+    private val scope: CoroutineScope,
     private val configuration: TitanircConfiguration,
     private val getBot: () -> PircBotX?
 ) : Listener {
 
-    private val scope = CoroutineScope(newSingleThreadContext("IrcMessageSender"))
     private var virtualBufferTimeout: Job? = null
 
     private var virtualBufferClearCountdown: CountDownLatch? = null
@@ -60,7 +59,9 @@ class IrcMessageSender(
     private fun onBot(block: PircBotX.() -> Unit) {
         scope.launch {
             try {
-                getBot()?.block()
+                getBot()
+                    ?.takeIf { it.state == PircBotX.State.CONNECTED }
+                    ?.block()
             } catch (e: Exception) {
                 Log.e(e)
             }

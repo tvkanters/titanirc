@@ -19,9 +19,10 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
 
     override val name = "IRC"
 
-    private val scope = CoroutineScope(newSingleThreadContext("Irc"))
+    private val connectionScope = CoroutineScope(newSingleThreadContext("Irc"))
+    private val taskScope = CoroutineScope(newSingleThreadContext("IrcTasks"))
     private var connectJob: Job? = null
-    private val messageSender = IrcMessageSender(configuration, ::bot)
+    private val messageSender = IrcMessageSender(taskScope, configuration, ::bot)
 
     private var bot: PircBotX? = null
     private var maxLineLength: Int = QUAKENET_MAX_LINE_LENGTH
@@ -30,7 +31,7 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
 
     override fun connect() {
         connectJob?.cancel()
-        connectJob = scope.launch {
+        connectJob = connectionScope.launch {
             bot?.close()
             try {
                 PircBotX(Configuration.Builder().apply {
@@ -42,12 +43,12 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
                             "PRIVMSG Q@CServe.quakenet.org :AUTH ${configuration.ircUsername} $it"
                     }
 
-                    addServer("port80c.se.quakenet.org")
+                    addServer("tngnet.nl.quakenet.org")
                     configuration.ircChannels.forEach {
                         addAutoJoinChannel(it)
                     }
                     isAutoReconnect = true
-                    autoReconnectAttempts = 10000
+                    autoReconnectAttempts = Int.MAX_VALUE
                     autoReconnectDelay = AdaptingDelay(2_000L, 30_000L).also { addListener(it) }
                     isUserModeHideRealHost = true
                     isAutoNickChange = true
@@ -55,7 +56,7 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
                     setListenerManager(SequentialListenerManager.newDefault())
 
                     addListener(LogListener())
-                    addListener(RestartListener(DISCONNECT_RESTART_DELAY, ::connect))
+                    addListener(RestartListener(taskScope, DISCONNECT_RESTART_DELAY, ::connect))
                     addListener(NickFixListener(name))
                     addListener(IrcBridgeListener(bridgeListeners))
                     addListener(messageSender)
