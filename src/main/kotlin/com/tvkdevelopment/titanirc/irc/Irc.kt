@@ -2,10 +2,7 @@ package com.tvkdevelopment.titanirc.irc
 
 import com.tvkdevelopment.titanirc.TitanircConfiguration
 import com.tvkdevelopment.titanirc.bridge.BridgeClient
-import com.tvkdevelopment.titanirc.irc.listeners.IrcBridgeListener
-import com.tvkdevelopment.titanirc.irc.listeners.LogListener
-import com.tvkdevelopment.titanirc.irc.listeners.NickFixListener
-import com.tvkdevelopment.titanirc.irc.listeners.RestartListener
+import com.tvkdevelopment.titanirc.irc.listeners.*
 import com.tvkdevelopment.titanirc.util.Log
 import kotlinx.coroutines.*
 import org.pircbotx.Configuration
@@ -60,6 +57,7 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
                     addListener(NickFixListener(name))
                     addListener(IrcBridgeListener(bridgeListeners))
                     addListener(messageSender)
+                    addListener(AdminListener(configuration, messageSender))
                 }.buildConfiguration())
                     .also { bot = it }
                     .startBot()
