@@ -40,7 +40,7 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
                             "PRIVMSG Q@CServe.quakenet.org :AUTH ${configuration.ircUsername} $it"
                     }
 
-                    addServer("tngnet.nl.quakenet.org")
+                    addServer("irc.quakenet.org")
                     configuration.ircChannels.forEach {
                         addAutoJoinChannel(it)
                     }
