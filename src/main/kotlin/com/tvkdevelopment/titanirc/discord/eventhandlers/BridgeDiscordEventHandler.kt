@@ -33,25 +33,27 @@ class BridgeDiscordEventHandler(
 
     override fun Registrar.register() {
         on<MessageCreateEvent>({ guildId }) {
-            val member = member?.takeUnless { it.isBot } ?: return@on
+            val member = member ?: return@on
             val message = message.takeIf { it.type in RELAYED_MESSAGE_TYPES } ?: return@on
 
             guildId?.let { lastMessages.getOrPut(it) { mutableListOf() } }
                 ?.addWithLimit(LastMessage(member, message.id, message.content), MESSAGE_CORRECTION_LIMIT)
 
-            val messageToSend = with(message) {
-                mutableListOf<String>()
-                    .asSequence()
-                    .plus(referencedMessage?.getReplyLabel())
-                    .plus(content)
-                    .plus(stickers.map { it.label })
-                    .plus(attachments.map { it.url }.filter { it !in content })
-                    .filterNot { it.isNullOrBlank() }
-                    .joinToString(" ")
-            }
+            if (!member.isBot) {
+                val messageToSend = with(message) {
+                    mutableListOf<String>()
+                        .asSequence()
+                        .plus(referencedMessage?.getReplyLabel())
+                        .plus(content)
+                        .plus(stickers.map { it.label })
+                        .plus(attachments.map { it.url }.filter { it !in content })
+                        .filterNot { it.isNullOrBlank() }
+                        .joinToString(" ")
+                }
 
-            listeners.forEach {
-                it.onMessage(message.channel.id.toString(), member.effectiveName, messageToSend)
+                listeners.forEach {
+                    it.onMessage(message.channel.id.toString(), member.effectiveName, messageToSend)
+                }
             }
         }
 
