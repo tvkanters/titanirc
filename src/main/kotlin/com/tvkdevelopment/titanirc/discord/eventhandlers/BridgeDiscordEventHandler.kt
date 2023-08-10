@@ -28,8 +28,10 @@ class BridgeDiscordEventHandler(
 
     private val snowflakeDecodeMessageTransformation = SnowflakeDecodeMessageTransformation(snowflakeRegistry)
     private val lastMessages = mutableMapOf<Snowflake, MutableList<LastMessage>>()
+    private val lastMessageReactions = mutableSetOf<LastMessageReaction>()
 
     private data class LastMessage(val member: Member, val messageId: Snowflake, val content: String)
+    private data class LastMessageReaction(val member: Member, val emojiName: String)
 
     override fun Registrar.register() {
         on<MessageCreateEvent>({ guildId }) {
@@ -38,6 +40,7 @@ class BridgeDiscordEventHandler(
 
             guildId?.let { lastMessages.getOrPut(it) { mutableListOf() } }
                 ?.addWithLimit(LastMessage(member, message.id, message.content), MESSAGE_CORRECTION_LIMIT)
+            lastMessageReactions.clear()
 
             if (!member.isBot) {
                 val messageToSend = with(message) {
@@ -120,9 +123,16 @@ class BridgeDiscordEventHandler(
 
         on<ReactionAddEvent>({ guildId }) {
             if (messageId == lastMessages[guildId]?.lastOrNull()?.messageId) {
-                val memberName = getUserAsMember()?.effectiveName ?: return@on
-                listeners.forEach {
-                    it.onMessage(message.channelId.toString(), memberName, emoji.mention)
+                val member = getUserAsMember() ?: return@on
+
+                val lastMessageReaction = LastMessageReaction(member, emoji.name)
+                if (lastMessageReaction !in lastMessageReactions) {
+                    lastMessageReactions += lastMessageReaction
+
+                    val memberName = member.effectiveName
+                    listeners.forEach {
+                        it.onMessage(message.channelId.toString(), memberName, emoji.mention)
+                    }
                 }
             }
         }
