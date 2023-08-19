@@ -1,5 +1,6 @@
 package com.tvkdevelopment.titanirc.discord
 
+import com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations.escapeDiscordFormatting
 import com.tvkdevelopment.titanirc.util.Time
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.entity.Message
@@ -16,7 +17,7 @@ suspend fun Message.getReplyLabel(): String =
         .asSequence()
         .plus(
             when {
-                author?.isBot == true -> bridgeNickname
+                author?.isBot == true -> bridgeNickname?.escapeDiscordFormatting()
                 else -> getAuthorAsMemberOrNull()?.effectiveName ?: author?.effectiveName
             }
         )
