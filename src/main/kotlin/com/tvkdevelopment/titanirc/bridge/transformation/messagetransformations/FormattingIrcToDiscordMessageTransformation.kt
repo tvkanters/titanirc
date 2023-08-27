@@ -30,14 +30,23 @@ class FormattingIrcToDiscordMessageTransformation : MessageTransformation {
 
             fun apply(message: String) =
                 message.replace(regex) {
-                    discordSymbol +
-                        FORMATTINGS.fold(it.groupValues[1]) { group, formatting ->
-                            group.replace(
-                                formatting.ircSymbol,
-                                "$discordSymbol${formatting.ircSymbol}$discordSymbol"
-                            )
-                        } +
-                        discordSymbol
+                    val body = it.groupValues[1].trimEnd(' ')
+                    val amountOfTrailingSpaces = it.groupValues[1].length - body.length
+
+                    buildString {
+                        append(discordSymbol)
+                        append(FORMATTINGS.fold(body) { group, formatting ->
+                            group
+                                .replace(
+                                    formatting.ircSymbol,
+                                    "$discordSymbol${formatting.ircSymbol}$discordSymbol"
+                                )
+                        })
+                        append(discordSymbol)
+                        for (i in 0 until amountOfTrailingSpaces) {
+                            append(' ')
+                        }
+                    }
                 }
         }
     }

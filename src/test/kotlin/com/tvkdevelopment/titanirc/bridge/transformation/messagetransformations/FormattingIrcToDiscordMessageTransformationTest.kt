@@ -199,4 +199,28 @@ class FormattingIrcToDiscordMessageTransformationTest {
         // THEN no formatting is parsed
         assertEquals(message, result)
     }
+
+    @Test
+    fun testTrailingSpace() {
+        // GIVEN
+        val message = "${ITALICS}test ${ITALICS}spaces"
+
+        // WHEN
+        val result = sut.transform("", "", message)
+
+        // THEN
+        assertEquals("_test_ spaces", result)
+    }
+
+    @Test
+    fun testTrailingSpaces() {
+        // GIVEN
+        val message = "${ITALICS}test  $ITALICS spaces"
+
+        // WHEN
+        val result = sut.transform("", "", message)
+
+        // THEN
+        assertEquals("_test_   spaces", result)
+    }
 }
