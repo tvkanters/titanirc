@@ -17,6 +17,7 @@ class SnowflakeEncodeMemberMessageTransformationTest {
     private val snowflakeRegistry = MutableSnowflakeRegistry().apply {
         forGuild(guild).memberRegistry += mockkMember(USER_ID, USER_NAME)
         forGuild(guild).memberRegistry += mockkMember(USER_ID_SPACE, USER_NAME_SPACE)
+        forGuild(guild).memberRegistry += mockkMember(USER_ID_EMOJI, USER_NAME_EMOJI)
         forGuild(guildOther).memberRegistry += mockkMember(USER_ID_OTHER_GUILD, USER_NAME)
 
         forGuild(guild).roleRegistry += mockkRole(ROLE_ID, ROLE_NAME)
@@ -86,13 +87,49 @@ class SnowflakeEncodeMemberMessageTransformationTest {
     @Test
     fun testSpacedName() {
         // GIVEN
-        val message = "$USER_NAME_SPACE_FIRST, hello"
+        val message = "$USER_NAME_SPACE, hello"
 
         // WHEN
         val result = sut.transform("", CHANNEL_ID.toString(), message)
 
         // THEN
         assertEquals("<@$USER_ID_SPACE>, hello", result)
+    }
+
+    @Test
+    fun testSpacedNameFirst() {
+        // GIVEN
+        val message = "$USER_NAME_SPACE_FIRST, hello"
+
+        // WHEN
+        val result = sut.transform("", CHANNEL_ID.toString(), message)
+
+        // THEN
+        assertEquals("$USER_NAME_SPACE_FIRST, hello", result)
+    }
+
+    @Test
+    fun testSpacedNameGlued() {
+        // GIVEN
+        val message = "$USER_NAME_SPACE_GLUED, hello"
+
+        // WHEN
+        val result = sut.transform("", CHANNEL_ID.toString(), message)
+
+        // THEN
+        assertEquals("<@$USER_ID_SPACE>, hello", result)
+    }
+
+    @Test
+    fun testEmojiedName() {
+        // GIVEN
+        val message = "$USER_NAME_EMOJI_FIRST, hello"
+
+        // WHEN
+        val result = sut.transform("", CHANNEL_ID.toString(), message)
+
+        // THEN
+        assertEquals("<@$USER_ID_EMOJI>, hello", result)
     }
 
     @Test
@@ -170,13 +207,13 @@ class SnowflakeEncodeMemberMessageTransformationTest {
     @Test
     fun testAtNameCommas() {
         // GIVEN
-        val message = "Hello @$USER_NAME, @$USER_NAME_SPACE_FIRST, hi"
+        val message = "Hello @$USER_NAME, @$USER_NAME_SPACE_FIRST, @$USER_NAME_EMOJI_FIRST, hi"
 
         // WHEN
         val result = sut.transform("", CHANNEL_ID.toString(), message)
 
         // THEN
-        assertEquals("Hello <@$USER_ID>, <@$USER_ID_SPACE>, hi", result)
+        assertEquals("Hello <@$USER_ID>, @$USER_NAME_SPACE_FIRST, <@$USER_ID_EMOJI>, hi", result)
     }
 
     @Test
@@ -233,7 +270,7 @@ class SnowflakeEncodeMemberMessageTransformationTest {
     @Test
     fun testUpdateOverlapped() {
         // GIVEN a user takes another user's name
-        val message = "Hello, @$USER_NAME and @$USER_NAME_SPACE_FIRST"
+        val message = "Hello, @$USER_NAME and @$USER_NAME_EMOJI_FIRST"
         sut.transform("", CHANNEL_ID.toString(), message)
         snowflakeRegistry.forGuild(guild).memberRegistry += mockkMember(USER_ID, USER_NAME_SPACE)
         sut.transform("", CHANNEL_ID.toString(), message)
@@ -243,7 +280,7 @@ class SnowflakeEncodeMemberMessageTransformationTest {
         val result = sut.transform("", CHANNEL_ID.toString(), message)
 
         // THEN the stolen user's name is properly attributed again
-        assertEquals("Hello, <@$USER_ID> and <@$USER_ID_SPACE>", result)
+        assertEquals("Hello, <@$USER_ID> and <@$USER_ID_EMOJI>", result)
     }
 
     @Test
@@ -279,11 +316,15 @@ class SnowflakeEncodeMemberMessageTransformationTest {
 
         private const val USER_ID = 123L
         private const val USER_ID_SPACE = 789L
+        private const val USER_ID_EMOJI = 780L
         private const val USER_ID_OTHER_GUILD = 234L
 
         private const val USER_NAME = "Larry"
-        private const val USER_NAME_SPACE = "Hans Bob"
-        private const val USER_NAME_SPACE_FIRST = "Hans"
+        private const val USER_NAME_SPACE = "Lord Edgy"
+        private const val USER_NAME_SPACE_FIRST = "Lord"
+        private const val USER_NAME_SPACE_GLUED = "LordEdgy"
+        private const val USER_NAME_EMOJI = "Hans \uD83D\uDC00"
+        private const val USER_NAME_EMOJI_FIRST = "Hans"
         private const val USER_NAME_GARBAGE = "%&^ABC"
 
         private const val ROLE_ID = 666L

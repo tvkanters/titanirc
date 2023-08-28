@@ -23,6 +23,7 @@ class SnowflakeEncodeMemberMessageTransformation(
 
     private fun GuildSnowflakeRegistry.resolvePotentialName(potentialName: String, allowRoles: Boolean): String? =
         potentialName
+            .replace(REGEX_REMOVE_CHARS, "")
             .takeIf { it.isNotEmpty() }
             ?.lowercase()
             ?.let { normalizedName ->
@@ -32,6 +33,7 @@ class SnowflakeEncodeMemberMessageTransformation(
 
     companion object {
         private val REGEX_POTENTIAL_NAME =
-            Regex("""^([a-z0-9_-]+)(?=[:,])|(?<=^| )@([a-z0-9_-]+)""", RegexOption.IGNORE_CASE)
+            Regex("""^([a-z0-9 _-]+)(?=[:,])|(?<=^| )@([a-z0-9_-]+)""", RegexOption.IGNORE_CASE)
+        private val REGEX_REMOVE_CHARS = Regex(" ")
     }
 }

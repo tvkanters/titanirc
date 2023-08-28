@@ -37,10 +37,17 @@ data class ItemInfo(val originalName: String) {
     val normalizedName: String? =
         originalName
             .lowercase()
-            .let { REGEX_NORMALIZE_NAME.matchAt(it, 0)?.groupValues?.get(1) }
+            .let { name ->
+                REGEX_NORMALIZE_NAME
+                    .matchAt(name, 0)
+                    ?.groupValues
+                    ?.get(1)
+                    ?.replace(REGEX_REMOVE_CHARS, "")
+            }
             ?.takeIf { it.isNotEmpty() }
 
     companion object {
-        private val REGEX_NORMALIZE_NAME = Regex("^([a-z0-9_-]+)")
+        private val REGEX_NORMALIZE_NAME = Regex("^([a-z0-9 _-]+)")
+        private val REGEX_REMOVE_CHARS = Regex(" ")
     }
 }
