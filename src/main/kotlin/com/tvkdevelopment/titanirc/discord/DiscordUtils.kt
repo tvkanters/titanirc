@@ -21,7 +21,7 @@ suspend fun Message.getReplyLabel(): String =
                 else -> getAuthorAsMemberOrNull()?.effectiveName ?: author?.effectiveName
             }
         )
-        .plus(Time.getRelativeTimeString(Time.currentTime - timestamp, short = true, minimumTimePassed = 2.minutes))
+        .plus(Time.getRelativeTimeString(Time.currentTime - timestamp, short = true, minimumTimePassed = 1.minutes))
         .filterNot { it.isNullOrEmpty() }
         .joinToString(" ")
         .let { "[^$it]" }
