@@ -2,6 +2,7 @@ package com.tvkdevelopment.titanirc.discord
 
 import com.tvkdevelopment.titanirc.TitanircConfiguration
 import com.tvkdevelopment.titanirc.bridge.BridgeClient
+import com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations.unescapeDiscordFormatting
 import com.tvkdevelopment.titanirc.discord.eventhandlers.*
 import com.tvkdevelopment.titanirc.util.Log
 import dev.kord.common.entity.Snowflake
@@ -131,13 +132,8 @@ class Discord(
     override fun setTopic(channel: String, topic: String) {
         onBot {
             getChannelOf<MessageChannel>(Snowflake(channel))
-                ?.takeIf { it.topicValue != topic }
+                ?.takeIf { it.topicValue.unescapeDiscordFormatting() != topic.unescapeDiscordFormatting() }
                 ?.apply { rest.channel.patchChannel(id, ChannelModifyPatchRequest(topic = Optional(topic))) }
         }
-    }
-
-    companion object {
-        private val dev.kord.core.entity.channel.Channel?.topicValue: String
-            get() = this?.data?.topic?.value ?: ""
     }
 }

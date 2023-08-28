@@ -35,3 +35,8 @@ fun String.escapeDiscordFormatting(): String =
             append(char)
         }
     }
+
+private val REGEX_UNESCAPE = Regex("""\\([*_|~`#\\-])""")
+
+fun String.unescapeDiscordFormatting() =
+    replace(REGEX_UNESCAPE, "$1")
