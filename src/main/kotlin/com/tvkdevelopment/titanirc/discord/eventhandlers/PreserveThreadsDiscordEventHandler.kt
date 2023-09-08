@@ -49,6 +49,6 @@ class PreserveThreadsDiscordEventHandler : DiscordEventHandler {
     }
 
     companion object {
-        private val REACTIVATE_INTERVAL = 12.hours
+        private val REACTIVATE_INTERVAL = 3.hours
     }
 }
