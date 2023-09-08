@@ -61,8 +61,8 @@ class BridgeDiscordEventHandler(
         }
 
         onChannel<ChannelUpdateEvent>({ channel }) {
-            val topic = channel.topicValue
-            if (topic != old.topicValue) {
+            val topic = channel.topicValue.trim()
+            if (topic != old.topicValue.trim()) {
                 Log.i("Discord topic updated: ${channel.data.name.value}")
 
                 val channelString = channel.id.toString()

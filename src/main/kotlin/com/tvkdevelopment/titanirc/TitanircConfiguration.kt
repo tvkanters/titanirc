@@ -20,6 +20,7 @@ interface TitanircConfiguration {
     val discordTopicRoles: TopicRoles
         get() = DEFAULT_TOPIC_ROLES
     val discordThreadsToPreserve: Set<String> get() = emptySet()
+    val discordChannelTopicsToPreserve: Set<String> get() = emptySet()
 }
 
 val DEFAULT_GUILDS = setOf("119177492253769743")

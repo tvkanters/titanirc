@@ -46,6 +46,7 @@ class Discord(
         EmojiSyncDiscordEventHandler(mutableSnowflakeRegistry),
         RoleSyncDiscordEventHandler(mutableSnowflakeRegistry),
         PreserveThreadsDiscordEventHandler(),
+        UpdateMobileTopicDiscordEventHandler(),
     )
 
     @OptIn(PrivilegedIntent::class)
