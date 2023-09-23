@@ -53,7 +53,7 @@ class FormattingIrcToDiscordMessageTransformationTest {
         val result = sut.transform("", "", message)
 
         // THEN
-        assertEquals("_test_", result)
+        assertEquals("_­test_­", result)
     }
 
     @Test
@@ -65,7 +65,7 @@ class FormattingIrcToDiscordMessageTransformationTest {
         val result = sut.transform("", "", message)
 
         // THEN
-        assertEquals("t_es_t", result)
+        assertEquals("t_­es_­t", result)
     }
 
     @Test
@@ -77,7 +77,7 @@ class FormattingIrcToDiscordMessageTransformationTest {
         val result = sut.transform("", "", message)
 
         // THEN
-        assertEquals("t_es_${NORMAL}t", result)
+        assertEquals("t_­es_­${NORMAL}t", result)
     }
 
     @Test
@@ -149,7 +149,7 @@ class FormattingIrcToDiscordMessageTransformationTest {
         val result = sut.transform("", "", message)
 
         // THEN
-        assertEquals("_te**st**_", result)
+        assertEquals("_­te**st**_­", result)
     }
 
     @Test
@@ -161,7 +161,7 @@ class FormattingIrcToDiscordMessageTransformationTest {
         val result = sut.transform("", "", message)
 
         // THEN
-        assertEquals("t_e**s**t_s", result)
+        assertEquals("t_­e**s**t_­s", result)
     }
 
     @Test
@@ -173,7 +173,67 @@ class FormattingIrcToDiscordMessageTransformationTest {
         val result = sut.transform("", "", message)
 
         // THEN
-        assertEquals("t_e**s**_**t**s", result)
+        assertEquals("t_­e**s**_­**t**s", result)
+    }
+
+    @Test
+    fun testNestedAsymmetricalFlipped() {
+        // GIVEN
+        val message = "t${BOLD}e${ITALICS}s${BOLD}t${ITALICS}s"
+
+        // WHEN
+        val result = sut.transform("", "", message)
+
+        // THEN
+        assertEquals("t**e**_­**s**t_­s", result)
+    }
+
+    @Test
+    fun testBoldItalics() {
+        // GIVEN
+        val message = "${BOLD}${ITALICS}test${ITALICS}${BOLD}"
+
+        // WHEN
+        val result = sut.transform("", "", message)
+
+        // THEN
+        assertEquals("**_­test_­**", result)
+    }
+
+    @Test
+    fun testItalicsBold() {
+        // GIVEN
+        val message = "${ITALICS}${BOLD}test${BOLD}${ITALICS}"
+
+        // WHEN
+        val result = sut.transform("", "", message)
+
+        // THEN
+        assertEquals("_­**test**_­", result)
+    }
+
+//    @Test Not supported
+    fun testBoldItalicsAsymmetrical() {
+        // GIVEN
+        val message = "${BOLD}${ITALICS}test${BOLD}${ITALICS}"
+
+        // WHEN
+        val result = sut.transform("", "", message)
+
+        // THEN
+        assertEquals("**­_test_­**", result)
+    }
+
+//    @Test Not supported
+    fun testItalicsBoldAsymmetrical() {
+        // GIVEN
+        val message = "${ITALICS}${BOLD}test${ITALICS}${BOLD}"
+
+        // WHEN
+        val result = sut.transform("", "", message)
+
+        // THEN
+        assertEquals("_­**test**_­", result)
     }
 
     @Test
@@ -209,7 +269,7 @@ class FormattingIrcToDiscordMessageTransformationTest {
         val result = sut.transform("", "", message)
 
         // THEN
-        assertEquals("_test_ spaces", result)
+        assertEquals("_­test_­ spaces", result)
     }
 
     @Test
@@ -221,6 +281,6 @@ class FormattingIrcToDiscordMessageTransformationTest {
         val result = sut.transform("", "", message)
 
         // THEN
-        assertEquals("_test_   spaces", result)
+        assertEquals("_­test_­   spaces", result)
     }
 }
