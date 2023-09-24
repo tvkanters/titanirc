@@ -47,6 +47,7 @@ class Discord(
         RoleSyncDiscordEventHandler(mutableSnowflakeRegistry),
         PreserveThreadsDiscordEventHandler(),
         UpdateMobileTopicDiscordEventHandler(),
+        StreamEventDiscordEventHandler(),
     )
 
     @OptIn(PrivilegedIntent::class)

@@ -14,6 +14,10 @@ import kotlinx.coroutines.launch
 import kotlin.coroutines.coroutineContext
 import kotlin.time.Duration.Companion.hours
 
+/**
+ * Aims to fix an issue on mobile clients (Android) where the topic shown is outdated if it was updated while the client
+ * was offline.
+ */
 class UpdateMobileTopicDiscordEventHandler : DiscordEventHandler {
 
     private val jobs = mutableMapOf<Snowflake, Job>()

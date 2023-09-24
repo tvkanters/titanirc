@@ -21,9 +21,17 @@ interface TitanircConfiguration {
         get() = DEFAULT_TOPIC_ROLES
     val discordThreadsToPreserve: Set<String> get() = emptySet()
     val discordChannelTopicsToPreserve: Set<String> get() = emptySet()
+    val discordEventSyncGuildToChannel: Map<String, String>
+        get() = DEFAULT_EVENT_SYNC
 }
 
-val DEFAULT_GUILDS = setOf("119177492253769743")
+const val DISCORD_ID_GUILD_DOPELIVES = "119177492253769743"
+const val DISCORD_ID_CHANNEL_DOPELIVES_STREAMIRC = "418911279625797652"
+
+val DEFAULT_GUILDS = setOf(DISCORD_ID_GUILD_DOPELIVES)
 val DEFAULT_TOPIC_ROLES = TopicRoles(
-    "418911279625797652" to { topic -> 806471250406670367UL.takeIf { TopicUtil.getStreamInfo(topic) != null } },
+    DISCORD_ID_CHANNEL_DOPELIVES_STREAMIRC to { topic -> 806471250406670367UL.takeIf { TopicUtil.getStreamInfo(topic) != null } },
+)
+val DEFAULT_EVENT_SYNC = mapOf(
+    DISCORD_ID_GUILD_DOPELIVES to DISCORD_ID_CHANNEL_DOPELIVES_STREAMIRC,
 )
