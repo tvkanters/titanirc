@@ -38,6 +38,8 @@ class StreamEventDiscordEventHandler : DiscordEventHandler {
                     .takeIf { externalEvents.none { it.status == GuildScheduledEventStatus.Active } }
                     ?.toStreamEvent()
 
+            streamScheduledEvents.dropLast(1).forEach { it.delete() }
+
             when {
                 streamEvent == null && desiredStreamEvent != null -> {
                     Log.i("Creating stream event")
@@ -90,7 +92,27 @@ class StreamEventDiscordEventHandler : DiscordEventHandler {
             }
         }
 
+        suspend fun onScheduledEventUpdate(
+            guildId: Snowflake,
+            id: Snowflake,
+            scheduledEvent: GuildScheduledEvent?,
+            updateStreamEvent: Boolean = true
+        ) {
+            val event = scheduledEvent?.takeUnless { it.isFinished }
+            if (event != null) {
+                scheduledEventsById[id] = event
+                if (updateStreamEvent) {
+                    updateStreamEvent(guildId)
+                }
+            } else {
+                if (scheduledEventsById.remove(id) != null && updateStreamEvent) {
+                    updateStreamEvent(guildId)
+                }
+            }
+        }
+
         on<GuildCreateEvent>({ guild.id }) {
+            guild.scheduledEvents.collect { onScheduledEventUpdate(guild.id, it.id, it, updateStreamEvent = false) }
             guild.channels.collect(::onChannelUpdate)
         }
 
@@ -98,28 +120,16 @@ class StreamEventDiscordEventHandler : DiscordEventHandler {
             onChannelUpdate(channel, old)
         }
 
-        suspend fun updateScheduledEvent(guildId: Snowflake, id: Snowflake, scheduledEvent: GuildScheduledEvent?) {
-            val event = scheduledEvent?.takeUnless { it.isFinished }
-            if (event != null) {
-                scheduledEventsById[id] = event
-                updateStreamEvent(guildId)
-            } else {
-                if (scheduledEventsById.remove(id) != null) {
-                    updateStreamEvent(guildId)
-                }
-            }
-        }
-
         on<GuildScheduledEventCreateEvent>({ guildId }) {
-            updateScheduledEvent(guildId, scheduledEventId, scheduledEvent)
+            onScheduledEventUpdate(guildId, scheduledEventId, scheduledEvent)
         }
 
         on<GuildScheduledEventUpdateEvent>({ guildId }) {
-            updateScheduledEvent(guildId, scheduledEventId, scheduledEvent)
+            onScheduledEventUpdate(guildId, scheduledEventId, scheduledEvent)
         }
 
         on<GuildScheduledEventDeleteEvent>({ guildId }) {
-            updateScheduledEvent(guildId, scheduledEventId, null)
+            onScheduledEventUpdate(guildId, scheduledEventId, null)
         }
     }
 
