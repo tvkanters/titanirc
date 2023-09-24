@@ -18,7 +18,7 @@ import dev.kord.core.event.guild.GuildScheduledEventCreateEvent
 import dev.kord.core.event.guild.GuildScheduledEventDeleteEvent
 import dev.kord.core.event.guild.GuildScheduledEventUpdateEvent
 import kotlin.time.Duration.Companion.hours
-import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Duration.Companion.minutes
 
 class StreamEventDiscordEventHandler : DiscordEventHandler {
 
@@ -51,6 +51,13 @@ class StreamEventDiscordEventHandler : DiscordEventHandler {
                         scheduledEndTime = currentTime + 12.hours
                         entityMetadata =
                             GuildScheduledEventEntityMetadata(location = Optional(desiredStreamEvent.location))
+                    }
+                }
+
+                streamEvent != null && streamEvent == desiredStreamEvent && !streamScheduledEvent.isActive -> {
+                    Log.i("Activating stream event")
+                    streamScheduledEvent.edit {
+                        status = GuildScheduledEventStatus.Active
                     }
                 }
 
@@ -130,9 +137,13 @@ class StreamEventDiscordEventHandler : DiscordEventHandler {
             GuildScheduledEventStatus.Cancelled ->
                 true
         }
+
+    private val GuildScheduledEvent.isActive: Boolean
+        get() = status == GuildScheduledEventStatus.Active
+
     companion object {
 
-        private val START_TIME_DELAY = 3.seconds
+        private val START_TIME_DELAY = 1.minutes
 
         private data class StreamEvent(val name: String, val location: String)
 
