@@ -2,6 +2,7 @@ package com.tvkdevelopment.titanirc.discord
 
 import com.tvkdevelopment.titanirc.TitanircConfiguration
 import com.tvkdevelopment.titanirc.bridge.BridgeClient
+import com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations.escapeDiscordFormatting
 import com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations.unescapeDiscordFormatting
 import com.tvkdevelopment.titanirc.discord.eventhandlers.*
 import com.tvkdevelopment.titanirc.util.Log
@@ -121,13 +122,13 @@ class Discord(
 
     override fun relayMessage(channel: String, nick: String, message: String) {
         onBot {
-            sendMessage(channel, "**<$nick>** $message")
+            sendMessage(channel, "**<${nick.escapeDiscordFormatting()}>** $message")
         }
     }
 
     override fun relaySlashMe(channel: String, nick: String, message: String) {
         onBot {
-            sendMessage(channel, "\\* $nick $message")
+            sendMessage(channel, "\\* $${nick.escapeDiscordFormatting()} $message")
         }
     }
 
