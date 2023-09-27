@@ -128,7 +128,7 @@ class Discord(
 
     override fun relaySlashMe(channel: String, nick: String, message: String) {
         onBot {
-            sendMessage(channel, "\\* $${nick.escapeDiscordFormatting()} $message")
+            sendMessage(channel, "\\* ${nick.escapeDiscordFormatting()} $message")
         }
     }
 
