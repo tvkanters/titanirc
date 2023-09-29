@@ -29,8 +29,13 @@ class PreserveThreadsDiscordEventHandler : DiscordEventHandler {
                             ArchiveDuration.Day -> ArchiveDuration.ThreeDays
                             else -> ArchiveDuration.Day
                         }
+                        val newName = when {
+                            name.endsWith(' ') -> name.trimEnd()
+                            else -> "$name "
+                        }
                         edit {
                             archived = false
+                            name = newName
                             autoArchiveDuration = archiveDuration
                         }
                         delay(REACTIVATE_INTERVAL)
