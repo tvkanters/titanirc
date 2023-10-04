@@ -47,6 +47,7 @@ object Main {
                         FormattingIrcStripMessageTransformation(),
                         SmolFiStripMessageTransformation(),
                         TwitterFixAddMessageTransformation(),
+                        DiscordUrlTrackingStripMessageTransformation(),
                         SnowflakeEncodeMemberMessageTransformation(discord.snowflakeRegistry),
                         SnowflakeEncodeChannelMessageTransformation(discord.snowflakeRegistry),
                         SnowflakeEncodeEmojiMessageTransformation(discord.snowflakeRegistry),
@@ -57,6 +58,7 @@ object Main {
                     listOf(
                         FormattingDiscordToIrcMessageTransformation(),
                         SmolFiPrependMessageTransformation(),
+                        DiscordUrlTrackingStripMessageTransformation(),
                         SnowflakeDecodeMessageTransformation(discord.snowflakeRegistry),
                     )
                 )
