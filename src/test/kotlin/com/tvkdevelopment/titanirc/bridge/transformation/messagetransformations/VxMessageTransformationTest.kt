@@ -3,9 +3,9 @@ package com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class TwitterFixAddMessageTransformationTest {
+class VxMessageTransformationTest {
 
-    private val sut = TwitterFixAddMessageTransformation()
+    private val sut = VxMessageTransformation()
 
     @Test
     fun testTransformation() {

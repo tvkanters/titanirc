@@ -46,7 +46,7 @@ object Main {
                         FormattingIrcToDiscordMessageTransformation(),
                         FormattingIrcStripMessageTransformation(),
                         SmolFiStripMessageTransformation(),
-                        TwitterFixAddMessageTransformation(),
+                        VxMessageTransformation(),
                         DiscordUrlTrackingStripMessageTransformation(),
                         SnowflakeEncodeMemberMessageTransformation(discord.snowflakeRegistry),
                         SnowflakeEncodeChannelMessageTransformation(discord.snowflakeRegistry),
