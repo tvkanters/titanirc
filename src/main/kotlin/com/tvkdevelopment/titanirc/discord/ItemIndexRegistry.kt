@@ -8,8 +8,12 @@ interface ItemIndexRegistry<Id, Name, NormalizedName> {
     val itemsByNormalizedName: Map<NormalizedName, Id>
 }
 
-class MutableEntityItemRegistry<Item : Entity>(private val getName: (Item) -> String?) :
-    ItemIndexRegistry<Snowflake, ItemInfo, String> {
+class MutableEntityItemRegistry<Item : Entity>(
+    private val getName: (Item) -> String?,
+    private val getAdditionalNames: (Item) -> Set<String>,
+) : ItemIndexRegistry<Snowflake, ItemInfo, String> {
+
+    constructor(getName: (Item) -> String?) : this(getName, { emptySet() })
 
     private val mutableItemsById = mutableMapOf<Snowflake, ItemInfo>()
     override val itemsById = mutableItemsById
@@ -18,7 +22,7 @@ class MutableEntityItemRegistry<Item : Entity>(private val getName: (Item) -> St
         get() {
             if (itemsByNormalizedValueInvalidated) {
                 mutableItemsById.forEach { (key, value) ->
-                    value.normalizedName?.let { field[it] = key }
+                    value.normalizedNames.forEach { field[it] = key }
                 }
                 itemsByNormalizedValueInvalidated = false
             }
@@ -28,23 +32,26 @@ class MutableEntityItemRegistry<Item : Entity>(private val getName: (Item) -> St
     private var itemsByNormalizedValueInvalidated = false
 
     operator fun plusAssign(item: Item) {
-        getName(item)?.let { mutableItemsById[item.id] = ItemInfo(it) }
+        getName(item)?.let { mutableItemsById[item.id] = ItemInfo(it, getAdditionalNames(item)) }
         itemsByNormalizedValueInvalidated = true
     }
 }
 
-data class ItemInfo(val originalName: String) {
-    val normalizedName: String? =
-        originalName
-            .lowercase()
-            .let { name ->
-                REGEX_NORMALIZE_NAME
-                    .matchAt(name, 0)
-                    ?.groupValues
-                    ?.get(1)
-                    ?.replace(REGEX_REMOVE_CHARS, "")
+data class ItemInfo(val originalName: String, val additionalNames: Set<String>) {
+    val normalizedNames: Set<String> =
+        (additionalNames + originalName)
+            .mapNotNull { name ->
+                name.lowercase()
+                    .let { lowercaseName ->
+                        REGEX_NORMALIZE_NAME
+                            .matchAt(lowercaseName, 0)
+                            ?.groupValues
+                            ?.get(1)
+                            ?.replace(REGEX_REMOVE_CHARS, "")
+                    }
+                    ?.takeIf { it.isNotEmpty() }
             }
-            ?.takeIf { it.isNotEmpty() }
+            .toSet()
 
     companion object {
         private val REGEX_NORMALIZE_NAME = Regex("^([a-z0-9 _-]+)")

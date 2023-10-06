@@ -51,7 +51,7 @@ interface GuildSnowflakeRegistry {
 }
 
 class MutableGuildSnowflakeRegistry : GuildSnowflakeRegistry {
-    override val memberRegistry = MutableEntityItemRegistry<Member> { it.effectiveName }
+    override val memberRegistry = MutableEntityItemRegistry<Member>({ it.effectiveName }, { setOf(it.username) })
     override val channelRegistry = MutableEntityItemRegistry<Channel> { it.data.name.value }
     override val roleRegistry = MutableEntityItemRegistry<Role> { it.name }
     override val emojiRegistry = MutableEntityItemRegistry<GuildEmoji> { it.name }

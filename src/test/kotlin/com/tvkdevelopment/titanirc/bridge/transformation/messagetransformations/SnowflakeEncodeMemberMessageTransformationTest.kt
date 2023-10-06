@@ -15,10 +15,10 @@ class SnowflakeEncodeMemberMessageTransformationTest {
     private val guild = mockkGuild(GUILD_ID, setOf(CHANNEL_ID))
     private val guildOther = mockkGuild(GUILD_ID_OTHER, setOf(CHANNEL_ID_OTHER))
     private val snowflakeRegistry = MutableSnowflakeRegistry().apply {
-        forGuild(guild).memberRegistry += mockkMember(USER_ID, USER_NAME)
-        forGuild(guild).memberRegistry += mockkMember(USER_ID_SPACE, USER_NAME_SPACE)
-        forGuild(guild).memberRegistry += mockkMember(USER_ID_EMOJI, USER_NAME_EMOJI)
-        forGuild(guildOther).memberRegistry += mockkMember(USER_ID_OTHER_GUILD, USER_NAME)
+        forGuild(guild).memberRegistry += mockkMember(USER_ID, USER_USERNAME, USER_NAME)
+        forGuild(guild).memberRegistry += mockkMember(USER_ID_SPACE, USER_USERNAME_SPACE, USER_NAME_SPACE)
+        forGuild(guild).memberRegistry += mockkMember(USER_ID_EMOJI, USER_USERNAME_EMOJI, USER_NAME_EMOJI)
+        forGuild(guildOther).memberRegistry += mockkMember(USER_ID_OTHER_GUILD, USER_USERNAME, USER_NAME)
 
         forGuild(guild).roleRegistry += mockkRole(ROLE_ID, ROLE_NAME)
     }
@@ -260,7 +260,7 @@ class SnowflakeEncodeMemberMessageTransformationTest {
         assertEquals("Hello, <@$USER_ID> and @Fred", preconditionResult)
 
         // WHEN
-        snowflakeRegistry.forGuild(guild).memberRegistry += mockkMember(USER_ID, "Fred")
+        snowflakeRegistry.forGuild(guild).memberRegistry += mockkMember(USER_ID, "freddie", "Fred")
         val result = sut.transform("", CHANNEL_ID.toString(), message)
 
         // THEN
@@ -272,11 +272,11 @@ class SnowflakeEncodeMemberMessageTransformationTest {
         // GIVEN a user takes another user's name
         val message = "Hello, @$USER_NAME and @$USER_NAME_EMOJI_FIRST"
         sut.transform("", CHANNEL_ID.toString(), message)
-        snowflakeRegistry.forGuild(guild).memberRegistry += mockkMember(USER_ID, USER_NAME_SPACE)
+        snowflakeRegistry.forGuild(guild).memberRegistry += mockkMember(USER_ID, USER_USERNAME_SPACE, USER_NAME_SPACE)
         sut.transform("", CHANNEL_ID.toString(), message)
 
         // WHEN the user reverts the name change
-        snowflakeRegistry.forGuild(guild).memberRegistry += mockkMember(USER_ID, USER_NAME)
+        snowflakeRegistry.forGuild(guild).memberRegistry += mockkMember(USER_ID, USER_USERNAME, USER_NAME)
         val result = sut.transform("", CHANNEL_ID.toString(), message)
 
         // THEN the stolen user's name is properly attributed again
@@ -307,6 +307,19 @@ class SnowflakeEncodeMemberMessageTransformationTest {
         assertEquals(message, result)
     }
 
+    @Test
+    fun testUsername() {
+        // GIVEN
+        val message = "@$USER_USERNAME and @${USER_USERNAME_SPACE} hello"
+
+        // WHEN
+        val result = sut.transform("", CHANNEL_ID.toString(), message)
+
+        // THEN
+        assertEquals("<@$USER_ID> and <@${USER_ID_SPACE}> hello", result)
+    }
+
+
     companion object {
         private const val GUILD_ID = 987L
         private const val GUILD_ID_OTHER = 654L
@@ -327,6 +340,10 @@ class SnowflakeEncodeMemberMessageTransformationTest {
         private const val USER_NAME_EMOJI_FIRST = "Hans"
         private const val USER_NAME_GARBAGE = "%&^ABC"
 
+        private const val USER_USERNAME = "Larry2623"
+        private const val USER_USERNAME_SPACE = "Larry2623Space"
+        private const val USER_USERNAME_EMOJI = "Larry2623Emoji"
+
         private const val ROLE_ID = 666L
         private const val ROLE_NAME = "Mods"
 
@@ -335,8 +352,9 @@ class SnowflakeEncodeMemberMessageTransformationTest {
             every { this@niceMockk.channelIds } returns channelIds.map { Snowflake(it) }.toSet()
         }
 
-        fun mockkMember(id: Long, name: String) = niceMockk<Member> {
+        fun mockkMember(id: Long, username: String, name: String) = niceMockk<Member> {
             every { this@niceMockk.id } returns Snowflake(id)
+            every { this@niceMockk.username } returns username
             every { this@niceMockk.effectiveName } returns name
         }
 
