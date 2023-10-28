@@ -22,6 +22,14 @@ object TopicUtil {
 
     private fun MatchResult.extractGroupValue(groupName: String): String? =
         groups[groupName]?.value?.takeIf { it.isNotBlank() }
+
+    fun setStreamInfo(topic: String, streamInfo: StreamInfo): String =
+        REGEX.replace(
+            topic,
+            listOf("Streamer:", streamInfo.streamer, "|", "${streamInfo.streamType}:", streamInfo.title, "|")
+                .filter { it.isNotBlank() }
+                .joinToString(" ")
+        )
 }
 
 data class StreamInfo(
