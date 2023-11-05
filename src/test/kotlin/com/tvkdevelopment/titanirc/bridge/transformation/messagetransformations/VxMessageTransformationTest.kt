@@ -54,4 +54,28 @@ class VxMessageTransformationTest {
         // THEN
         assertEquals("Hi https://vxtwitter.com/bob/1234", transformedMessage)
     }
+
+    @Test
+    fun testRedditTransformation() {
+        // GIVEN
+        val message = "Hi https://reddit.com/r/somepost"
+
+        // WHEN
+        val transformedMessage = sut.transform("", "", message)
+
+        // THEN
+        assertEquals("Hi https://rxddit.com/r/somepost", transformedMessage)
+    }
+
+    @Test
+    fun testOldRedditTransformation() {
+        // GIVEN
+        val message = "Hi https://old.reddit.com/r/somepost"
+
+        // WHEN
+        val transformedMessage = sut.transform("", "", message)
+
+        // THEN
+        assertEquals("Hi https://old.rxddit.com/r/somepost", transformedMessage)
+    }
 }
