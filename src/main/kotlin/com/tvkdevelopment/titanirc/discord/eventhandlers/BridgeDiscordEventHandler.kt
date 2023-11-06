@@ -68,8 +68,9 @@ class BridgeDiscordEventHandler(
                 val channelString = channel.id.toString()
                 if (old != null && topic.isNotBlank()) {
                     val topicRole = configuration.discordTopicRoles.getRole(channelString, topic)
+                    val sanitizedTopic = topic.replace(TOPIC_UPDATE_SANITIZE_REGEX, "<$1>")
                     channel.asChannelOfOrNull<MessageChannel>()
-                        ?.createMessage(":bell: ${topicRole?.mentionRole ?: "Topic"} updated: $topic")
+                        ?.createMessage(":bell: ${topicRole?.mentionRole ?: "Topic"} updated: $sanitizedTopic")
                 }
 
                 listeners.forEach {
@@ -140,6 +141,7 @@ class BridgeDiscordEventHandler(
 
     companion object {
         private const val MESSAGE_CORRECTION_LIMIT = 10
+        private val TOPIC_UPDATE_SANITIZE_REGEX = Regex("(?<!<)(https?:\\/\\/[^ ]+)")
 
         private val RELAYED_MESSAGE_TYPES = setOf(
             MessageType.Default,

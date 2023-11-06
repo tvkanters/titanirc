@@ -23,7 +23,7 @@ import kotlin.time.Duration.Companion.minutes
 class StreamEventDiscordEventHandler : DiscordEventHandler {
 
     private val scheduledEventsById = mutableMapOf<Snowflake, GuildScheduledEvent>()
-    private val streamInfoByGuild = mutableMapOf<Snowflake, StreamInfo?>()
+    private val streamInfoByChannelByGuild = mutableMapOf<Snowflake, Array<StreamInfo?>>()
 
     override fun Registrar.register() {
 
@@ -33,7 +33,7 @@ class StreamEventDiscordEventHandler : DiscordEventHandler {
 
             val streamScheduledEvent = streamScheduledEvents.lastOrNull()
             val streamEvent = streamScheduledEvent?.toStreamEvent()
-            val streamInfo = streamInfoByGuild[guildId]
+            val streamInfo = streamInfoByChannelByGuild[guildId]?.firstOrNull { it != null }
             val desiredStreamEvent =
                 streamInfo
                     .takeIf { externalEvents.none { it.status == GuildScheduledEventStatus.Active } }
@@ -92,13 +92,19 @@ class StreamEventDiscordEventHandler : DiscordEventHandler {
 
         suspend fun onChannelUpdate(channel: Channel, old: Channel? = null) {
             val guildId = channel.data.guildId.value ?: return
-            if (channel.id.toString() != configuration.discordEventSyncGuildToChannel[guildId.toString()]) {
+            val channelString = channel.id.toString()
+            val channelsToSync =
+                configuration.discordEventSyncGuildToChannels.getOrDefault(guildId.toString(), emptyList())
+            val channelIndex = channelsToSync.indexOf(channelString)
+            if (channelIndex == -1) {
                 return
             }
 
             val topic = channel.topicValue.trim()
             if (old == null || topic != old.topicValue.trim()) {
-                streamInfoByGuild[guildId] = TopicUtil.getStreamInfo(topic)
+                val streamInfoByChannel =
+                    streamInfoByChannelByGuild.getOrPut(guildId) { arrayOfNulls(channelsToSync.size) }
+                streamInfoByChannel[channelIndex] = TopicUtil.getStreamInfo(topic)
                 updateStreamEvent(guildId)
             }
         }
