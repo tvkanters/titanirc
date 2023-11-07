@@ -1,5 +1,6 @@
 package com.tvkdevelopment.titanirc
 
+import com.tvkdevelopment.titanirc.TitanircConfiguration.EventSyncChannel
 import com.tvkdevelopment.titanirc.discord.TopicRoles
 import com.tvkdevelopment.titanirc.util.TopicUtil
 
@@ -21,8 +22,10 @@ interface TitanircConfiguration {
         get() = DEFAULT_TOPIC_ROLES
     val discordThreadsToPreserve: Set<String> get() = emptySet()
     val discordChannelTopicsToPreserve: Set<String> get() = emptySet()
-    val discordEventSyncGuildToChannels: Map<String, List<String>>
+    val discordEventSyncGuildToChannels: Map<String, List<EventSyncChannel>>
         get() = DEFAULT_EVENT_SYNC
+
+    data class EventSyncChannel(val channel: String, val label: String? = null)
 }
 
 const val DISCORD_ID_GUILD_DOPELIVES = "119177492253769743"
@@ -35,7 +38,7 @@ val DEFAULT_TOPIC_ROLES = TopicRoles(
 )
 val DEFAULT_EVENT_SYNC = mapOf(
     DISCORD_ID_GUILD_DOPELIVES to listOf(
-        DISCORD_ID_CHANNEL_DOPELIVES_STREAMIRC,
-        DISCORD_ID_CHANNEL_DOPELIVES_BOOTLEGSTREAM,
+        EventSyncChannel(DISCORD_ID_CHANNEL_DOPELIVES_STREAMIRC),
+        EventSyncChannel(DISCORD_ID_CHANNEL_DOPELIVES_BOOTLEGSTREAM, "Bootleg"),
     ),
 )

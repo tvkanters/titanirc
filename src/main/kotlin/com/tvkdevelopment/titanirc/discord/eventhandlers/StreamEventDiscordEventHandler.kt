@@ -95,7 +95,7 @@ class StreamEventDiscordEventHandler : DiscordEventHandler {
             val channelString = channel.id.toString()
             val channelsToSync =
                 configuration.discordEventSyncGuildToChannels.getOrDefault(guildId.toString(), emptyList())
-            val channelIndex = channelsToSync.indexOf(channelString)
+            val channelIndex = channelsToSync.indexOfFirst { it.channel == channelString }
             if (channelIndex == -1) {
                 return
             }
@@ -104,7 +104,15 @@ class StreamEventDiscordEventHandler : DiscordEventHandler {
             if (old == null || topic != old.topicValue.trim()) {
                 val streamInfoByChannel =
                     streamInfoByChannelByGuild.getOrPut(guildId) { arrayOfNulls(channelsToSync.size) }
-                streamInfoByChannel[channelIndex] = TopicUtil.getStreamInfo(topic)
+                streamInfoByChannel[channelIndex] =
+                    TopicUtil.getStreamInfo(topic)
+                        ?.let {
+                            val label = channelsToSync[channelIndex].label
+                            when {
+                                label != null -> it.copy(streamer = "[${label}] ${it.streamer}")
+                                else -> it
+                            }
+                        }
                 updateStreamEvent(guildId)
             }
         }
