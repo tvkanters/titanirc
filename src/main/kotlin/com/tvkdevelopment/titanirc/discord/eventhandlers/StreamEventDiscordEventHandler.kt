@@ -129,6 +129,17 @@ class StreamEventDiscordEventHandler : DiscordEventHandler {
                 if (updateStreamEvent) {
                     updateStreamEvent(guildId)
                 }
+
+                if (scheduledEvent.location.trim().lowercase() in INVALID_STREAMERS) {
+                    val newStreamer = scheduledEvent.creatorId
+                        ?.let { scheduledEvent.getGuild().getMemberOrNull(it)?.effectiveName }
+                    if (newStreamer != null) {
+                        Log.i("Updating invalid stream event streamer")
+                        scheduledEvent.edit {
+                            entityMetadata = GuildScheduledEventEntityMetadata(location = Optional(newStreamer))
+                        }
+                    }
+                }
             } else {
                 if (scheduledEventsById.remove(id) != null && updateStreamEvent) {
                     updateStreamEvent(guildId)
@@ -180,6 +191,8 @@ class StreamEventDiscordEventHandler : DiscordEventHandler {
 
         private val START_TIME_DELAY = 1.minutes
         private val STREAM_RELEVANCE_SLOP = 15.minutes
+
+        private val INVALID_STREAMERS = setOf("stream", "dopelives")
 
         private data class StreamEvent(val name: String, val location: String)
 
