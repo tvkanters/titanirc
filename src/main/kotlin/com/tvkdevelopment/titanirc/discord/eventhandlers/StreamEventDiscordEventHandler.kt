@@ -34,17 +34,18 @@ class StreamEventDiscordEventHandler : DiscordEventHandler {
             val streamScheduledEvent = streamScheduledEvents.lastOrNull()
             val streamEvent = streamScheduledEvent?.toStreamEvent()
             val streamInfo = streamInfoByChannelByGuild[guildId]?.firstOrNull { it != null }
+
+            val (currentSimilarExternalEvents, differentExternalEvents) =
+                externalEvents.partition { streamInfo != null && it.isSimilarTo(streamInfo) && it.isNow }
             val desiredStreamEvent =
                 streamInfo
-                    .takeIf { externalEvents.none { it.status == GuildScheduledEventStatus.Active } }
+                    .takeIf { differentExternalEvents.none { it.isActive } }
                     ?.toStreamEvent()
 
             streamScheduledEvents.dropLast(1).forEach { it.delete() }
 
-            suspend fun deleteSimilarEvents(streamEvent: StreamEvent) {
-                externalEvents
-                    .filter { it.isSimilarTo(streamEvent) && it.isRelevantNow }
-                    .forEach { it.delete() }
+            suspend fun deleteCurrentSimilarEvents() {
+                currentSimilarExternalEvents.forEach { it.delete() }
             }
 
             when {
@@ -68,7 +69,7 @@ class StreamEventDiscordEventHandler : DiscordEventHandler {
                     streamScheduledEvent.edit {
                         status = GuildScheduledEventStatus.Active
                     }
-                    deleteSimilarEvents(streamEvent)
+                    deleteCurrentSimilarEvents()
                 }
 
                 streamEvent != null && desiredStreamEvent != null && streamEvent != desiredStreamEvent -> {
@@ -84,7 +85,7 @@ class StreamEventDiscordEventHandler : DiscordEventHandler {
                     Log.i("Deleting stream event")
                     streamScheduledEvent.delete()
                     if (streamInfo == null) {
-                        deleteSimilarEvents(streamEvent)
+                        deleteCurrentSimilarEvents()
                     }
                 }
             }
@@ -184,9 +185,6 @@ class StreamEventDiscordEventHandler : DiscordEventHandler {
                 true
         }
 
-    private val GuildScheduledEvent.isActive: Boolean
-        get() = status == GuildScheduledEventStatus.Active
-
     companion object {
 
         private val START_TIME_DELAY = 1.minutes
@@ -205,10 +203,13 @@ class StreamEventDiscordEventHandler : DiscordEventHandler {
         private val GuildScheduledEvent.location: String
             get() = entityMetadata?.location?.value ?: ""
 
-        private fun GuildScheduledEvent.isSimilarTo(other: StreamEvent): Boolean =
-            location.equals(other.location, ignoreCase = true)
+        private fun GuildScheduledEvent.isSimilarTo(other: StreamInfo): Boolean =
+            location.equals(other.streamer, ignoreCase = true)
 
-        private val GuildScheduledEvent.isRelevantNow: Boolean
-            get() = scheduledStartTime - STREAM_RELEVANCE_SLOP <= Time.currentTime
+        private val GuildScheduledEvent.isActive: Boolean
+            get() = status == GuildScheduledEventStatus.Active
+
+        private val GuildScheduledEvent.isNow: Boolean
+            get() = isActive || scheduledStartTime - STREAM_RELEVANCE_SLOP <= Time.currentTime
     }
 }
