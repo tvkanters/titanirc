@@ -6,3 +6,4 @@
 *.iml
 /deploy.gradle
 /src/main/kotlin/com/tvkdevelopment/titanirc/TitanircConfigurationPrivate.kt
+/src/test/kotlin/com/tvkdevelopment/titanirc/Playground.kt

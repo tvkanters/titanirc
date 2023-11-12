@@ -204,7 +204,10 @@ class StreamEventDiscordEventHandler : DiscordEventHandler {
             get() = entityMetadata?.location?.value ?: ""
 
         private fun GuildScheduledEvent.isSimilarTo(other: StreamInfo): Boolean =
-            location.equals(other.streamer, ignoreCase = true)
+            location.streamerChunks == other.streamer.streamerChunks
+
+        private val String.streamerChunks: Set<String>
+            get() = split("+", "&", " and ").map { it.trim().lowercase() }.toSet()
 
         private val GuildScheduledEvent.isActive: Boolean
             get() = status == GuildScheduledEventStatus.Active
