@@ -38,8 +38,8 @@ class BridgeDiscordEventHandler(
             val member = member ?: return@on
             val message = message.takeIf { it.type in RELAYED_MESSAGE_TYPES } ?: return@on
 
-            guildId?.let { lastMessages.getOrPut(it) { mutableListOf() } }
-                ?.addWithLimit(LastMessage(member, message.id, message.content), MESSAGE_CORRECTION_LIMIT)
+            lastMessages.getOrPut(message.channelId) { mutableListOf() }
+                .addWithLimit(LastMessage(member, message.id, message.content), MESSAGE_CORRECTION_LIMIT)
             lastMessageReactions.clear()
 
             if (!member.isBot) {
@@ -93,10 +93,9 @@ class BridgeDiscordEventHandler(
         }
 
         on<MessageUpdateEvent>({ guildId }) {
-            val guildId = guildId ?: return@on
             val authorId = new.author.value?.id ?: return@on
 
-            val lastGuildMessages = lastMessages[guildId] ?: return@on
+            val lastGuildMessages = lastMessages[message.channelId] ?: return@on
             val lastMessageByAuthorIndex = lastGuildMessages.indexOfLast { it.member.id == authorId }
             val originalMessage =
                 lastGuildMessages.getOrNull(lastMessageByAuthorIndex)?.takeIf { it.messageId == new.id } ?: return@on
@@ -123,7 +122,7 @@ class BridgeDiscordEventHandler(
         }
 
         on<ReactionAddEvent>({ guildId }) {
-            if (messageId == lastMessages[guildId]?.lastOrNull()?.messageId) {
+            if (messageId == lastMessages[message.channelId]?.lastOrNull()?.messageId) {
                 val member = getUserAsMember() ?: return@on
 
                 val lastMessageReaction = LastMessageReaction(member, emoji.name)
