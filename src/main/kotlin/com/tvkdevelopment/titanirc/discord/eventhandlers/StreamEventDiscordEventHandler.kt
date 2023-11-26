@@ -107,11 +107,18 @@ class StreamEventDiscordEventHandler : DiscordEventHandler {
                     streamInfoByChannelByGuild.getOrPut(guildId) { arrayOfNulls(channelsToSync.size) }
                 streamInfoByChannel[channelIndex] =
                     TopicUtil.getStreamInfo(topic)
-                        ?.let {
+                        ?.let { streamInfo ->
+                            REGEX_JOKE_TOPIC_TITLE
+                                .takeIf { streamInfo.title.contains(streamInfo.streamer, ignoreCase = true) }
+                                ?.matchEntire(streamInfo.title)
+                                ?.let { streamInfo.copy(title = it.groupValues[1]) }
+                                ?: streamInfo
+                        }
+                        ?.let { streamInfo ->
                             val label = channelsToSync[channelIndex].label
                             when {
-                                label != null -> it.copy(streamer = "[${label}] ${it.streamer}")
-                                else -> it
+                                label != null -> streamInfo.copy(streamer = "[${label}] ${streamInfo.streamer}")
+                                else -> streamInfo
                             }
                         }
                 updateStreamEvent(guildId)
@@ -191,6 +198,8 @@ class StreamEventDiscordEventHandler : DiscordEventHandler {
         private val STREAM_RELEVANCE_SLOP = 15.minutes
 
         private val INVALID_STREAMERS = setOf("stream", "dopelives")
+
+        private val REGEX_JOKE_TOPIC_TITLE = Regex(""".*\(([^)]+)\).*""")
 
         private data class StreamEvent(val name: String, val location: String)
 
