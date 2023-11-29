@@ -108,9 +108,11 @@ class StreamEventDiscordEventHandler : DiscordEventHandler {
                 streamInfoByChannel[channelIndex] =
                     TopicUtil.getStreamInfo(topic)
                         ?.let { streamInfo ->
-                            REGEX_JOKE_TOPIC_TITLE
-                                .takeIf { streamInfo.title.contains(streamInfo.streamer, ignoreCase = true) }
-                                ?.matchEntire(streamInfo.title)
+                            Regex(
+                                """.*\b${Regex.escapeReplacement(streamInfo.streamer)}\b.*\(([^)]+)\)\s*""",
+                                RegexOption.IGNORE_CASE
+                            )
+                                .matchEntire(streamInfo.title)
                                 ?.let { streamInfo.copy(title = it.groupValues[1]) }
                                 ?: streamInfo
                         }
@@ -198,8 +200,6 @@ class StreamEventDiscordEventHandler : DiscordEventHandler {
         private val STREAM_RELEVANCE_SLOP = 15.minutes
 
         private val INVALID_STREAMERS = setOf("stream", "dopelives")
-
-        private val REGEX_JOKE_TOPIC_TITLE = Regex(""".*\(([^)]+)\).*""")
 
         private data class StreamEvent(val name: String, val location: String)
 
