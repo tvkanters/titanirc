@@ -13,7 +13,6 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.asChannelOfOrNull
 import dev.kord.core.entity.Member
 import dev.kord.core.entity.channel.MessageChannel
-import dev.kord.core.entity.effectiveName
 import dev.kord.core.event.channel.ChannelUpdateEvent
 import dev.kord.core.event.channel.thread.TextChannelThreadCreateEvent
 import dev.kord.core.event.message.MessageCreateEvent
@@ -84,7 +83,7 @@ class BridgeDiscordEventHandler(
             val referencedMessage = lastMessage?.referencedMessage ?: return@onChannel
 
             val channelString = referencedMessage.channel.id.toString()
-            val ownerName = channel.owner.asUserOrNull()?.effectiveName ?: return@onChannel
+            val ownerName = channel.guild.getMemberOrNull(channel.ownerId)?.effectiveName ?: return@onChannel
             val message = "created a thread ${referencedMessage.getReplyLabel()}"
 
             listeners.forEach {
