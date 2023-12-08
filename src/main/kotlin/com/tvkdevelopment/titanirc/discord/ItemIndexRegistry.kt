@@ -54,7 +54,7 @@ data class ItemInfo(val originalName: String, val additionalNames: Set<String>) 
             .toSet()
 
     companion object {
-        private val REGEX_NORMALIZE_NAME = Regex("^([a-z0-9 _-]+)")
+        private val REGEX_NORMALIZE_NAME = Regex("""^([a-z0-9 _-]+(?:\.[a-z0-9_-]+)*)""")
         private val REGEX_REMOVE_CHARS = Regex(" ")
     }
 }

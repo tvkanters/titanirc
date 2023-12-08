@@ -33,7 +33,7 @@ class SnowflakeEncodeMemberMessageTransformation(
 
     companion object {
         private val REGEX_POTENTIAL_NAME =
-            Regex("""^([a-z0-9 _-]+)(?=[:,])|(?<=^| )@([a-z0-9_-]+)""", RegexOption.IGNORE_CASE)
+            Regex("""^([a-z0-9 _-]+(?:\.[a-z0-9_-]+)*)(?=[:,])|(?<=^| )@([a-z0-9_-]+(?:\.[a-z0-9_-]+)*)""", RegexOption.IGNORE_CASE)
         private val REGEX_REMOVE_CHARS = Regex(" ")
     }
 }

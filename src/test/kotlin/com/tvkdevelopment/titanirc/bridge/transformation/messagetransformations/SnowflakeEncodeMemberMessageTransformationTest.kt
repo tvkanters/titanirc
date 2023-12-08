@@ -18,6 +18,7 @@ class SnowflakeEncodeMemberMessageTransformationTest {
         forGuild(guild).memberRegistry += mockkMember(USER_ID, USER_USERNAME, USER_NAME)
         forGuild(guild).memberRegistry += mockkMember(USER_ID_SPACE, USER_USERNAME_SPACE, USER_NAME_SPACE)
         forGuild(guild).memberRegistry += mockkMember(USER_ID_EMOJI, USER_USERNAME_EMOJI, USER_NAME_EMOJI)
+        forGuild(guild).memberRegistry += mockkMember(USER_ID_DOT, USER_USERNAME_DOT, USER_NAME_DOT)
         forGuild(guildOther).memberRegistry += mockkMember(USER_ID_OTHER_GUILD, USER_USERNAME, USER_NAME)
 
         forGuild(guild).roleRegistry += mockkRole(ROLE_ID, ROLE_NAME)
@@ -319,6 +320,18 @@ class SnowflakeEncodeMemberMessageTransformationTest {
         assertEquals("<@$USER_ID> and <@${USER_ID_SPACE}> hello", result)
     }
 
+    @Test
+    fun testUsernameDot() {
+        // GIVEN
+        val message = "@$USER_USERNAME_DOT hello"
+
+        // WHEN
+        val result = sut.transform("", CHANNEL_ID.toString(), message)
+
+        // THEN
+        assertEquals("<@$USER_ID_DOT> hello", result)
+    }
+
 
     companion object {
         private const val GUILD_ID = 987L
@@ -330,6 +343,7 @@ class SnowflakeEncodeMemberMessageTransformationTest {
         private const val USER_ID = 123L
         private const val USER_ID_SPACE = 789L
         private const val USER_ID_EMOJI = 780L
+        private const val USER_ID_DOT = 781L
         private const val USER_ID_OTHER_GUILD = 234L
 
         private const val USER_NAME = "Larry"
@@ -338,11 +352,13 @@ class SnowflakeEncodeMemberMessageTransformationTest {
         private const val USER_NAME_SPACE_GLUED = "LordEdgy"
         private const val USER_NAME_EMOJI = "Hans \uD83D\uDC00"
         private const val USER_NAME_EMOJI_FIRST = "Hans"
+        private const val USER_NAME_DOT = "Larry Barry"
         private const val USER_NAME_GARBAGE = "%&^ABC"
 
         private const val USER_USERNAME = "Larry2623"
         private const val USER_USERNAME_SPACE = "Larry2623Space"
         private const val USER_USERNAME_EMOJI = "Larry2623Emoji"
+        private const val USER_USERNAME_DOT = "Larry.Barry"
 
         private const val ROLE_ID = 666L
         private const val ROLE_NAME = "Mods"
