@@ -13,6 +13,7 @@ class SnowflakeEncodeEmojiMessageTransformation(
         return message.replace(message.emojiRegex) { match ->
             match.groupValues[1]
                 .lowercase()
+                .replace("\\", "")
                 .let { emojiRegistry.itemsByNormalizedName[it] }
                 ?.let { id ->
                     emojiRegistry.itemsById[id]
@@ -24,9 +25,9 @@ class SnowflakeEncodeEmojiMessageTransformation(
 
     companion object {
         private val REGEX_POTENTIAL_EMOJI_NAME =
-            Regex(""":([a-z0-9_-]+):""", RegexOption.IGNORE_CASE)
+            Regex(""":([a-z0-9\\_-]+):""", RegexOption.IGNORE_CASE)
         private val REGEX_POTENTIAL_EMOJI_NAME_SAFE =
-            Regex("""(?<=^| ):([a-z0-9_-]+):""", RegexOption.IGNORE_CASE)
+            Regex("""(?<=^| ):([a-z0-9\\_-]+):""", RegexOption.IGNORE_CASE)
 
         private val String.emojiRegex: Regex
             get() = if (contains("://")) REGEX_POTENTIAL_EMOJI_NAME_SAFE else REGEX_POTENTIAL_EMOJI_NAME
