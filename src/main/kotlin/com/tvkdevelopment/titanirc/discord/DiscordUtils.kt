@@ -1,13 +1,11 @@
 package com.tvkdevelopment.titanirc.discord
 
-import com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations.escapeDiscordFormatting
 import com.tvkdevelopment.titanirc.util.Time
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.entity.Message
 import dev.kord.core.entity.StickerItem
 import dev.kord.core.entity.channel.Channel
 import dev.kord.core.entity.effectiveName
-import kotlin.time.Duration.Companion.minutes
 
 val Channel?.topicValue: String
     get() = this?.data?.topic?.value ?: ""
@@ -17,14 +15,14 @@ suspend fun Message.getReplyLabel(): String =
         .asSequence()
         .plus(
             when {
-                author?.isBot == true -> bridgeNickname?.escapeDiscordFormatting()
+                author?.isBot == true -> bridgeNickname
                 else -> getAuthorAsMemberOrNull()?.effectiveName ?: author?.effectiveName
             }
         )
-        .plus(Time.getRelativeTimeString(Time.currentTime - timestamp, short = true, minimumTimePassed = 1.minutes))
+        .plus(Time.getRelativeTimeString(Time.currentTime - timestamp, short = true))
         .filterNot { it.isNullOrEmpty() }
         .joinToString(" ")
-        .let { "[^$it]" }
+        .let { "[^ $it]" }
 
 val Message.bridgeNickname: String?
     get() =
