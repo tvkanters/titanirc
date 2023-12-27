@@ -107,6 +107,7 @@ class StreamEventDiscordEventHandler : DiscordEventHandler {
                     streamInfoByChannelByGuild.getOrPut(guildId) { arrayOfNulls(channelsToSync.size) }
                 streamInfoByChannel[channelIndex] =
                     TopicUtil.getStreamInfo(topic)
+                        ?.takeIf { it.streamer.length > 1 }
                         ?.let { streamInfo ->
                             Regex(
                                 """.*\b${Regex.escapeReplacement(streamInfo.streamer)}\b.*\(([^)]+)\)\s*""",
