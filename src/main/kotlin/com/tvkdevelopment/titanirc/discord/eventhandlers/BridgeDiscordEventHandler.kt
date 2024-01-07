@@ -139,7 +139,7 @@ class BridgeDiscordEventHandler(
 
     companion object {
         private const val MESSAGE_CORRECTION_LIMIT = 10
-        private val TOPIC_UPDATE_SANITIZE_REGEX = Regex("(?<!<)(https?:\\/\\/[^ ]+)")
+        private val TOPIC_UPDATE_SANITIZE_REGEX = Regex("(?<!<)(https?://[^ ]+)")
 
         private val RELAYED_MESSAGE_TYPES = setOf(
             MessageType.Default,

@@ -1,6 +1,7 @@
 package com.tvkdevelopment.titanirc.discord.eventhandlers
 
 import com.tvkdevelopment.titanirc.TitanircConfiguration
+import com.tvkdevelopment.titanirc.util.Log
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.entity.channel.Channel
@@ -20,7 +21,11 @@ interface DiscordEventHandler {
                 consumer = {
                     val guildId = getGuildId()
                     if (guildId == null || configuration.discordGuilds.contains(guildId.toString())) {
-                        consumer()
+                        try {
+                            consumer()
+                        } catch (e: Exception) {
+                            Log.e("Error handling event ${T::class.simpleName}", e)
+                        }
                     }
                 }
             )
