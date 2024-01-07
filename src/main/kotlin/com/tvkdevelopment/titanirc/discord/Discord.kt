@@ -77,7 +77,9 @@ class Discord(
                 }
 
                 on<DisconnectEvent> {
-                    Log.i("Discord disconnected: ${this::class.simpleName}")
+                    if (this !is DisconnectEvent.RetryLimitReachedEvent) {
+                        Log.i("Discord disconnected: ${this::class.simpleName}")
+                    }
                     bot = null
                 }
 

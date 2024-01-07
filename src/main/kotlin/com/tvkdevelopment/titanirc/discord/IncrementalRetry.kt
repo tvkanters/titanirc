@@ -1,11 +1,9 @@
 package com.tvkdevelopment.titanirc.discord
 
+import com.tvkdevelopment.titanirc.util.Log
 import dev.kord.gateway.retry.Retry
 import kotlinx.coroutines.delay
-import mu.KotlinLogging
 import kotlin.time.Duration
-
-private val incrementalRetryLogger = KotlinLogging.logger { }
 
 class IncrementalRetry(
     private val backoffStart: Duration,
@@ -34,7 +32,7 @@ class IncrementalRetry(
         ++tries
         val backoff = (backoffStart + backoffStepSize * tries).coerceAtMost(backoffMax)
 
-        incrementalRetryLogger.trace { "retry attempt $tries, delaying for $backoff" }
+        Log.i("Discord retry attempt $tries, delaying for $backoff")
         delay(backoff)
     }
 }
