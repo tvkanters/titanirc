@@ -22,6 +22,7 @@ import dev.kord.gateway.PrivilegedIntent
 import dev.kord.gateway.ratelimit.IdentifyRateLimiter
 import dev.kord.rest.json.request.ChannelModifyPatchRequest
 import kotlinx.coroutines.*
+import kotlin.properties.Delegates.observable
 import kotlin.time.Duration.Companion.seconds
 
 
@@ -33,7 +34,20 @@ class Discord(
     override val name = "Discord"
 
     private val scope = CoroutineScope(newSingleThreadContext("Discord"))
-    private var bot: Kord? = null
+
+    private var kordJob by observable<Job?>(null) { _, oldValue, _ ->
+        oldValue?.cancel()
+    }
+
+    private var zombieReconnectJob by observable<Job?>(null) { _, oldValue, _ ->
+        oldValue?.cancel()
+    }
+
+    private var bot by observable<Kord?>(null) { _, _, newValue ->
+        if (newValue != null) {
+            zombieReconnectJob = null
+        }
+    }
 
     private val bridgeListeners = mutableListOf<BridgeClient.Listener>()
 
@@ -53,7 +67,7 @@ class Discord(
 
     @OptIn(PrivilegedIntent::class)
     override fun connect() {
-        scope.launch {
+        kordJob = scope.launch {
             Kord(configuration.discordToken) {
                 gateways { resources, shards ->
                     shards.map {
@@ -81,6 +95,17 @@ class Discord(
                         Log.i("Discord disconnected: ${this::class.simpleName}")
                     }
                     bot = null
+
+                    if (this is DisconnectEvent.ZombieConnectionEvent && zombieReconnectJob == null) {
+                        zombieReconnectJob = scope.launch {
+                            while (bot == null) {
+                                kordJob = null
+                                delay(ZOMBIE_RECONNECT_DELAY)
+                                Log.i("Trying to reconnect zombie connection")
+                                connect()
+                            }
+                        }
+                    }
                 }
 
                 on<ResumedEvent> {
@@ -140,5 +165,9 @@ class Discord(
                 ?.takeIf { it.topicValue.unescapeDiscordFormatting() != topic.unescapeDiscordFormatting() }
                 ?.apply { rest.channel.patchChannel(id, ChannelModifyPatchRequest(topic = Optional(topic))) }
         }
+    }
+
+    companion object {
+        private val ZOMBIE_RECONNECT_DELAY = 10.seconds
     }
 }
