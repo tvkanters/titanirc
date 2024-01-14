@@ -14,35 +14,39 @@ object Time {
         get() = Clock.System.now()
 
     fun getRelativeTimeString(timePassed: Duration, short: Boolean, minimumTimePassed: Duration = 0.seconds): String? =
-        when {
-            timePassed < minimumTimePassed -> null
-            timePassed >= 2.days -> "${timePassed.toInt(DurationUnit.DAYS)}${getDayString(plural = true, short)} ago"
-            timePassed >= 1.days -> "1${getDayString(plural = false, short)} ago"
-            timePassed >= 2.hours -> "${timePassed.toInt(DurationUnit.HOURS)}${getHourString(plural = true, short)} ago"
-            timePassed >= 1.hours -> "1${getHourString(plural = false, short)} ago"
-            timePassed >= 2.minutes -> "${timePassed.toInt(DurationUnit.MINUTES)}${getMinuteString(plural = true, short)} ago"
-            timePassed >= 1.minutes -> "1${getMinuteString(plural = false, short)} ago"
-            else -> "just now"
+        DurationString.options
+            .takeIf { timePassed >= minimumTimePassed }
+            ?.firstNotNullOfOrNull { it.get(timePassed, short) }
+
+    private fun interface DurationString {
+        fun get(duration: Duration, short: Boolean): String?
+
+        class SimpleDurationString(
+            private val base: String,
+            private val unit: DurationUnit,
+            private val minimum: Duration,
+        ) : DurationString {
+
+            override fun get(duration: Duration, short: Boolean) =
+                duration
+                    .takeIf { it >= minimum }
+                    ?.toInt(unit)
+                    ?.let {
+                        when {
+                            short -> "$it${base.take(1)}"
+                            it != 1 -> "$it ${base}s"
+                            else -> "$it $base"
+                        }
+                    }
         }
 
-    private fun getDayString(plural: Boolean, short: Boolean) =
-        when {
-            short -> "d"
-            plural -> " days"
-            else -> " day"
+        companion object {
+            val options = listOf(
+                SimpleDurationString("day", DurationUnit.DAYS, 1.days),
+                SimpleDurationString("hour", DurationUnit.HOURS, 1.hours),
+                SimpleDurationString("minute", DurationUnit.MINUTES, 1.minutes),
+                SimpleDurationString("second", DurationUnit.SECONDS, 0.seconds),
+            )
         }
-
-    private fun getHourString(plural: Boolean, short: Boolean) =
-        when {
-            short -> "h"
-            plural -> " hours"
-            else -> " hour"
-        }
-
-    private fun getMinuteString(plural: Boolean, short: Boolean) =
-        when {
-            short -> "m"
-            plural -> " minutes"
-            else -> " minute"
-        }
+    }
 }
