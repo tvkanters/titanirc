@@ -51,3 +51,9 @@ val Snowflake.mentionRole: String
 
 val Snowflake.mentionChannel: String
     get() = "<$MENTION_SYMBOL_CHANNEL$this>"
+
+private val TOPIC_UPDATE_SANITIZE_REGEX = Regex("""(?<!<)(https?://[^ )]+)""")
+
+fun escapeTopicForMessage(topic: String) =
+    topic.replace(TOPIC_UPDATE_SANITIZE_REGEX, "<$1>")
+
