@@ -8,6 +8,7 @@ import com.tvkdevelopment.titanirc.bridge.transformation.MessageTransformationMa
 import com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations.*
 import com.tvkdevelopment.titanirc.discord.Discord
 import com.tvkdevelopment.titanirc.irc.Irc
+import com.tvkdevelopment.titanirc.util.Log
 import org.apache.log4j.BasicConfigurator
 import org.slf4j.simple.SimpleLogger
 
@@ -22,6 +23,8 @@ object Main {
             System.setProperty(SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "VERBOSE")
             BasicConfigurator.configure()
         }
+
+        Log.i("Starting titanirc")
 
         val irc = Irc(configuration)
         val discord = Discord(configuration)

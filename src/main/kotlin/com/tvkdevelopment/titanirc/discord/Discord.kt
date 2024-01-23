@@ -99,9 +99,9 @@ class Discord(
                     if (this is DisconnectEvent.ZombieConnectionEvent && zombieReconnectJob == null) {
                         zombieReconnectJob = scope.launch {
                             while (bot == null) {
-                                kordJob = null
                                 delay(ZOMBIE_RECONNECT_DELAY)
                                 Log.i("Trying to reconnect zombie connection")
+                                kordJob = null
                                 connect()
                             }
                         }
