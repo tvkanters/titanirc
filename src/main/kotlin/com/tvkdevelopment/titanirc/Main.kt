@@ -50,7 +50,8 @@ object Main {
                         FormattingIrcStripMessageTransformation(),
                         SmolFiStripMessageTransformation(),
                         VxMessageTransformation(),
-                        DiscordUrlTrackingStripMessageTransformation(),
+                        // Tracking is not stripped because URLs don't work without it anymore.
+                        //DiscordUrlTrackingStripMessageTransformation(),
                         SnowflakeEncodeMemberMessageTransformation(discord.snowflakeRegistry),
                         SnowflakeEncodeChannelMessageTransformation(discord.snowflakeRegistry),
                         SnowflakeEncodeEmojiMessageTransformation(discord.snowflakeRegistry),
@@ -61,7 +62,8 @@ object Main {
                     listOf(
                         FormattingDiscordToIrcMessageTransformation(),
                         SmolFiPrependMessageTransformation(),
-                        DiscordUrlTrackingStripMessageTransformation(),
+                        // Tracking is not stripped because URLs don't work without it anymore.
+                        //DiscordUrlTrackingStripMessageTransformation(),
                         SnowflakeDecodeMessageTransformation(discord.snowflakeRegistry),
                     )
                 )
