@@ -38,14 +38,17 @@ class Discord(
     private var kordJob by observable<Job?>(null) { _, oldValue, _ ->
         oldValue?.cancel()
     }
+    private var kord by observable<Kord?>(null) { _, oldValue, _ ->
+        oldValue?.cancel()
+    }
 
-    private var zombieReconnectJob by observable<Job?>(null) { _, oldValue, _ ->
+    private var rebootConnectionJob by observable<Job?>(null) { _, oldValue, _ ->
         oldValue?.cancel()
     }
 
     private var bot by observable<Kord?>(null) { _, _, newValue ->
         if (newValue != null) {
-            zombieReconnectJob = null
+            rebootConnectionJob = null
         }
     }
 
@@ -68,7 +71,8 @@ class Discord(
     @OptIn(PrivilegedIntent::class)
     override fun connect() {
         kordJob = scope.launch {
-            Kord(configuration.discordToken) {
+            Log.i("Starting Kord")
+            kord = Kord(configuration.discordToken) {
                 gateways { resources, shards ->
                     shards.map {
                         DefaultGateway {
@@ -79,7 +83,7 @@ class Discord(
                     }
                 }
             }.apply {
-                if (configuration.isDevEnv) {
+                if (configuration.isDevEnv || bot == null) {
                     on<Event> {
                         Log.i("Event: $this")
                     }
@@ -90,27 +94,23 @@ class Discord(
                     bot = kord
                 }
 
+                on<ResumedEvent> {
+                    Log.i("Discord resumed")
+                    bot = kord
+                }
+
                 on<DisconnectEvent> {
                     if (this !is DisconnectEvent.RetryLimitReachedEvent) {
                         Log.i("Discord disconnected: ${this::class.simpleName}")
                     }
                     bot = null
 
-                    if (this is DisconnectEvent.ZombieConnectionEvent && zombieReconnectJob == null) {
-                        zombieReconnectJob = scope.launch {
-                            while (bot == null) {
-                                delay(ZOMBIE_RECONNECT_DELAY)
-                                Log.i("Trying to reconnect zombie connection")
-                                kordJob = null
-                                connect()
-                            }
-                        }
+                    when (this) {
+                        is DisconnectEvent.ZombieConnectionEvent,
+                        is DisconnectEvent.RetryLimitReachedEvent ->
+                            rebootConnection()
+                        else -> {}
                     }
-                }
-
-                on<ResumedEvent> {
-                    Log.i("Discord resumed")
-                    bot = kord
                 }
 
                 on<GuildCreateEvent> {
@@ -123,6 +123,20 @@ class Discord(
                 login {
                     intents += Intent.MessageContent
                     intents += Intent.GuildMembers
+                }
+            }
+        }
+    }
+
+    private fun rebootConnection() {
+        if (rebootConnectionJob == null) {
+            rebootConnectionJob = scope.launch {
+                while (bot == null) {
+                    delay(REBOOT_RECONNECT_DELAY)
+                    Log.i("Rebooting connection")
+                    kord = null
+                    kordJob?.cancelAndJoin()
+                    connect()
                 }
             }
         }
@@ -168,6 +182,6 @@ class Discord(
     }
 
     companion object {
-        private val ZOMBIE_RECONNECT_DELAY = 10.seconds
+        private val REBOOT_RECONNECT_DELAY = 10.seconds
     }
 }
