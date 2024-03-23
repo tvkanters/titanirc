@@ -188,7 +188,7 @@ class StreamEventDiscordEventHandler : DiscordEventHandler {
             GuildScheduledEventStatus.Scheduled,
             GuildScheduledEventStatus.Active,
             is GuildScheduledEventStatus.Unknown ->
-                false
+                scheduledEndTime?.let { it <= Time.currentTime } ?: false
 
             GuildScheduledEventStatus.Completed,
             GuildScheduledEventStatus.Cancelled ->

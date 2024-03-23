@@ -83,8 +83,8 @@ class Discord(
                     }
                 }
             }.apply {
-                if (configuration.isDevEnv || bot == null) {
-                    on<Event> {
+                on<Event> {
+                    if (configuration.isDevEnv || bot == null) {
                         Log.i("Event: $this")
                     }
                 }
@@ -109,6 +109,7 @@ class Discord(
                         is DisconnectEvent.ZombieConnectionEvent,
                         is DisconnectEvent.RetryLimitReachedEvent ->
                             rebootConnection()
+
                         else -> {}
                     }
                 }
