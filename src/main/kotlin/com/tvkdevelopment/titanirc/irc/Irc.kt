@@ -87,6 +87,7 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
 
     private fun sendMessage(channel: String, prefix: String?, message: String) {
         message
+            .replace(REGEX_BLANK_LINE_REPLACE, "\n")
             .conditionalTransform(message.count { it == '\n' } >= MAX_LINES_BEFORE_JOINING) {
                 it.replace(REGEX_NEW_LINE_REPLACE, " ")
             }
@@ -105,6 +106,7 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
 
         private const val MAX_LINES_BEFORE_JOINING = 5
 
+        private val REGEX_BLANK_LINE_REPLACE = Regex("\n{2,}")
         private val REGEX_NEW_LINE_REPLACE = Regex("\n+")
 
         private fun <T> T.conditionalTransform(condition: Boolean, transform: (T) -> T): T =
