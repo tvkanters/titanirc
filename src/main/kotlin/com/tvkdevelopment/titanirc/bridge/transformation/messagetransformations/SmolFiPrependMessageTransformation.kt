@@ -10,7 +10,7 @@ class SmolFiPrependMessageTransformation : MessageTransformation {
 
     companion object {
         private val REGEX =
-            Regex("""(?<!https://smol.fi/e/\?v=)https?://(?:media|cdn)\.discordapp\.(?:net|com)/attachments/(\S+\.(?:mp4|webm|mov)[^ ]*)""")
+            Regex("""(?<!https://smol.fi/e/\?v=)https?://(?:media|cdn)\.discordapp\.(?:net|com)/attachments/(\S+\.(?:mp4|webm|mov)\S*)""")
 
         private fun encode(string: String) = URLEncoder.encode(string, Charsets.UTF_8.name())
     }
