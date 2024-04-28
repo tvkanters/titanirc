@@ -54,7 +54,7 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
 
                     addListener(LogListener())
                     addListener(RestartListener(taskScope, DISCONNECT_RESTART_DELAY, ::connect))
-                    addListener(NickFixListener(name))
+                    addListener(NickFixListener(configuration))
                     addListener(IrcBridgeListener(bridgeListeners))
                     addListener(messageSender)
                     addListener(AdminListener(configuration, messageSender))

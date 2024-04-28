@@ -4,6 +4,7 @@ import com.tvkdevelopment.titanirc.TitanircConfiguration
 import com.tvkdevelopment.titanirc.irc.IrcMessageSender
 import com.tvkdevelopment.titanirc.util.StreamInfo
 import com.tvkdevelopment.titanirc.util.TopicUtil
+import org.pircbotx.PircBotX
 import org.pircbotx.hooks.Event
 import org.pircbotx.hooks.Listener
 import org.pircbotx.hooks.events.PrivateMessageEvent
@@ -44,6 +45,9 @@ class AdminListener(
                                         ?.let { TopicUtil.setStreamInfo(it, StreamInfo(streamer, "Game", title)) }
                                         ?.let { messageSender.setTopic(channel, it) }
                                 }
+
+                        "!fixnick" ->
+                            event.getBot<PircBotX>().sendIRC().changeNick(configuration.ircNick)
                     }
                 }
             }
