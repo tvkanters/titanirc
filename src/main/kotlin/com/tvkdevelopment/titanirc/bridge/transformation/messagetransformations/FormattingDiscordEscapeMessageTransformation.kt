@@ -2,7 +2,7 @@ package com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations
 
 import com.tvkdevelopment.titanirc.bridge.transformation.MessageTransformation
 
-private val ESCAPED_CHARS = setOf('*', '_', '~', '`', '\\')
+private val ESCAPED_CHARS = setOf('*', '_', '~', '\\')
 private const val ILLEGAL_WORD = "://"
 private const val WORD_SEPARATOR = ' '
 
