@@ -62,6 +62,7 @@ object Main {
                     listOf(
                         FormattingDiscordToIrcMessageTransformation(),
                         SmolFiPrependMessageTransformation(),
+                        VxStripMessageTransformation(),
                         // Tracking is not stripped because URLs don't work without it anymore.
                         //DiscordUrlTrackingStripMessageTransformation(),
                         SnowflakeDecodeMessageTransformation(discord.snowflakeRegistry),
