@@ -332,6 +332,18 @@ class SnowflakeEncodeMemberMessageTransformationTest {
         assertEquals("<@$USER_ID_DOT> hello", result)
     }
 
+    @Test
+    fun testNameBlacklist() {
+        // GIVEN
+        snowflakeRegistry.forGuild(guild).memberRegistry += mockkMember(12345, "streamer_", "Streamer")
+        val message = "Streamer: | Game: |"
+
+        // WHEN
+        val result = sut.transform("", CHANNEL_ID.toString(), message)
+
+        // THEN
+        assertEquals(message, result)
+    }
 
     companion object {
         private const val GUILD_ID = 987L

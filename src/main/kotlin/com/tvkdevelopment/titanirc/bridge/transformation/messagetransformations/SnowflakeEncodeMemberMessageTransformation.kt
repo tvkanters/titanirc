@@ -24,8 +24,8 @@ class SnowflakeEncodeMemberMessageTransformation(
     private fun GuildSnowflakeRegistry.resolvePotentialName(potentialName: String, allowRoles: Boolean): String? =
         potentialName
             .replace(REGEX_REMOVE_CHARS, "")
-            .takeIf { it.isNotEmpty() }
-            ?.lowercase()
+            .lowercase()
+            .takeUnless { it.isEmpty() || it in NAME_BLACKLIST  }
             ?.let { normalizedName ->
                 memberRegistry.itemsByNormalizedName[normalizedName]?.mentionMember
                     ?: roleRegistry.takeIf { allowRoles }?.itemsByNormalizedName?.get(normalizedName)?.mentionRole
@@ -35,5 +35,7 @@ class SnowflakeEncodeMemberMessageTransformation(
         private val REGEX_POTENTIAL_NAME =
             Regex("""^([a-z0-9 _-]+(?:\.[a-z0-9_-]+)*)(?=[:,])|(?<=^| )@([a-z0-9_-]+(?:\.[a-z0-9_-]+)*)""", RegexOption.IGNORE_CASE)
         private val REGEX_REMOVE_CHARS = Regex(" ")
+
+        private val NAME_BLACKLIST = setOf("streamer", "game", "movie")
     }
 }
