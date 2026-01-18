@@ -12,7 +12,6 @@ import com.tvkdevelopment.titanirc.util.Log
 import org.apache.log4j.BasicConfigurator
 import org.slf4j.simple.SimpleLogger
 
-
 object Main {
 
     @JvmStatic
@@ -66,6 +65,7 @@ object Main {
                         // Tracking is not stripped because URLs don't work without it anymore.
                         //DiscordUrlTrackingStripMessageTransformation(),
                         SnowflakeDecodeMessageTransformation(discord.snowflakeRegistry),
+                        TimestampDecodeMessageTransformation(),
                     )
                 )
             ),

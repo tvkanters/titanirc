@@ -1,13 +1,13 @@
 package com.tvkdevelopment.titanirc.util
 
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
+import kotlin.time.Instant
 
 object Time {
     val currentTime: Instant
@@ -17,6 +17,17 @@ object Time {
         DurationString.options
             .takeIf { timePassed >= minimumTimePassed }
             ?.firstNotNullOfOrNull { it.get(timePassed, short) }
+
+    fun getRelativeTimeString(instant: Instant, short: Boolean): String {
+        val difference = instant - currentTime
+        val absoluteDifference = difference.absoluteValue
+        val relativeString = getRelativeTimeString(timePassed = absoluteDifference, short = short)
+        return when {
+            difference == 0.seconds -> "now"
+            difference > 0.seconds -> "in $relativeString"
+            else -> "$relativeString ago"
+        }
+    }
 
     private fun interface DurationString {
         fun get(duration: Duration, short: Boolean): String?
