@@ -7,10 +7,10 @@ class VxMessageTransformation : MessageTransformation {
     override fun transform(sourceChannel: String, targetChannel: String, message: String): String =
         message
             .replace(VX_REGEX, "https://vx$1.")
-            .replace(REDDIT_REGEX, "https://$1rxddit.com/")
+            .replace(REDD_IT_REGEX, "https://vxreddit.com/")
 
     companion object {
-        private val VX_REGEX = Regex("""https?://(?:www\.)?(twitter|threads|tiktok)\.""")
-        private val REDDIT_REGEX = Regex("""https?://((?:old|www)\.)?(reddit\.[^/.]+|redd\.it)/""")
+        private val VX_REGEX = Regex("""https?://(?:www\.|old\.)?(twitter|threads|tiktok|reddit)\.""")
+        private val REDD_IT_REGEX = Regex("""https?://((?:old|www)\.)?(redd\.it)/""")
     }
 }

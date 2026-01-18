@@ -64,7 +64,7 @@ class VxMessageTransformationTest {
         val transformedMessage = sut.transform("", "", message)
 
         // THEN
-        assertEquals("Hi https://rxddit.com/r/somepost", transformedMessage)
+        assertEquals("Hi https://vxreddit.com/r/somepost", transformedMessage)
     }
 
     @Test
@@ -76,7 +76,7 @@ class VxMessageTransformationTest {
         val transformedMessage = sut.transform("", "", message)
 
         // THEN
-        assertEquals("Hi https://old.rxddit.com/r/somepost", transformedMessage)
+        assertEquals("Hi https://vxreddit.com/r/somepost", transformedMessage)
     }
 
     @Test
@@ -88,6 +88,6 @@ class VxMessageTransformationTest {
         val transformedMessage = sut.transform("", "", message)
 
         // THEN
-        assertEquals("Hi https://rxddit.com/r/somepost", transformedMessage)
+        assertEquals("Hi https://vxreddit.com/r/somepost", transformedMessage)
     }
 }
