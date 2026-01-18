@@ -2,6 +2,7 @@
 /.gradle/
 /build/
 /exe/
+/.kotlin/
 *.log*
 *.iml
 /deploy.gradle

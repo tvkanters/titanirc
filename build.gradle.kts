@@ -1,20 +1,12 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
     id("java")
-    kotlin("jvm") version "1.9.0"
+    kotlin("jvm") version "2.3.0"
     id("org.hidetake.ssh") version "2.10.1"
 }
 
 group = "com.tvkdevelopment.titanirc"
 version = "1.0"
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
-}
-tasks.withType<KotlinCompile>().configureEach {
-    kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
-}
 tasks.withType<Test> {
     useJUnitPlatform()
 }
@@ -32,9 +24,9 @@ dependencies {
     implementation("com.github.pircbotx:pircbotx:2.3.1")
     implementation("org.slf4j:slf4j-log4j12:2.0.7")
     implementation("org.slf4j:slf4j-simple:2.0.7")
-    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1")
 
-    implementation("dev.kord:kord-core:0.13.1")
+    implementation("dev.kord:kord-core:0.17.0")
 
     testImplementation(kotlin("test-junit"))
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
