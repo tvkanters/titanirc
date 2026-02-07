@@ -78,7 +78,7 @@ class Discord(
                         DefaultGateway {
                             client = resources.httpClient
                             identifyRateLimiter = IdentifyRateLimiter(resources.maxConcurrency, defaultDispatcher)
-                            reconnectRetry = IncrementalRetry(2.seconds, 2.seconds, 30.seconds)
+                            reconnectRetry = IncrementalRetry(2.seconds, 10.seconds, 60.seconds)
                         }
                     }
                 }
@@ -130,7 +130,7 @@ class Discord(
     }
 
     private fun rebootConnection() {
-        if (rebootConnectionJob == null) {
+        if (rebootConnectionJob?.isActive != true) {
             rebootConnectionJob = scope.launch {
                 while (bot == null) {
                     delay(REBOOT_RECONNECT_DELAY)
@@ -183,6 +183,6 @@ class Discord(
     }
 
     companion object {
-        private val REBOOT_RECONNECT_DELAY = 10.seconds
+        private val REBOOT_RECONNECT_DELAY = 30.seconds
     }
 }

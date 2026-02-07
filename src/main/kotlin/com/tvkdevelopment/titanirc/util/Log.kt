@@ -12,7 +12,7 @@ object Log {
     private val simpleFormatter = object : SimpleFormatter() {
         override fun format(logRecord: LogRecord) =
             String.format(
-                "[%1\$tF %1\$tT] [%2\$-7s] %3\$s%n",
+                $$"[%1$tF %1$tT.%1$tL] [%2$-7s] %3$s%n",
                 Date(logRecord.millis),
                 logRecord.level.localizedName,
                 logRecord.message
