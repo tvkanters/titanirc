@@ -107,16 +107,7 @@ class StreamEventDiscordEventHandler : DiscordEventHandler {
                     streamInfoByChannelByGuild.getOrPut(guildId) { arrayOfNulls(channelsToSync.size) }
                 streamInfoByChannel[channelIndex] =
                     TopicUtil.getStreamInfo(topic)
-                        ?.let { streamInfo ->
-                            Regex(
-                                """.*\b${Regex.escapeReplacement(streamInfo.streamer)}\b.*\(([^)]+)\)\s*""",
-                                RegexOption.IGNORE_CASE
-                            )
-                                .takeIf { streamInfo.streamer.length > 1 }
-                                ?.matchEntire(streamInfo.title)
-                                ?.let { streamInfo.copy(title = it.groupValues[1]) }
-                                ?: streamInfo
-                        }
+                        ?.let(TopicUtil::filterJokeTopics)
                         ?.let { streamInfo ->
                             val label = channelsToSync[channelIndex].label
                             when {

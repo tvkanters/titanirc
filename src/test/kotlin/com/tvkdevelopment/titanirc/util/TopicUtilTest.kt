@@ -113,4 +113,100 @@ class TopicUtilTest {
         // THEN
         assertNull(result)
     }
+
+    @Test
+    fun testDoNotFilterNonJokeTopic() {
+        // GIVEN
+        val streamInfo = StreamInfo(
+            streamer = "seagull",
+            streamType = "game",
+            title = "Normal Game 2"
+        )
+
+        // WHEN
+        val result = TopicUtil.filterJokeTopics(streamInfo)
+
+        // THEN
+        assertEquals(streamInfo, result)
+    }
+
+    @Test
+    fun testFilterJokeTopicMentioningSelf() {
+        // GIVEN
+        val streamInfo = StreamInfo(
+            streamer = "seagull",
+            streamType = "game",
+            title = "seagull who is being a twat (Normal Game 2)"
+        )
+
+        // WHEN
+        val result = TopicUtil.filterJokeTopics(streamInfo)
+
+        // THEN
+        assertEquals(streamInfo.copy(title = "Normal Game 2"), result)
+    }
+
+    @Test
+    fun testFilterJokeTopicMentioningSelfIgnoresShortNames() {
+        // GIVEN
+        val streamInfo = StreamInfo(
+            streamer = "a",
+            streamType = "game",
+            title = "a who is being a twat (Normal Game 2)"
+        )
+
+        // WHEN
+        val result = TopicUtil.filterJokeTopics(streamInfo)
+
+        // THEN
+        assertEquals(streamInfo, result)
+    }
+
+    @Test
+    fun testFilterJokeTopicNotMentioningSelf() {
+        // GIVEN
+        val streamInfo = StreamInfo(
+            streamer = "seagull",
+            streamType = "game",
+            title = "some viewer who is being picked on because the stream is a bully (Normal Game 2)"
+        )
+
+        // WHEN
+        val result = TopicUtil.filterJokeTopics(streamInfo)
+
+        // THEN
+        assertEquals(streamInfo.copy(title = "Normal Game 2"), result)
+    }
+
+    @Test
+    fun testFilterJokeTopicNotMentioningSelfIgnoresShort() {
+        // GIVEN
+        val streamInfo = StreamInfo(
+            streamer = "seagull",
+            streamType = "game",
+            title = "Some Title (Normal Game 2)"
+        )
+
+        // WHEN
+        val result = TopicUtil.filterJokeTopics(streamInfo)
+
+        // THEN
+        assertEquals(streamInfo, result)
+    }
+
+    @Test
+    fun testFilterJokeTopicIgnoresNonGames() {
+        // GIVEN
+        val streamInfo = StreamInfo(
+            streamer = "seagull",
+            streamType = "movie",
+            title = "seagull movie 2 (the movieing)"
+        )
+
+        // WHEN
+        val result = TopicUtil.filterJokeTopics(streamInfo)
+
+        // THEN
+        assertEquals(streamInfo, result)
+    }
 }

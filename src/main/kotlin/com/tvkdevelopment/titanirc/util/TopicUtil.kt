@@ -7,6 +7,32 @@ object TopicUtil {
         RegexOption.IGNORE_CASE
     )
 
+    private data class JokeTopic(
+        val regex: (StreamInfo) -> Regex?,
+        val extractTitle: (MatchResult) -> String
+    )
+
+    private val JOKE_TOPICS =
+        setOf(
+            JokeTopic(
+                regex = { streamInfo ->
+                    streamInfo.streamer
+                        .takeIf { it.length > 1 }
+                        ?.let {
+                            Regex(
+                                """.*\b${Regex.escapeReplacement(it)}\b.*\(([^)]+)\)\s*""",
+                                RegexOption.IGNORE_CASE
+                            )
+                        }
+                },
+                extractTitle = { it.groupValues[1] }
+            ),
+            JokeTopic(
+                regex = { Regex(""".{40,}\(([^)]+)\)\s*""") },
+                extractTitle = { it.groupValues[1] }
+            ),
+        )
+
     private val cache = LinkedHashMap<String, StreamInfo>()
 
     fun getStreamInfo(topic: String): StreamInfo? =
@@ -30,6 +56,13 @@ object TopicUtil {
                 .filter { it.isNotBlank() }
                 .joinToString(" ")
         )
+
+    fun filterJokeTopics(streamInfo: StreamInfo): StreamInfo =
+        JOKE_TOPICS
+            .takeIf { streamInfo.streamType.lowercase() == "game" }
+            ?.firstNotNullOfOrNull { it.regex(streamInfo)?.matchEntire(streamInfo.title) }
+            ?.let { streamInfo.copy(title = it.groupValues[1]) }
+            ?: streamInfo
 }
 
 data class StreamInfo(
