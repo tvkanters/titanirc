@@ -18,6 +18,7 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
 
     private val connectionScope = CoroutineScope(SupervisorJob() + newSingleThreadContext("Irc"))
     private val taskScope = CoroutineScope(newSingleThreadContext("IrcTasks"))
+    private val healthScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private var connectJob: Job? = null
     private val messageSender = IrcMessageSender(taskScope, configuration, ::bot)
 
@@ -60,6 +61,10 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
                         setListenerManager(SequentialListenerManager.newDefault())
 
                         addListener(LogListener())
+                        addListener(IrcHealthListener(healthScope, configuration.ircChannels) { failedBot ->
+                            // Closing the socket makes PircBotX run its own reconnect loop.
+                            if (bot === failedBot) failedBot.close()
+                        })
                         addListener(NickFixListener(configuration))
                         addListener(IrcBridgeListener(bridgeListeners))
                         addListener(messageSender)
