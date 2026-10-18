@@ -77,7 +77,7 @@ class IrcHealthListener(
 
             is UnknownEvent -> {
                 if (event.command.equals("PONG", ignoreCase = true)) {
-                    pendingPong.compareAndSet(event.parsedLine.lastOrNull(), null)
+                    pendingPong.acknowledgePong(event.parsedLine.lastOrNull())
                 }
             }
 
@@ -93,5 +93,13 @@ class IrcHealthListener(
         private val JOIN_GRACE_PERIOD = 30.seconds
         private val PING_INTERVAL = 60.seconds
         private val PONG_TIMEOUT = 20.seconds
+    }
+}
+
+/** Match the reply by value, then use the stored reference for the atomic clear. */
+internal fun AtomicReference<String?>.acknowledgePong(reply: String?) {
+    val outstanding = get()
+    if (outstanding != null && outstanding == reply) {
+        compareAndSet(outstanding, null)
     }
 }
