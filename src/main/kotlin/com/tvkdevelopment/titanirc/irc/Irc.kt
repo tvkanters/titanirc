@@ -16,55 +16,69 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
 
     override val name = "IRC"
 
-    private val connectionScope = CoroutineScope(newSingleThreadContext("Irc"))
+    private val connectionScope = CoroutineScope(SupervisorJob() + newSingleThreadContext("Irc"))
     private val taskScope = CoroutineScope(newSingleThreadContext("IrcTasks"))
     private var connectJob: Job? = null
     private val messageSender = IrcMessageSender(taskScope, configuration, ::bot)
 
-    private var bot: PircBotX? = null
+    @Volatile private var bot: PircBotX? = null
     private var maxLineLength: Int = QUAKENET_MAX_LINE_LENGTH
 
     private val bridgeListeners = mutableListOf<BridgeClient.Listener>()
 
     override fun connect() {
+        // startBot() blocks the connection thread while PircBotX reconnects. Stop it from
+        // the caller's thread before queuing a replacement on that same connection thread.
+        val previousBot = bot
+        previousBot?.stopBotReconnect()
+        previousBot?.close()
         connectJob?.cancel()
         connectJob = connectionScope.launch {
-            bot?.close()
-            try {
-                PircBotX(Configuration.Builder().apply {
-                    name = configuration.ircNick
-                    login = configuration.ircUsername
-                    realName = "Dopelives bridge"
-                    configuration.ircPassword?.let {
-                        nickservCustomMessage =
-                            "PRIVMSG Q@CServe.quakenet.org :AUTH ${configuration.ircUsername} $it"
-                    }
+            while (isActive) {
+                var currentBot: PircBotX? = null
+                try {
+                    val newBot = PircBotX(Configuration.Builder().apply {
+                        name = configuration.ircNick
+                        login = configuration.ircUsername
+                        realName = "Dopelives bridge"
+                        configuration.ircPassword?.let {
+                            nickservCustomMessage =
+                                "PRIVMSG Q@CServe.quakenet.org :AUTH ${configuration.ircUsername} $it"
+                        }
 
-                    addServer("irc.quakenet.org")
-                    configuration.ircChannels.forEach {
-                        addAutoJoinChannel(it)
-                    }
-                    isAutoReconnect = true
-                    autoReconnectAttempts = Int.MAX_VALUE
-                    autoReconnectDelay = AdaptingDelay(2_000L, 30_000L).also { addListener(it) }
-                    isUserModeHideRealHost = true
-                    isAutoNickChange = true
+                        addServer("irc.quakenet.org")
+                        configuration.ircChannels.forEach {
+                            addAutoJoinChannel(it)
+                        }
+                        isAutoReconnect = true
+                        autoReconnectAttempts = Int.MAX_VALUE
+                        autoReconnectDelay = AdaptingDelay(2_000L, 30_000L).also { addListener(it) }
+                        socketConnectTimeout = 15_000
+                        isUserModeHideRealHost = true
+                        isAutoNickChange = true
 
-                    setListenerManager(SequentialListenerManager.newDefault())
+                        setListenerManager(SequentialListenerManager.newDefault())
 
-                    addListener(LogListener())
-                    addListener(RestartListener(taskScope, DISCONNECT_RESTART_DELAY, ::connect))
-                    addListener(NickFixListener(configuration))
-                    addListener(IrcBridgeListener(bridgeListeners))
-                    addListener(messageSender)
-                    addListener(AdminListener(configuration, messageSender))
-                }.buildConfiguration())
-                    .also { bot = it }
-                    .startBot()
-            } catch (e: Exception) {
-                Log.e(e)
+                        addListener(LogListener())
+                        addListener(NickFixListener(configuration))
+                        addListener(IrcBridgeListener(bridgeListeners))
+                        addListener(messageSender)
+                        addListener(AdminListener(configuration, messageSender))
+                    }.buildConfiguration())
+                    currentBot = newBot
+                    bot = newBot
+                    newBot.startBot()
+                    Log.w("IRC connection loop ended; restarting")
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Log.e("IRC connection loop failed; restarting", e)
+                } finally {
+                    if (bot === currentBot) bot = null
+                    currentBot?.stopBotReconnect()
+                    currentBot?.close()
+                }
                 delay(CRASH_RESTART_DELAY)
-                connect()
             }
         }
     }
@@ -101,7 +115,6 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
 
     companion object {
         private const val QUAKENET_MAX_LINE_LENGTH = 440
-        private val DISCONNECT_RESTART_DELAY = 30.seconds
         private val CRASH_RESTART_DELAY = 5.seconds
 
         private const val MAX_LINES_BEFORE_JOINING = 5
