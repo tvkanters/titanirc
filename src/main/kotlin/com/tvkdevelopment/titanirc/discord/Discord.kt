@@ -33,7 +33,7 @@ class Discord(
 
     override val name = "Discord"
 
-    private val scope = CoroutineScope(newSingleThreadContext("Discord"))
+    private val scope = CoroutineScope(SupervisorJob() + newSingleThreadContext("Discord"))
 
     private var kordJob by observable<Job?>(null) { _, oldValue, _ ->
         oldValue?.cancel()
@@ -71,59 +71,73 @@ class Discord(
     @OptIn(PrivilegedIntent::class)
     override fun connect() {
         kordJob = scope.launch {
-            Log.i("Starting Kord")
-            kord = Kord(configuration.discordToken) {
-                gateways { resources, shards ->
-                    shards.map {
-                        DefaultGateway {
-                            client = resources.httpClient
-                            identifyRateLimiter = IdentifyRateLimiter(resources.maxConcurrency, defaultDispatcher)
-                            reconnectRetry = IncrementalRetry(2.seconds, 10.seconds, 60.seconds)
+            try {
+                Log.i("Starting Kord")
+                kord = Kord(configuration.discordToken) {
+                    gateways { resources, shards ->
+                        shards.map {
+                            DefaultGateway {
+                                client = resources.httpClient
+                                identifyRateLimiter = IdentifyRateLimiter(resources.maxConcurrency, defaultDispatcher)
+                                reconnectRetry = IncrementalRetry(2.seconds, 10.seconds, 60.seconds)
+                            }
                         }
                     }
-                }
-            }.apply {
-                on<Event> {
-                    if (configuration.isDevEnv || bot == null) {
-                        Log.i("Event: $this")
+                }.apply {
+                    on<Event> {
+                        if (configuration.isDevEnv || bot == null) {
+                            Log.i("Event: $this")
+                        }
+                    }
+
+                    on<ReadyEvent> {
+                        Log.i("Discord ready")
+                        bot = kord
+                    }
+
+                    on<ResumedEvent> {
+                        Log.i("Discord resumed")
+                        bot = kord
+                    }
+
+                    on<DisconnectEvent> {
+                        if (this !is DisconnectEvent.RetryLimitReachedEvent) {
+                            Log.i("Discord disconnected: ${this::class.simpleName}")
+                        }
+                        bot = null
+
+                        when (this) {
+                            is DisconnectEvent.ZombieConnectionEvent,
+                            is DisconnectEvent.RetryLimitReachedEvent ->
+                                rebootConnection()
+
+                            else -> {}
+                        }
+                    }
+
+                    on<GuildCreateEvent> {
+                        Log.i("Discord server joined: ${guild.data.name}")
+                        guild.editSelfNickname(configuration.discordNick)
+                    }
+
+                    eventHandlers.register(this, configuration)
+
+                    login {
+                        intents += Intent.MessageContent
+                        intents += Intent.GuildMembers
                     }
                 }
-
-                on<ReadyEvent> {
-                    Log.i("Discord ready")
-                    bot = kord
-                }
-
-                on<ResumedEvent> {
-                    Log.i("Discord resumed")
-                    bot = kord
-                }
-
-                on<DisconnectEvent> {
-                    if (this !is DisconnectEvent.RetryLimitReachedEvent) {
-                        Log.i("Discord disconnected: ${this::class.simpleName}")
-                    }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e("Discord connection ended unexpectedly", e)
+            } finally {
+                // A cancelled job is being replaced deliberately. A job that ends on its own
+                // must schedule a new connection, even if it failed before READY was emitted.
+                if (currentCoroutineContext().isActive) {
                     bot = null
-
-                    when (this) {
-                        is DisconnectEvent.ZombieConnectionEvent,
-                        is DisconnectEvent.RetryLimitReachedEvent ->
-                            rebootConnection()
-
-                        else -> {}
-                    }
-                }
-
-                on<GuildCreateEvent> {
-                    Log.i("Discord server joined: ${guild.data.name}")
-                    guild.editSelfNickname(configuration.discordNick)
-                }
-
-                eventHandlers.register(this, configuration)
-
-                login {
-                    intents += Intent.MessageContent
-                    intents += Intent.GuildMembers
+                    kord = null
+                    rebootConnection()
                 }
             }
         }
