@@ -176,13 +176,14 @@ class Discord(
             ?.createMessage(message)
     }
 
-    override fun relayMessage(channel: String, nick: String, message: String) {
+    override fun relayMessage(channel: String, username: String?, nick: String, message: String) {
         onBot {
-            sendMessage(channel, "**<${nick.escapeDiscordFormatting()}>** $message")
+            val omitNick = username != null && username in configuration.ircBotUsernames && REGEX_URL_ONLY.matches(message)
+            sendMessage(channel, if (omitNick) message else "**<${nick.escapeDiscordFormatting()}>** $message")
         }
     }
 
-    override fun relaySlashMe(channel: String, nick: String, message: String) {
+    override fun relaySlashMe(channel: String, username: String?, nick: String, message: String) {
         onBot {
             sendMessage(channel, "\\* ${nick.escapeDiscordFormatting()} $message")
         }
@@ -198,5 +199,6 @@ class Discord(
 
     companion object {
         private val REBOOT_RECONNECT_DELAY = 30.seconds
+        private val REGEX_URL_ONLY = Regex("""https?://\S+""", RegexOption.IGNORE_CASE)
     }
 }

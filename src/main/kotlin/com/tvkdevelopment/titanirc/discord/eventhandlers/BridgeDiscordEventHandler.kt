@@ -54,7 +54,7 @@ class BridgeDiscordEventHandler(
                 }
 
                 listeners.forEach {
-                    it.onMessage(message.channel.id.toString(), member.effectiveName, messageToSend)
+                    it.onMessage(message.channel.id.toString(), member.username, member.effectiveName, messageToSend)
                 }
             }
         }
@@ -83,11 +83,11 @@ class BridgeDiscordEventHandler(
             val referencedMessage = lastMessage?.referencedMessage ?: return@onChannel
 
             val channelString = referencedMessage.channel.id.toString()
-            val ownerName = channel.guild.getMemberOrNull(channel.ownerId)?.effectiveName ?: return@onChannel
+            val owner = channel.guild.getMemberOrNull(channel.ownerId) ?: return@onChannel
             val message = "created a thread ${referencedMessage.getReplyLabel()}"
 
             listeners.forEach {
-                it.onSlashMe(channelString, ownerName, message)
+                it.onSlashMe(channelString, owner.username, owner.effectiveName, message)
             }
         }
 
@@ -113,9 +113,10 @@ class BridgeDiscordEventHandler(
             calculateWordCorrection(oldContent, newContent)
                 ?.escapeDiscordFormatting()
                 ?.let { correction ->
+                    val authorUsername = originalMessage.member.username
                     val authorName = originalMessage.member.effectiveName
                     listeners.forEach {
-                        it.onMessage(message.channel.id.toString(), authorName, correction)
+                        it.onMessage(message.channel.id.toString(), authorUsername, authorName, correction)
                     }
                 }
         }
@@ -128,9 +129,10 @@ class BridgeDiscordEventHandler(
                 if (lastMessageReaction !in lastMessageReactions) {
                     lastMessageReactions += lastMessageReaction
 
+                    val memberUsername = member.username
                     val memberName = member.effectiveName
                     listeners.forEach {
-                        it.onMessage(message.channelId.toString(), memberName, emoji.mention)
+                        it.onMessage(message.channelId.toString(), memberUsername, memberName, emoji.mention)
                     }
                 }
             }

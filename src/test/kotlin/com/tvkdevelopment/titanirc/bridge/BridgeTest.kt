@@ -35,11 +35,43 @@ class BridgeTest {
         )
 
         // WHEN
-        mockClient1Listeners.forEach { it.onMessage("a1", "nick", "message") }
+        mockClient1Listeners.forEach { it.onMessage("a1", "username", "nick", "message") }
 
         // THEN
-        verify(exactly = 0) { mockClient1.relayMessage(any(), any(), any()) }
-        verify { mockClient2.relayMessage("a2", "nick", "message") }
+        verify(exactly = 0) { mockClient1.relayMessage(any(), any(), any(), any()) }
+        verify { mockClient2.relayMessage("a2", "username", "nick", "message") }
+    }
+
+    @Test
+    fun testRelayMessagePreservesUsername() {
+        // GIVEN
+        Bridge.connect(
+            ChannelMapping(
+                ChannelLink(mockClient1 to "a1", mockClient2 to "a2"),
+            ),
+        )
+
+        // WHEN
+        mockClient1Listeners.forEach { it.onMessage("a1", "botident", "bot", "https://example.com") }
+
+        // THEN
+        verify { mockClient2.relayMessage("a2", "botident", "bot", "https://example.com") }
+    }
+
+    @Test
+    fun testRelayMessagePreservesMissingUsername() {
+        // GIVEN
+        Bridge.connect(
+            ChannelMapping(
+                ChannelLink(mockClient1 to "a1", mockClient2 to "a2"),
+            ),
+        )
+
+        // WHEN
+        mockClient1Listeners.forEach { it.onMessage("a1", null, "Guest", "https://example.com") }
+
+        // THEN
+        verify { mockClient2.relayMessage("a2", null, "Guest", "https://example.com") }
     }
 
     @Test
@@ -52,12 +84,12 @@ class BridgeTest {
         )
 
         // WHEN
-        mockClient1Listeners.forEach { it.onMessage("a1", "nick", "message") }
+        mockClient1Listeners.forEach { it.onMessage("a1", "username", "nick", "message") }
 
         // THEN
-        verify(exactly = 0) { mockClient1.relayMessage(any(), any(), any()) }
-        verify { mockClient2.relayMessage("a2", "nick", "message") }
-        verify { mockClient3.relayMessage("a3", "nick", "message") }
+        verify(exactly = 0) { mockClient1.relayMessage(any(), any(), any(), any()) }
+        verify { mockClient2.relayMessage("a2", "username", "nick", "message") }
+        verify { mockClient3.relayMessage("a3", "username", "nick", "message") }
     }
 
     @Test
@@ -71,12 +103,12 @@ class BridgeTest {
         )
 
         // WHEN
-        mockClient1Listeners.forEach { it.onMessage("b1", "nick", "message") }
+        mockClient1Listeners.forEach { it.onMessage("b1", "username", "nick", "message") }
 
         // THEN
-        verify(exactly = 0) { mockClient1.relayMessage(any(), any(), any()) }
-        verify { mockClient2.relayMessage("b2", "nick", "message") }
-        verify(exactly = 0) { mockClient3.relayMessage(any(), any(), any()) }
+        verify(exactly = 0) { mockClient1.relayMessage(any(), any(), any(), any()) }
+        verify { mockClient2.relayMessage("b2", "username", "nick", "message") }
+        verify(exactly = 0) { mockClient3.relayMessage(any(), any(), any(), any()) }
     }
 
     @Test
@@ -91,12 +123,12 @@ class BridgeTest {
         )
 
         // WHEN
-        mockClient2Listeners.forEach { it.onMessage("b2", "nick", "message") }
+        mockClient2Listeners.forEach { it.onMessage("b2", "username", "nick", "message") }
 
         // THEN
-        verify { mockClient1.relayMessage("b1", "nick", "message") }
-        verify(exactly = 0) { mockClient2.relayMessage(any(), any(), any()) }
-        verify { mockClient3.relayMessage("b3", "nick", "message") }
+        verify { mockClient1.relayMessage("b1", "username", "nick", "message") }
+        verify(exactly = 0) { mockClient2.relayMessage(any(), any(), any(), any()) }
+        verify { mockClient3.relayMessage("b3", "username", "nick", "message") }
     }
 
     @Test
@@ -111,12 +143,12 @@ class BridgeTest {
         )
 
         // WHEN
-        mockClient1Listeners.forEach { it.onMessage("b1", "nick", "message") }
+        mockClient1Listeners.forEach { it.onMessage("b1", "username", "nick", "message") }
 
         // THEN
-        verify(exactly = 0) { mockClient1.relayMessage(any(), any(), any()) }
-        verify { mockClient2.relayMessage("b2", "nick", "message") }
-        verify(exactly = 0) { mockClient3.relayMessage(any(), any(), any()) }
+        verify(exactly = 0) { mockClient1.relayMessage(any(), any(), any(), any()) }
+        verify { mockClient2.relayMessage("b2", "username", "nick", "message") }
+        verify(exactly = 0) { mockClient3.relayMessage(any(), any(), any(), any()) }
     }
 
     @Test
@@ -135,10 +167,10 @@ class BridgeTest {
         )
 
         // WHEN
-        mockClient1Listeners.forEach { it.onMessage("a1", "nick", "message") }
+        mockClient1Listeners.forEach { it.onMessage("a1", "username", "nick", "message") }
 
         // THEN
-        verify { mockClient2.relayMessage("a2", "nick", "message transformed") }
+        verify { mockClient2.relayMessage("a2", "username", "nick", "message transformed") }
     }
 
     @Test
@@ -157,10 +189,10 @@ class BridgeTest {
         )
 
         // WHEN
-        mockClient2Listeners.forEach { it.onMessage("a2", "nick", "message") }
+        mockClient2Listeners.forEach { it.onMessage("a2", "username", "nick", "message") }
 
         // THEN
-        verify { mockClient1.relayMessage("a1", "nick", "message") }
+        verify { mockClient1.relayMessage("a1", "username", "nick", "message") }
     }
 
     @Test
@@ -182,10 +214,10 @@ class BridgeTest {
         )
 
         // WHEN
-        mockClient1Listeners.forEach { it.onMessage("a1", "nick", "message") }
+        mockClient1Listeners.forEach { it.onMessage("a1", "username", "nick", "message") }
 
         // THEN
-        verify { mockClient2.relayMessage("a2", "nick", "message 1 2") }
+        verify { mockClient2.relayMessage("a2", "username", "nick", "message 1 2") }
     }
 
     @Test
@@ -198,11 +230,27 @@ class BridgeTest {
         )
 
         // WHEN
-        mockClient1Listeners.forEach { it.onSlashMe("a1", "nick", "slaps") }
+        mockClient1Listeners.forEach { it.onSlashMe("a1", "username", "nick", "slaps") }
 
         // THEN
-        verify(exactly = 0) { mockClient1.relaySlashMe(any(), any(), any()) }
-        verify { mockClient2.relaySlashMe("a2", "nick", "slaps") }
+        verify(exactly = 0) { mockClient1.relaySlashMe(any(), any(), any(), any()) }
+        verify { mockClient2.relaySlashMe("a2", "username", "nick", "slaps") }
+    }
+
+    @Test
+    fun testSlashMePreservesMissingUsername() {
+        // GIVEN
+        Bridge.connect(
+            ChannelMapping(
+                ChannelLink(mockClient1 to "a1", mockClient2 to "a2"),
+            ),
+        )
+
+        // WHEN
+        mockClient1Listeners.forEach { it.onSlashMe("a1", null, "Guest", "waves") }
+
+        // THEN
+        verify { mockClient2.relaySlashMe("a2", null, "Guest", "waves") }
     }
 
     @Test
