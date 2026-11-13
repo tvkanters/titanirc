@@ -27,16 +27,20 @@ class IrcBridgeListener(
     }
 
     private fun onMessage(user: User?, channel: Channel?, message: String) {
-        val username = user?.login
+        val username = normalizeUsername(user?.login)
         val nick = user?.nick ?: return
         val channelName = channel?.name ?: return
         listeners.forEach { it.onMessage(channelName, username, nick, message) }
     }
 
     private fun onSlashMe(user: User?, channel: Channel?, message: String) {
-        val username = user?.login
+        val username = normalizeUsername(user?.login)
         val nick = user?.nick ?: return
         val channelName = channel?.name ?: return
         listeners.forEach { it.onSlashMe(channelName, username, nick, message) }
     }
+
+    // QuakeNet may prepend status markers, while a valid ident cannot start with punctuation.
+    private fun normalizeUsername(login: String?): String? =
+        login?.trimStart { !it.isLetterOrDigit() }?.ifEmpty { null }
 }

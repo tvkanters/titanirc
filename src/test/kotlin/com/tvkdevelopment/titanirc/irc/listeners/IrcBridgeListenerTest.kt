@@ -5,6 +5,8 @@ import com.tvkdevelopment.titanirc.niceMockk
 import io.mockk.every
 import io.mockk.verify
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import org.pircbotx.Channel
 import org.pircbotx.User
 import org.pircbotx.hooks.events.ActionEvent
@@ -19,7 +21,28 @@ class IrcBridgeListenerTest {
     fun testMessageIncludesIrcUsername() {
         val ircUser = niceMockk<User> {
             every { nick } returns "ChangedNick"
-            every { login } returns "botident"
+            every { login } returns "bot-ident.name"
+        }
+        val ircChannel = niceMockk<Channel> {
+            every { name } returns "#test"
+        }
+        val event = niceMockk<MessageEvent> {
+            every { user } returns ircUser
+            every { channel } returns ircChannel
+            every { message } returns "https://example.com"
+        }
+
+        listener.onEvent(event)
+
+        verify(exactly = 1) { bridgeListener.onMessage("#test", "bot-ident.name", "ChangedNick", "https://example.com") }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["~botident", "+botident", "^botident", "=botident", "-botident", "._~botident"])
+    fun testMessageStripsIrcIdentPrefixes(rawLogin: String) {
+        val ircUser = niceMockk<User> {
+            every { nick } returns "ChangedNick"
+            every { login } returns rawLogin
         }
         val ircChannel = niceMockk<Channel> {
             every { name } returns "#test"
@@ -33,6 +56,27 @@ class IrcBridgeListenerTest {
         listener.onEvent(event)
 
         verify(exactly = 1) { bridgeListener.onMessage("#test", "botident", "ChangedNick", "https://example.com") }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["~", "+^=", ""])
+    fun testMessageWithoutIdentAfterStrippingUsesNullUsername(rawLogin: String) {
+        val ircUser = niceMockk<User> {
+            every { nick } returns "Guest"
+            every { login } returns rawLogin
+        }
+        val ircChannel = niceMockk<Channel> {
+            every { name } returns "#test"
+        }
+        val event = niceMockk<MessageEvent> {
+            every { user } returns ircUser
+            every { channel } returns ircChannel
+            every { message } returns "hello"
+        }
+
+        listener.onEvent(event)
+
+        verify(exactly = 1) { bridgeListener.onMessage("#test", null, "Guest", "hello") }
     }
 
     @Test
@@ -56,10 +100,10 @@ class IrcBridgeListenerTest {
     }
 
     @Test
-    fun testActionIncludesIrcUsername() {
+    fun testActionStripsIrcIdentPrefix() {
         val ircUser = niceMockk<User> {
             every { nick } returns "ChangedNick"
-            every { login } returns "botident"
+            every { login } returns "~+botident"
         }
         val ircChannel = niceMockk<Channel> {
             every { name } returns "#test"
