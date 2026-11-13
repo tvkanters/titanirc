@@ -16,6 +16,7 @@ repositories {
     jcenter()
     maven("https://jitpack.io")
     maven("https://oss.sonatype.org/content/repositories/snapshots")
+    maven("https://repo.kordex.dev/mirror")
 }
 
 dependencies {
@@ -26,7 +27,9 @@ dependencies {
     implementation("org.slf4j:slf4j-simple:2.0.7")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1")
 
-    implementation("dev.kord:kord-core:0.17.0")
+    // 0.19.0 is necessary to fix https://github.com/kordlib/kord/issues/1075, return to normal releases and remove
+    // maven("https://repo.kordex.dev/mirror") when the fix is published
+    implementation("dev.kord:kord-core:0.19.0-SNAPSHOT")
 
     testImplementation(kotlin("test-junit"))
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
