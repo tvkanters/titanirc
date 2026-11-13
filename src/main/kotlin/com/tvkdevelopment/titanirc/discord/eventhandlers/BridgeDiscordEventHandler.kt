@@ -114,8 +114,9 @@ class BridgeDiscordEventHandler(
                 ?.escapeDiscordFormatting()
                 ?.let { correction ->
                     val authorName = originalMessage.member.effectiveName
+                    val authorUsername = originalMessage.member.username
                     listeners.forEach {
-                        it.onMessage(message.channel.id.toString(), originalMessage.member.username, authorName, correction)
+                        it.onMessage(message.channel.id.toString(), authorUsername, authorName, correction)
                     }
                 }
         }
@@ -129,8 +130,9 @@ class BridgeDiscordEventHandler(
                     lastMessageReactions += lastMessageReaction
 
                     val memberName = member.effectiveName
+                    val memberUsername = member.username
                     listeners.forEach {
-                        it.onMessage(message.channelId.toString(), member.username, memberName, emoji.mention)
+                        it.onMessage(message.channelId.toString(), memberUsername, memberName, emoji.mention)
                     }
                 }
             }

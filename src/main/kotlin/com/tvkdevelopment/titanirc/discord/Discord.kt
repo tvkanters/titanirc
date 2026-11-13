@@ -178,7 +178,7 @@ class Discord(
 
     override fun relayMessage(channel: String, username: String, nick: String, message: String) {
         onBot {
-            val omitNick = username in configuration.ircBotUsernames && REGEX_URL_ONLY.matches(message)
+            val omitNick = username.isNotEmpty() && username in configuration.ircBotUsernames && REGEX_URL_ONLY.matches(message)
             sendMessage(channel, if (omitNick) message else "**<${nick.escapeDiscordFormatting()}>** $message")
         }
     }
