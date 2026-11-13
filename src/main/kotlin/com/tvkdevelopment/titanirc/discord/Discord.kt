@@ -2,7 +2,6 @@ package com.tvkdevelopment.titanirc.discord
 
 import com.tvkdevelopment.titanirc.TitanircConfiguration
 import com.tvkdevelopment.titanirc.bridge.BridgeClient
-import com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations.escapeDiscordFormatting
 import com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations.unescapeDiscordFormatting
 import com.tvkdevelopment.titanirc.discord.eventhandlers.*
 import com.tvkdevelopment.titanirc.util.Log
@@ -176,9 +175,9 @@ class Discord(
             ?.createMessage(message)
     }
 
-    override fun relayMessage(channel: String, nick: String, message: String) {
+    override fun relayMessage(channel: String, nick: String, message: String, omitNick: Boolean) {
         onBot {
-            sendMessage(channel, "**<${nick.escapeDiscordFormatting()}>** $message")
+            sendMessage(channel, formatRelayedDiscordMessage(nick, message, omitNick))
         }
     }
 

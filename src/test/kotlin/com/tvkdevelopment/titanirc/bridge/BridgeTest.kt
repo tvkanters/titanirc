@@ -43,6 +43,22 @@ class BridgeTest {
     }
 
     @Test
+    fun testRelayMessageWithoutNick() {
+        // GIVEN
+        Bridge.connect(
+            ChannelMapping(
+                ChannelLink(mockClient1 to "a1", mockClient2 to "a2"),
+            ),
+        )
+
+        // WHEN
+        mockClient1Listeners.forEach { it.onMessage("a1", "bot", "https://example.com", true) }
+
+        // THEN
+        verify { mockClient2.relayMessage("a2", "bot", "https://example.com", true) }
+    }
+
+    @Test
     fun testRelayMessageToMultipleClients() {
         // GIVEN
         Bridge.connect(

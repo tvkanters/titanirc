@@ -6,6 +6,12 @@ import kotlin.test.assertEquals
 class DiscordUtilsTest {
 
     @Test
+    fun testFormatRelayedDiscordMessage() {
+        assertEquals("**<Bot>** Regular message", formatRelayedDiscordMessage("Bot", "Regular message", false))
+        assertEquals("https://example.com", formatRelayedDiscordMessage("Bot", "https://example.com", true))
+    }
+
+    @Test
     fun testEscapeTopicForMessage() {
         // GIVEN
         assertEquals("Test <http://test.com> Test", escapeTopicForMessage("Test http://test.com Test"))
