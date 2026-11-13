@@ -176,14 +176,14 @@ class Discord(
             ?.createMessage(message)
     }
 
-    override fun relayMessage(channel: String, nick: String, username: String, message: String) {
+    override fun relayMessage(channel: String, username: String, nick: String, message: String) {
         onBot {
             val omitNick = username in configuration.ircBotUsernames && REGEX_URL_ONLY.matches(message)
             sendMessage(channel, if (omitNick) message else "**<${nick.escapeDiscordFormatting()}>** $message")
         }
     }
 
-    override fun relaySlashMe(channel: String, nick: String, username: String, message: String) {
+    override fun relaySlashMe(channel: String, username: String, nick: String, message: String) {
         onBot {
             sendMessage(channel, "\\* ${nick.escapeDiscordFormatting()} $message")
         }

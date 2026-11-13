@@ -32,7 +32,7 @@ class IrcBridgeListenerTest {
 
         listener.onEvent(event)
 
-        verify(exactly = 1) { bridgeListener.onMessage("#test", "ChangedNick", "botident", "https://example.com") }
+        verify(exactly = 1) { bridgeListener.onMessage("#test", "botident", "ChangedNick", "https://example.com") }
     }
 
     @Test
@@ -52,7 +52,7 @@ class IrcBridgeListenerTest {
 
         listener.onEvent(event)
 
-        verify(exactly = 1) { bridgeListener.onSlashMe("#test", "ChangedNick", "botident", "waves") }
+        verify(exactly = 1) { bridgeListener.onSlashMe("#test", "botident", "ChangedNick", "waves") }
     }
 
     @Test
