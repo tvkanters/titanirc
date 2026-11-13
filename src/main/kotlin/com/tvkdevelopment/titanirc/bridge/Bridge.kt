@@ -14,13 +14,13 @@ class Bridge private constructor(
             val targetClients = channelMapping.clients - sourceClient
 
             sourceClient.addBridgeListener(object : BridgeClient.Listener {
-                override fun onMessage(channel: String, username: String, nick: String, message: String) {
+                override fun onMessage(channel: String, username: String?, nick: String, message: String) {
                     targetClients.forEach { targetClient ->
                         relayMessage(sourceClient, targetClient, channel, username, nick, message)
                     }
                 }
 
-                override fun onSlashMe(channel: String, username: String, nick: String, message: String) {
+                override fun onSlashMe(channel: String, username: String?, nick: String, message: String) {
                     targetClients.forEach { targetClient ->
                         relaySlashMe(sourceClient, targetClient, channel, username, nick, message)
                     }
@@ -45,7 +45,7 @@ class Bridge private constructor(
         sourceClient: BridgeClient,
         targetClient: BridgeClient,
         sourceChannel: String,
-        username: String,
+        username: String?,
         nick: String,
         message: String,
     ) {
@@ -78,7 +78,7 @@ class Bridge private constructor(
         sourceClient: BridgeClient,
         targetClient: BridgeClient,
         sourceChannel: String,
-        username: String,
+        username: String?,
         nick: String,
         message: String,
     ) {

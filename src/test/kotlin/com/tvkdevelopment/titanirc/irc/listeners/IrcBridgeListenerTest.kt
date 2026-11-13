@@ -36,7 +36,7 @@ class IrcBridgeListenerTest {
     }
 
     @Test
-    fun testMessageWithoutIrcIdentUsesEmptyUsername() {
+    fun testMessageWithoutIrcIdentUsesNullUsername() {
         val ircUser = niceMockk<User> {
             every { nick } returns "Guest"
             every { login } returns null
@@ -52,7 +52,7 @@ class IrcBridgeListenerTest {
 
         listener.onEvent(event)
 
-        verify(exactly = 1) { bridgeListener.onMessage("#test", "", "Guest", "hello") }
+        verify(exactly = 1) { bridgeListener.onMessage("#test", null, "Guest", "hello") }
     }
 
     @Test
@@ -73,6 +73,26 @@ class IrcBridgeListenerTest {
         listener.onEvent(event)
 
         verify(exactly = 1) { bridgeListener.onSlashMe("#test", "botident", "ChangedNick", "waves") }
+    }
+
+    @Test
+    fun testActionWithoutIrcIdentUsesNullUsername() {
+        val ircUser = niceMockk<User> {
+            every { nick } returns "Guest"
+            every { login } returns null
+        }
+        val ircChannel = niceMockk<Channel> {
+            every { name } returns "#test"
+        }
+        val event = niceMockk<ActionEvent> {
+            every { user } returns ircUser
+            every { channel } returns ircChannel
+            every { message } returns "waves"
+        }
+
+        listener.onEvent(event)
+
+        verify(exactly = 1) { bridgeListener.onSlashMe("#test", null, "Guest", "waves") }
     }
 
     @Test

@@ -59,6 +59,22 @@ class BridgeTest {
     }
 
     @Test
+    fun testRelayMessagePreservesMissingUsername() {
+        // GIVEN
+        Bridge.connect(
+            ChannelMapping(
+                ChannelLink(mockClient1 to "a1", mockClient2 to "a2"),
+            ),
+        )
+
+        // WHEN
+        mockClient1Listeners.forEach { it.onMessage("a1", null, "Guest", "https://example.com") }
+
+        // THEN
+        verify { mockClient2.relayMessage("a2", null, "Guest", "https://example.com") }
+    }
+
+    @Test
     fun testRelayMessageToMultipleClients() {
         // GIVEN
         Bridge.connect(
@@ -219,6 +235,22 @@ class BridgeTest {
         // THEN
         verify(exactly = 0) { mockClient1.relaySlashMe(any(), any(), any(), any()) }
         verify { mockClient2.relaySlashMe("a2", "username", "nick", "slaps") }
+    }
+
+    @Test
+    fun testSlashMePreservesMissingUsername() {
+        // GIVEN
+        Bridge.connect(
+            ChannelMapping(
+                ChannelLink(mockClient1 to "a1", mockClient2 to "a2"),
+            ),
+        )
+
+        // WHEN
+        mockClient1Listeners.forEach { it.onSlashMe("a1", null, "Guest", "waves") }
+
+        // THEN
+        verify { mockClient2.relaySlashMe("a2", null, "Guest", "waves") }
     }
 
     @Test

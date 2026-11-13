@@ -113,8 +113,8 @@ class BridgeDiscordEventHandler(
             calculateWordCorrection(oldContent, newContent)
                 ?.escapeDiscordFormatting()
                 ?.let { correction ->
-                    val authorName = originalMessage.member.effectiveName
                     val authorUsername = originalMessage.member.username
+                    val authorName = originalMessage.member.effectiveName
                     listeners.forEach {
                         it.onMessage(message.channel.id.toString(), authorUsername, authorName, correction)
                     }
@@ -129,8 +129,8 @@ class BridgeDiscordEventHandler(
                 if (lastMessageReaction !in lastMessageReactions) {
                     lastMessageReactions += lastMessageReaction
 
-                    val memberName = member.effectiveName
                     val memberUsername = member.username
+                    val memberName = member.effectiveName
                     listeners.forEach {
                         it.onMessage(message.channelId.toString(), memberUsername, memberName, emoji.mention)
                     }
