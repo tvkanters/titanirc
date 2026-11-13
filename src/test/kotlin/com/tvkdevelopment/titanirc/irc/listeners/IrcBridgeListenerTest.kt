@@ -7,6 +7,7 @@ import io.mockk.verify
 import org.junit.jupiter.api.Test
 import org.pircbotx.Channel
 import org.pircbotx.User
+import org.pircbotx.hooks.events.ActionEvent
 import org.pircbotx.hooks.events.MessageEvent
 
 class IrcBridgeListenerTest {
@@ -31,7 +32,27 @@ class IrcBridgeListenerTest {
 
         listener.onEvent(event)
 
-        verify(exactly = 1) { bridgeListener.onMessage("#test", "ChangedNick", "https://example.com", "botident") }
+        verify(exactly = 1) { bridgeListener.onMessage("#test", "ChangedNick", "botident", "https://example.com") }
+    }
+
+    @Test
+    fun testActionIncludesIrcUsername() {
+        val ircUser = niceMockk<User> {
+            every { nick } returns "ChangedNick"
+            every { login } returns "botident"
+        }
+        val ircChannel = niceMockk<Channel> {
+            every { name } returns "#test"
+        }
+        val event = niceMockk<ActionEvent> {
+            every { user } returns ircUser
+            every { channel } returns ircChannel
+            every { message } returns "waves"
+        }
+
+        listener.onEvent(event)
+
+        verify(exactly = 1) { bridgeListener.onSlashMe("#test", "ChangedNick", "botident", "waves") }
     }
 
     @Test

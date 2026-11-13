@@ -92,7 +92,7 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
         bridgeListeners += listener
     }
 
-    override fun relayMessage(channel: String, nick: String, message: String, username: String?) {
+    override fun relayMessage(channel: String, nick: String, username: String, message: String) {
         sendMessage(
             channel,
             "<$nick> ".takeUnless { message.startsWith('!') },
@@ -100,7 +100,7 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
         )
     }
 
-    override fun relaySlashMe(channel: String, nick: String, message: String) {
+    override fun relaySlashMe(channel: String, nick: String, username: String, message: String) {
         sendMessage(channel, "* $nick ", message)
     }
 

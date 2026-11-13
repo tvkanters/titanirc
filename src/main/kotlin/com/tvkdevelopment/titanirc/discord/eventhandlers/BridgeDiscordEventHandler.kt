@@ -54,7 +54,7 @@ class BridgeDiscordEventHandler(
                 }
 
                 listeners.forEach {
-                    it.onMessage(message.channel.id.toString(), member.effectiveName, messageToSend)
+                    it.onMessage(message.channel.id.toString(), member.effectiveName, member.username, messageToSend)
                 }
             }
         }
@@ -83,11 +83,11 @@ class BridgeDiscordEventHandler(
             val referencedMessage = lastMessage?.referencedMessage ?: return@onChannel
 
             val channelString = referencedMessage.channel.id.toString()
-            val ownerName = channel.guild.getMemberOrNull(channel.ownerId)?.effectiveName ?: return@onChannel
+            val owner = channel.guild.getMemberOrNull(channel.ownerId) ?: return@onChannel
             val message = "created a thread ${referencedMessage.getReplyLabel()}"
 
             listeners.forEach {
-                it.onSlashMe(channelString, ownerName, message)
+                it.onSlashMe(channelString, owner.effectiveName, owner.username, message)
             }
         }
 
@@ -115,7 +115,7 @@ class BridgeDiscordEventHandler(
                 ?.let { correction ->
                     val authorName = originalMessage.member.effectiveName
                     listeners.forEach {
-                        it.onMessage(message.channel.id.toString(), authorName, correction)
+                        it.onMessage(message.channel.id.toString(), authorName, originalMessage.member.username, correction)
                     }
                 }
         }
@@ -130,7 +130,7 @@ class BridgeDiscordEventHandler(
 
                     val memberName = member.effectiveName
                     listeners.forEach {
-                        it.onMessage(message.channelId.toString(), memberName, emoji.mention)
+                        it.onMessage(message.channelId.toString(), memberName, member.username, emoji.mention)
                     }
                 }
             }

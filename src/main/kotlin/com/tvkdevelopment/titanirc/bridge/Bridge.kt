@@ -14,15 +14,15 @@ class Bridge private constructor(
             val targetClients = channelMapping.clients - sourceClient
 
             sourceClient.addBridgeListener(object : BridgeClient.Listener {
-                override fun onMessage(channel: String, nick: String, message: String, username: String?) {
+                override fun onMessage(channel: String, nick: String, username: String, message: String) {
                     targetClients.forEach { targetClient ->
-                        relayMessage(sourceClient, targetClient, channel, nick, message, username)
+                        relayMessage(sourceClient, targetClient, channel, nick, username, message)
                     }
                 }
 
-                override fun onSlashMe(channel: String, nick: String, message: String) {
+                override fun onSlashMe(channel: String, nick: String, username: String, message: String) {
                     targetClients.forEach { targetClient ->
-                        relaySlashMe(sourceClient, targetClient, channel, nick, message)
+                        relaySlashMe(sourceClient, targetClient, channel, nick, username, message)
                     }
                 }
 
@@ -46,8 +46,8 @@ class Bridge private constructor(
         targetClient: BridgeClient,
         sourceChannel: String,
         nick: String,
+        username: String,
         message: String,
-        username: String?,
     ) {
         try {
             val targetChannel = channelMapping.getTargetChannel(sourceClient, targetClient, sourceChannel) ?: return
@@ -60,7 +60,7 @@ class Bridge private constructor(
                     message,
                 )
 
-            targetClient.relayMessage(targetChannel, nick, transformedMessage, username)
+            targetClient.relayMessage(targetChannel, nick, username, transformedMessage)
         } catch (e: Exception) {
             Log.e(
                 "Bridge exception in relayMessage: " +
@@ -79,6 +79,7 @@ class Bridge private constructor(
         targetClient: BridgeClient,
         sourceChannel: String,
         nick: String,
+        username: String,
         message: String,
     ) {
         try {
@@ -92,7 +93,7 @@ class Bridge private constructor(
                     message,
                 )
 
-            targetClient.relaySlashMe(targetChannel, nick, transformedMessage)
+            targetClient.relaySlashMe(targetChannel, nick, username, transformedMessage)
         } catch (e: Exception) {
             Log.e(
                 "Bridge exception in relaySlashMe: " +
