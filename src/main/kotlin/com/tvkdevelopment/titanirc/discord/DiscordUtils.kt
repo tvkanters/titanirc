@@ -1,6 +1,5 @@
 package com.tvkdevelopment.titanirc.discord
 
-import com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations.escapeDiscordFormatting
 import com.tvkdevelopment.titanirc.util.Time
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.entity.Message
@@ -10,9 +9,6 @@ import dev.kord.core.entity.effectiveName
 
 val Channel?.topicValue: String
     get() = this?.data?.topic?.value ?: ""
-
-internal fun formatRelayedDiscordMessage(nick: String, message: String, omitNick: Boolean): String =
-    if (omitNick) message else "**<${nick.escapeDiscordFormatting()}>** $message"
 
 suspend fun Message.getReplyLabel(): String =
     mutableListOf<String>()

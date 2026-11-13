@@ -9,12 +9,12 @@ interface BridgeClient {
     fun addBridgeListener(listener: Listener)
 
     interface Listener {
-        fun onMessage(channel: String, nick: String, message: String, omitNick: Boolean = false)
+        fun onMessage(channel: String, nick: String, message: String, username: String? = null)
         fun onSlashMe(channel: String, nick: String, message: String)
         fun onTopicChanged(channel: String, topic: String)
     }
 
-    fun relayMessage(channel: String, nick: String, message: String, omitNick: Boolean = false)
+    fun relayMessage(channel: String, nick: String, message: String, username: String? = null)
 
     fun relaySlashMe(channel: String, nick: String, message: String)
 

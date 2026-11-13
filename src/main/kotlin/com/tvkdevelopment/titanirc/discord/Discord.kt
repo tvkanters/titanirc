@@ -2,6 +2,7 @@ package com.tvkdevelopment.titanirc.discord
 
 import com.tvkdevelopment.titanirc.TitanircConfiguration
 import com.tvkdevelopment.titanirc.bridge.BridgeClient
+import com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations.escapeDiscordFormatting
 import com.tvkdevelopment.titanirc.bridge.transformation.messagetransformations.unescapeDiscordFormatting
 import com.tvkdevelopment.titanirc.discord.eventhandlers.*
 import com.tvkdevelopment.titanirc.util.Log
@@ -175,9 +176,12 @@ class Discord(
             ?.createMessage(message)
     }
 
-    override fun relayMessage(channel: String, nick: String, message: String, omitNick: Boolean) {
+    override fun relayMessage(channel: String, nick: String, message: String, username: String?) {
         onBot {
-            sendMessage(channel, formatRelayedDiscordMessage(nick, message, omitNick))
+            val omitNick = username != null &&
+                configuration.ircBotUsernames.any { it.equals(username, ignoreCase = true) } &&
+                REGEX_URL_ONLY.matches(message)
+            sendMessage(channel, if (omitNick) message else "**<${nick.escapeDiscordFormatting()}>** $message")
         }
     }
 
@@ -197,5 +201,6 @@ class Discord(
 
     companion object {
         private val REBOOT_RECONNECT_DELAY = 30.seconds
+        private val REGEX_URL_ONLY = Regex("""https?://\S+""", RegexOption.IGNORE_CASE)
     }
 }

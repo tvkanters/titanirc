@@ -14,9 +14,9 @@ class Bridge private constructor(
             val targetClients = channelMapping.clients - sourceClient
 
             sourceClient.addBridgeListener(object : BridgeClient.Listener {
-                override fun onMessage(channel: String, nick: String, message: String, omitNick: Boolean) {
+                override fun onMessage(channel: String, nick: String, message: String, username: String?) {
                     targetClients.forEach { targetClient ->
-                        relayMessage(sourceClient, targetClient, channel, nick, message, omitNick)
+                        relayMessage(sourceClient, targetClient, channel, nick, message, username)
                     }
                 }
 
@@ -47,7 +47,7 @@ class Bridge private constructor(
         sourceChannel: String,
         nick: String,
         message: String,
-        omitNick: Boolean,
+        username: String?,
     ) {
         try {
             val targetChannel = channelMapping.getTargetChannel(sourceClient, targetClient, sourceChannel) ?: return
@@ -60,7 +60,7 @@ class Bridge private constructor(
                     message,
                 )
 
-            targetClient.relayMessage(targetChannel, nick, transformedMessage, omitNick)
+            targetClient.relayMessage(targetChannel, nick, transformedMessage, username)
         } catch (e: Exception) {
             Log.e(
                 "Bridge exception in relayMessage: " +

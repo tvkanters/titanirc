@@ -66,7 +66,7 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
                             if (bot === failedBot) failedBot.close()
                         })
                         addListener(NickFixListener(configuration))
-                        addListener(IrcBridgeListener(bridgeListeners, configuration))
+                        addListener(IrcBridgeListener(bridgeListeners))
                         addListener(messageSender)
                         addListener(AdminListener(configuration, messageSender))
                     }.buildConfiguration())
@@ -92,10 +92,10 @@ class Irc(private val configuration: TitanircConfiguration) : BridgeClient {
         bridgeListeners += listener
     }
 
-    override fun relayMessage(channel: String, nick: String, message: String, omitNick: Boolean) {
+    override fun relayMessage(channel: String, nick: String, message: String, username: String?) {
         sendMessage(
             channel,
-            "<$nick> ".takeUnless { omitNick || message.startsWith('!') },
+            "<$nick> ".takeUnless { message.startsWith('!') },
             message,
         )
     }

@@ -1,49 +1,47 @@
 package com.tvkdevelopment.titanirc.irc.listeners
 
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
+import com.tvkdevelopment.titanirc.bridge.BridgeClient
+import com.tvkdevelopment.titanirc.niceMockk
+import io.mockk.every
+import io.mockk.verify
 import org.junit.jupiter.api.Test
+import org.pircbotx.Channel
+import org.pircbotx.User
+import org.pircbotx.hooks.events.MessageEvent
 
 class IrcBridgeListenerTest {
 
-    @Test
-    fun testUrlOnlyMessageFromConfiguredUsername() {
-        val usernames = setOf("botident")
-
-        assertTrue(shouldOmitIrcBotNick("SomeNick", "BotIdent", "https://example.com/a", usernames, emptySet()))
-        assertTrue(shouldOmitIrcBotNick("ChangedNick", "botident", "http://example.com", usernames, emptySet()))
-        assertTrue(shouldOmitIrcBotNick("ChangedNick", "botident", "HTTPS://example.com", usernames, emptySet()))
-        assertFalse(shouldOmitIrcBotNick("SomeNick", "otherident", "https://example.com", usernames, emptySet()))
-        assertFalse(shouldOmitIrcBotNick("SomeNick", null, "https://example.com", usernames, emptySet()))
-    }
+    private val bridgeListener = niceMockk<BridgeClient.Listener>()
+    private val listener = IrcBridgeListener(listOf(bridgeListener))
 
     @Test
-    fun testUrlOnlyMessageFromConfiguredNick() {
-        val nicks = setOf("LinkBot")
-
-        assertTrue(shouldOmitIrcBotNick("linkbot", null, "https://example.com", emptySet(), nicks))
-        assertFalse(shouldOmitIrcBotNick("OtherBot", null, "https://example.com", emptySet(), nicks))
-    }
-
-    @Test
-    fun testNonUrlOnlyMessagesKeepNickname() {
-        val usernames = setOf("botident")
-        val nicks = setOf("LinkBot")
-
-        for (message in listOf(
-            "Check https://example.com",
-            "https://example.com more",
-            "https://example.com\nmore",
-            "https://example.com ",
-            "httpish",
-            "!command",
-        )) {
-            assertFalse(shouldOmitIrcBotNick("LinkBot", "botident", message, usernames, nicks), message)
+    fun testMessageIncludesIrcUsername() {
+        val ircUser = niceMockk<User> {
+            every { nick } returns "ChangedNick"
+            every { login } returns "botident"
         }
+        val ircChannel = niceMockk<Channel> {
+            every { name } returns "#test"
+        }
+        val event = niceMockk<MessageEvent> {
+            every { user } returns ircUser
+            every { channel } returns ircChannel
+            every { message } returns "https://example.com"
+        }
+
+        listener.onEvent(event)
+
+        verify(exactly = 1) { bridgeListener.onMessage("#test", "ChangedNick", "https://example.com", "botident") }
     }
 
     @Test
-    fun testNoConfiguredBotsKeepsNickname() {
-        assertFalse(shouldOmitIrcBotNick("LinkBot", "botident", "https://example.com", emptySet(), emptySet()))
+    fun testMessageWithoutUserIsIgnored() {
+        val event = niceMockk<MessageEvent> {
+            every { user } returns null
+        }
+
+        listener.onEvent(event)
+
+        verify(exactly = 0) { bridgeListener.onMessage(any(), any(), any(), any()) }
     }
 }

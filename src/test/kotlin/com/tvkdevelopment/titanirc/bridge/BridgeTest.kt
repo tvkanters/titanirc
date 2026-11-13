@@ -43,7 +43,7 @@ class BridgeTest {
     }
 
     @Test
-    fun testRelayMessageWithoutNick() {
+    fun testRelayMessagePreservesUsername() {
         // GIVEN
         Bridge.connect(
             ChannelMapping(
@@ -52,10 +52,10 @@ class BridgeTest {
         )
 
         // WHEN
-        mockClient1Listeners.forEach { it.onMessage("a1", "bot", "https://example.com", true) }
+        mockClient1Listeners.forEach { it.onMessage("a1", "bot", "https://example.com", "botident") }
 
         // THEN
-        verify { mockClient2.relayMessage("a2", "bot", "https://example.com", true) }
+        verify { mockClient2.relayMessage("a2", "bot", "https://example.com", "botident") }
     }
 
     @Test

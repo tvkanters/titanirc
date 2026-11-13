@@ -12,10 +12,7 @@ interface TitanircConfiguration {
     val ircNick: String
     val ircChannels: Set<String>
     val ircAdminHostnames: Set<String> get() = emptySet()
-    /** IRC login/ident values of bots whose URL-only messages should omit the nick on Discord. */
-    val ircUrlOnlyBotUsernames: Set<String> get() = emptySet()
-    /** Nickname fallback for bots without a stable IRC login/ident. */
-    val ircUrlOnlyBotNicks: Set<String> get() = emptySet()
+    val ircBotUsernames: Set<String> get() = emptySet()
 
     val discordToken: String
     val discordNick: String

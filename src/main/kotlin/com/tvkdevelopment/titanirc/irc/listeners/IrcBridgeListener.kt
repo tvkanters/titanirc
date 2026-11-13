@@ -1,6 +1,5 @@
 package com.tvkdevelopment.titanirc.irc.listeners
 
-import com.tvkdevelopment.titanirc.TitanircConfiguration
 import com.tvkdevelopment.titanirc.bridge.BridgeClient
 import org.pircbotx.Channel
 import org.pircbotx.User
@@ -12,7 +11,6 @@ import org.pircbotx.hooks.events.TopicEvent
 
 class IrcBridgeListener(
     private val listeners: List<BridgeClient.Listener>,
-    private val configuration: TitanircConfiguration,
 ) : Listener {
 
     override fun onEvent(event: Event?) {
@@ -31,11 +29,7 @@ class IrcBridgeListener(
     private fun onMessage(user: User?, channel: Channel?, message: String) {
         val nick = user?.nick ?: return
         val channelName = channel?.name ?: return
-        val omitNick = shouldOmitIrcBotNick(
-            nick, user.login, message,
-            configuration.ircUrlOnlyBotUsernames, configuration.ircUrlOnlyBotNicks,
-        )
-        listeners.forEach { it.onMessage(channelName, nick, message, omitNick) }
+        listeners.forEach { it.onMessage(channelName, nick, message, user.login) }
     }
 
     private fun onSlashMe(user: User?, channel: Channel?, message: String) {
@@ -44,14 +38,3 @@ class IrcBridgeListener(
         listeners.forEach { it.onSlashMe(channelName, nick, message) }
     }
 }
-
-internal fun shouldOmitIrcBotNick(
-    nick: String,
-    username: String?,
-    message: String,
-    usernames: Set<String>,
-    nicks: Set<String>,
-): Boolean =
-    (message.startsWith("http://", ignoreCase = true) || message.startsWith("https://", ignoreCase = true)) &&
-        message.none(Char::isWhitespace) &&
-        (usernames.any { it.equals(username, ignoreCase = true) } || nicks.any { it.equals(nick, ignoreCase = true) })
