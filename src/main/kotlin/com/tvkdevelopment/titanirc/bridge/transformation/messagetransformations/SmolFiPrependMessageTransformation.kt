@@ -6,7 +6,7 @@ import java.net.URLEncoder
 class SmolFiPrependMessageTransformation : MessageTransformation {
 
     override fun transform(sourceChannel: String, targetChannel: String, message: String): String =
-        message.replace(REGEX) { "https://smol.fi/e/?v=https://media.discordapp.net/attachments/${encode(it.groupValues[1])}" }
+        message.replace(REGEX) { "https://smol.fi/e/?v=media.discordapp.net%2Fattachments%2F${encode(it.groupValues[1])}" }
 
     companion object {
         private val REGEX =

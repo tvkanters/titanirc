@@ -17,7 +17,7 @@ class SmolFiPrependMessageTransformationTest {
 
         // THEN
         assertEquals(
-            "Hi https://smol.fi/e/?v=https://media.discordapp.net/attachments/1234/1234/test.mp4",
+            "Hi https://smol.fi/e/?v=media.discordapp.net%2Fattachments%2F1234%2F1234%2Ftest.mp4",
             transformedMessage
         )
     }
@@ -32,7 +32,7 @@ class SmolFiPrependMessageTransformationTest {
 
         // THEN
         assertEquals(
-            "Hi https://smol.fi/e/?v=https://media.discordapp.net/attachments/1234/1234/test.mp4",
+            "Hi https://smol.fi/e/?v=media.discordapp.net%2Fattachments%2F1234%2F1234%2Ftest.mp4",
             transformedMessage
         )
     }
@@ -47,13 +47,28 @@ class SmolFiPrependMessageTransformationTest {
 
         // THEN
         assertEquals(
-            "Hi https://smol.fi/e/?v=https://media.discordapp.net/attachments/1234/1234/test.mp4",
+            "Hi https://smol.fi/e/?v=media.discordapp.net%2Fattachments%2F1234%2F1234%2Ftest.mp4",
             transformedMessage
         )
     }
 
     @Test
     fun testNoDuplicateSmolFi() {
+        // GIVEN
+        val message = "Hi https://smol.fi/e/?v=media.discordapp.net/attachments/1234/1234/test.mp4"
+
+        // WHEN
+        val transformedMessage = sut.transform("", "", message)
+
+        // THEN
+        assertEquals(
+            "Hi https://smol.fi/e/?v=media.discordapp.net/attachments/1234/1234/test.mp4",
+            transformedMessage
+        )
+    }
+
+    @Test
+    fun testNoDuplicateSmolFiWithHttps() {
         // GIVEN
         val message = "Hi https://smol.fi/e/?v=https://media.discordapp.net/attachments/1234/1234/test.mp4"
 
