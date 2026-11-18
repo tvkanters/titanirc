@@ -5,7 +5,6 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.jsonPrimitive
 import java.net.URI
 import java.net.URLEncoder
 import java.net.http.HttpClient
@@ -47,16 +46,11 @@ class SmolFiPrependMessageTransformation(
         val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
         if (response.statusCode() !in 200..299) return null
 
-        val body = response.body().trim()
         val shortUrl = try {
-            when (val json = Json.parseToJsonElement(body)) {
-                is JsonPrimitive -> json.contentOrNull
-                is JsonObject -> listOf("short_url", "shortUrl", "shortened_url", "shortenedUrl", "short", "link", "url")
-                    .firstNotNullOfOrNull { json[it]?.jsonPrimitive?.contentOrNull }
-                else -> null
-            }
+            val json = Json.parseToJsonElement(response.body()) as? JsonObject
+            (json?.get("short") as? JsonPrimitive)?.takeIf { it.isString }?.contentOrNull
         } catch (_: Exception) {
-            body // Also support a plain-text URL response.
+            null
         }
 
         return shortUrl?.takeIf { isValidShortUrl(it) }
@@ -64,7 +58,7 @@ class SmolFiPrependMessageTransformation(
 
     companion object {
         private val REGEX =
-            Regex("""(?<!https://smol.fi/e/\?v=)https?://(?:media|cdn)\.discordapp\.(?:net|com)/attachments/(\S+\.(?:mp4|webm|mov)\S*)""")
+            Regex("""(?<!https://smol.fi/e/\?v=)https?://(?:media|cdn)\.discordapp\.(?:net|com)/attachments/(\S+)""")
 
         private fun encode(string: String) = URLEncoder.encode(string, Charsets.UTF_8.name())
 

@@ -89,7 +89,7 @@ class SmolFiPrependMessageTransformationTest {
     }
 
     @Test
-    fun testNoSmolFiNonVideo() {
+    fun testSmolFiNonVideo() {
         // GIVEN
         val message = "Hi https://media.discordapp.net/attachments/1234/1234/test.jpg no .mp4"
 
@@ -98,8 +98,18 @@ class SmolFiPrependMessageTransformationTest {
 
         // THEN
         assertEquals(
-            "Hi https://media.discordapp.net/attachments/1234/1234/test.jpg no .mp4",
+            "Hi https://smol.fi/e/?v=https://media.discordapp.net/attachments/1234%2F1234%2Ftest.jpg no .mp4",
             transformedMessage
+        )
+    }
+
+    @Test
+    fun testSmolFiExtensionlessAttachment() {
+        val message = "Hi https://cdn.discordapp.com/attachments/1234/1234/file"
+
+        assertEquals(
+            "Hi https://smol.fi/e/?v=https://media.discordapp.net/attachments/1234%2F1234%2Ffile",
+            sut.transform("", "", message)
         )
     }
 
@@ -113,7 +123,7 @@ class SmolFiPrependMessageTransformationTest {
 
         val result = transformWithServer(
             "Hi $original",
-            """{"short_url":"https://e.smol.fi/aBc"}""",
+            """{"id":"sSQesjJ","short":"https://e.smol.fi/v/sSQesjJ"}""",
         ) { request ->
             method.set(request.requestMethod)
             authorization.set(request.requestHeaders.getFirst("Authorization"))
@@ -121,7 +131,7 @@ class SmolFiPrependMessageTransformationTest {
             requestBody.set(request.requestBody.bufferedReader().use { it.readText() })
         }
 
-        assertEquals("Hi https://e.smol.fi/aBc", result)
+        assertEquals("Hi https://e.smol.fi/v/sSQesjJ", result)
         assertEquals("POST", method.get())
         assertEquals("Bearer test-api-key", authorization.get())
         assertEquals("application/json", contentType.get())
@@ -129,23 +139,33 @@ class SmolFiPrependMessageTransformationTest {
     }
 
     @Test
-    fun testApiAcceptsPlainTextResponse() {
+    fun testApiRejectsPlainTextResponse() {
         val result = transformWithServer(
             "https://media.discordapp.net/attachments/1234/1234/test.webm",
             "https://e.smol.fi/video123",
         )
 
-        assertEquals("https://e.smol.fi/video123", result)
+        assertEquals("https://smol.fi/e/?v=https://media.discordapp.net/attachments/1234%2F1234%2Ftest.webm", result)
     }
 
     @Test
-    fun testApiAcceptsJsonStringResponse() {
+    fun testApiRejectsJsonStringResponse() {
         val result = transformWithServer(
             "https://media.discordapp.net/attachments/1234/1234/test.mov",
             """"https://e.smol.fi/video123"""",
         )
 
-        assertEquals("https://e.smol.fi/video123", result)
+        assertEquals("https://smol.fi/e/?v=https://media.discordapp.net/attachments/1234%2F1234%2Ftest.mov", result)
+    }
+
+    @Test
+    fun testApiShortensNonVideoAttachment() {
+        val result = transformWithServer(
+            "https://media.discordapp.net/attachments/1234/1234/image.png",
+            """{"id":"image123","short":"https://e.smol.fi/v/image123"}""",
+        )
+
+        assertEquals("https://e.smol.fi/v/image123", result)
     }
 
     @Test
@@ -156,6 +176,8 @@ class SmolFiPrependMessageTransformationTest {
         assertEquals(fallback, transformWithServer(original, "failed", status = 500))
         assertEquals(fallback, transformWithServer(original, "{\"error\":\"not found\"}"))
         assertEquals(fallback, transformWithServer(original, "https://example.com/unrelated"))
+        assertEquals(fallback, transformWithServer(original, """{"short_url":"https://e.smol.fi/v/old"}"""))
+        assertEquals(fallback, transformWithServer(original, """{"url":"https://e.smol.fi/v/old"}"""))
     }
 
     @Test
@@ -165,7 +187,7 @@ class SmolFiPrependMessageTransformationTest {
 
         val result = transformWithServer(original, "https://e.smol.fi/late", delayMillis = 5000)
 
-        assertEquals("https://smol.fi/e/?v=https://media.discordapp.net/attachments/1234/1234/test.mp4", result)
+        assertEquals("https://smol.fi/e/?v=https://media.discordapp.net/attachments/1234%2F1234%2Ftest.mp4", result)
         assertTrue((System.nanoTime() - start) / 1_000_000 < 4500, "API request exceeded the 3-second timeout")
     }
 
