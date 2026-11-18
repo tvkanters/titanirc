@@ -26,6 +26,7 @@ dependencies {
     implementation("org.slf4j:slf4j-log4j12:2.0.7")
     implementation("org.slf4j:slf4j-simple:2.0.7")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0")
 
     // 0.19.0 is necessary to fix https://github.com/kordlib/kord/issues/1075, return to normal releases and remove
     // maven("https://repo.kordex.dev/mirror") when the fix is published
