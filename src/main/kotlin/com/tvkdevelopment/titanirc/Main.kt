@@ -60,7 +60,7 @@ object Main {
                     discord to irc,
                     listOf(
                         FormattingDiscordToIrcMessageTransformation(),
-                        SmolFiPrependMessageTransformation(),
+                        SmolFiPrependMessageTransformation(configuration.smolFiApiKey),
                         VxStripMessageTransformation(),
                         // Tracking is not stripped because URLs don't work without it anymore.
                         //DiscordUrlTrackingStripMessageTransformation(),
