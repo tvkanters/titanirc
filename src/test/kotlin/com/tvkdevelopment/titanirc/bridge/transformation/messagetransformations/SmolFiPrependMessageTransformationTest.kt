@@ -89,7 +89,7 @@ class SmolFiPrependMessageTransformationTest {
     }
 
     @Test
-    fun testSmolFiNonVideo() {
+    fun testNoSmolFiNonVideo() {
         // GIVEN
         val message = "Hi https://media.discordapp.net/attachments/1234/1234/test.jpg no .mp4"
 
@@ -98,17 +98,17 @@ class SmolFiPrependMessageTransformationTest {
 
         // THEN
         assertEquals(
-            "Hi https://smol.fi/e/?v=media.discordapp.net%2Fattachments%2F1234%2F1234%2Ftest.jpg no .mp4",
+            "Hi https://media.discordapp.net/attachments/1234/1234/test.jpg no .mp4",
             transformedMessage
         )
     }
 
     @Test
-    fun testSmolFiExtensionlessAttachment() {
+    fun testNoSmolFiExtensionlessAttachment() {
         val message = "Hi https://cdn.discordapp.com/attachments/1234/1234/file"
 
         assertEquals(
-            "Hi https://smol.fi/e/?v=media.discordapp.net%2Fattachments%2F1234%2F1234%2Ffile",
+            message,
             sut.transform("", "", message)
         )
     }
@@ -131,7 +131,7 @@ class SmolFiPrependMessageTransformationTest {
             requestBody.set(request.requestBody.bufferedReader().use { it.readText() })
         }
 
-        assertEquals("Hi https://e.smol.fi/v/sSQesjJ", result)
+        assertEquals("Hi https://e.smol.fi/v/sSQesjJ?file=test.mp4", result)
         assertEquals("POST", method.get())
         assertEquals("Bearer test-api-key", authorization.get())
         assertEquals("application/json", contentType.get())
@@ -165,7 +165,17 @@ class SmolFiPrependMessageTransformationTest {
             """{"id":"image123","short":"https://e.smol.fi/v/image123"}""",
         )
 
-        assertEquals("https://e.smol.fi/v/image123", result)
+        assertEquals("https://e.smol.fi/v/image123?file=image.png", result)
+    }
+
+    @Test
+    fun testApiShortensExtensionlessAttachment() {
+        val result = transformWithServer(
+            "https://cdn.discordapp.com/attachments/1234/1234/file",
+            """{"short":"https://e.smol.fi/v/file123"}""",
+        )
+
+        assertEquals("https://e.smol.fi/v/file123?file=file", result)
     }
 
     @Test
@@ -175,7 +185,24 @@ class SmolFiPrependMessageTransformationTest {
             """{"short":"https://example.com/returned"}""",
         )
 
-        assertEquals("https://example.com/returned", result)
+        assertEquals("https://example.com/returned?file=test.mp4", result)
+    }
+
+    @Test
+    fun testApiPreservesExistingShortUrlParameters() {
+        val result = transformWithServer(
+            "https://media.discordapp.net/attachments/1234/1234/image.png?ex=123",
+            """{"short":"https://e.smol.fi/v/image123?existing=value"}""",
+        )
+
+        assertEquals("https://e.smol.fi/v/image123?existing=value", result)
+    }
+
+    @Test
+    fun testApiFailureLeavesNonVideoUnchanged() {
+        val original = "https://media.discordapp.net/attachments/1234/1234/image.jpg?ex=123"
+
+        assertEquals(original, transformWithServer(original, "failed", status = 500))
     }
 
     @Test

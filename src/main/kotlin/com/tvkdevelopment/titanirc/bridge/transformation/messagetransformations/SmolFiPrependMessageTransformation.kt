@@ -22,13 +22,18 @@ class SmolFiPrependMessageTransformation(
 
     override fun transform(sourceChannel: String, targetChannel: String, message: String): String =
         message.replace(REGEX) { match ->
-            apiKey?.takeIf { it.isNotBlank() }
-                ?.let { key ->
-                    runCatching { shorten(key, match.value) }
-                        .onFailure { if (it is InterruptedException) Thread.currentThread().interrupt() }
-                        .getOrNull()
-                }
-                ?: "https://smol.fi/e/?v=media.discordapp.net%2Fattachments%2F${encode(match.groupValues[1])}"
+            apiKey?.let { key ->
+                runCatching { shorten(key, match.value) }
+                    .onFailure { if (it is InterruptedException) Thread.currentThread().interrupt() }
+                    .getOrNull()
+                    ?.let { short ->
+                        if ('?' in short) short else "$short?file=${match.groupValues[2]}"
+                    }
+            } ?: if (LEGACY_VIDEO_EXTENSION.containsMatchIn(match.groupValues[2])) {
+                "https://smol.fi/e/?v=media.discordapp.net%2Fattachments%2F${encode(match.groupValues[1])}"
+            } else {
+                match.value
+            }
         }
 
     private fun shorten(key: String, originalUrl: String): String? {
@@ -55,7 +60,8 @@ class SmolFiPrependMessageTransformation(
         private val API_TIMEOUT = Duration.ofSeconds(2)
 
         private val REGEX =
-            Regex("""(?<!https://smol.fi/e/\?v=)https?://(?:media|cdn)\.discordapp\.(?:net|com)/attachments/(\S+)""")
+            Regex("""(?<!https://smol.fi/e/\?v=)https?://(?:media|cdn)\.discordapp\.(?:net|com)/attachments/((?:[^/\s?]+/)*([^/\s?]+)(?:\?\S*)?)""")
+        private val LEGACY_VIDEO_EXTENSION = Regex("""\.(?:mp4|webm|mov)$""")
 
         private fun encode(string: String) = URLEncoder.encode(string, Charsets.UTF_8.name())
     }
