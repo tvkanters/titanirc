@@ -7,7 +7,6 @@ import java.net.InetSocketAddress
 import java.net.URI
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class SmolFiPrependMessageTransformationTest {
 
@@ -212,12 +211,14 @@ class SmolFiPrependMessageTransformationTest {
     @Test
     fun testApiTimesOutAfterTwoSeconds() {
         val original = "https://media.discordapp.net/attachments/1234/1234/test.mp4"
-        val start = System.nanoTime()
 
-        val result = transformWithServer(original, "https://e.smol.fi/late", delayMillis = 4000)
+        val result = transformWithServer(
+            original,
+            """{"short":"https://e.smol.fi/v/late"}""",
+            delayMillis = 2500,
+        )
 
         assertEquals("https://smol.fi/e/?v=media.discordapp.net%2Fattachments%2F1234%2F1234%2Ftest.mp4", result)
-        assertTrue((System.nanoTime() - start) / 1_000_000 < 3000, "API request exceeded the 2-second timeout")
     }
 
     private fun transformWithServer(

@@ -5,19 +5,13 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
+import java.net.HttpURLConnection
 import java.net.URI
 import java.net.URLEncoder
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
-import java.time.Duration
 
 class SmolFiPrependMessageTransformation(
     private val apiKey: String? = null,
     private val endpoint: URI = API_ENDPOINT,
-    private val httpClient: HttpClient = HttpClient.newBuilder()
-        .connectTimeout(API_TIMEOUT)
-        .build(),
 ) : MessageTransformation {
 
     override fun transform(sourceChannel: String, targetChannel: String, message: String): String =
@@ -35,27 +29,37 @@ class SmolFiPrependMessageTransformation(
         }
 
     private fun shorten(key: String, originalUrl: String): String? {
-        val request = HttpRequest.newBuilder(endpoint)
-            .timeout(API_TIMEOUT)
-            .header("Authorization", "Bearer $key")
-            .header("Content-Type", "application/json")
-            .POST(HttpRequest.BodyPublishers.ofString("""{"url":${JsonPrimitive(originalUrl)}}"""))
-            .build()
+        val connection = (endpoint.toURL().openConnection() as HttpURLConnection).apply {
+            requestMethod = "POST"
+            instanceFollowRedirects = false
+            connectTimeout = API_TIMEOUT_MILLIS
+            readTimeout = API_TIMEOUT_MILLIS
+            setRequestProperty("Authorization", "Bearer $key")
+            setRequestProperty("Content-Type", "application/json")
+            doOutput = true
+        }
 
-        return httpClient.send(request, HttpResponse.BodyHandlers.ofString())
-            .takeIf { it.statusCode() == 200 }
-            ?.body()
-            ?.let { runCatching { Json.parseToJsonElement(it) }.getOrNull() }
-            ?.let { it as? JsonObject }
-            ?.get("short")
-            ?.let { it as? JsonPrimitive }
-            ?.takeIf { it.isString }
-            ?.contentOrNull
+        return try {
+            connection.apply {
+                outputStream.use {
+                    it.write("""{"url":${JsonPrimitive(originalUrl)}}""".toByteArray(Charsets.UTF_8))
+                }
+            }.takeIf { it.responseCode == 200 }
+                ?.inputStream?.bufferedReader(Charsets.UTF_8)?.use { it.readText() }
+                ?.let { runCatching { Json.parseToJsonElement(it) }.getOrNull() }
+                ?.let { it as? JsonObject }
+                ?.get("short")
+                ?.let { it as? JsonPrimitive }
+                ?.takeIf { it.isString }
+                ?.contentOrNull
+        } finally {
+            connection.disconnect()
+        }
     }
 
     companion object {
         private val API_ENDPOINT = URI.create("https://e.smol.fi/api/s")
-        private val API_TIMEOUT = Duration.ofSeconds(2)
+        private const val API_TIMEOUT_MILLIS = 2000
 
         private val REGEX =
             Regex("""(?<!https://smol.fi/e/\?v=)https?://(?:media|cdn)\.discordapp\.(?:net|com)/attachments/((?:[^/\s?]+/)*([^/\s?]+)(?:\?\S*)?)""")
