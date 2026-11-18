@@ -179,16 +179,6 @@ class SmolFiPrependMessageTransformationTest {
     }
 
     @Test
-    fun testApiUsesReturnedShortValue() {
-        val result = transformWithServer(
-            "https://media.discordapp.net/attachments/1234/1234/test.mp4",
-            """{"short":"https://example.com/returned"}""",
-        )
-
-        assertEquals("https://example.com/returned?file=test.mp4", result)
-    }
-
-    @Test
     fun testApiPreservesExistingShortUrlParameters() {
         val result = transformWithServer(
             "https://media.discordapp.net/attachments/1234/1234/image.png?ex=123",

@@ -29,11 +29,9 @@ class SmolFiPrependMessageTransformation(
                     ?.let { short ->
                         if ('?' in short) short else "$short?file=${match.groupValues[2]}"
                     }
-            } ?: if (LEGACY_VIDEO_EXTENSION.containsMatchIn(match.groupValues[2])) {
-                "https://smol.fi/e/?v=media.discordapp.net%2Fattachments%2F${encode(match.groupValues[1])}"
-            } else {
-                match.value
-            }
+            } ?: match.takeIf { LEGACY_VIDEO_EXTENSION.containsMatchIn(it.groupValues[2]) }
+                ?.let { "https://smol.fi/e/?v=media.discordapp.net%2Fattachments%2F${encode(it.groupValues[1])}" }
+                ?: match.value
         }
 
     private fun shorten(key: String, originalUrl: String): String? {

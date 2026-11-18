@@ -25,6 +25,7 @@ interface TitanircConfiguration {
     val discordChannelTopicsToPreserve: Set<String> get() = emptySet()
     val discordEventSyncGuildToChannels: Map<String, List<EventSyncChannel>>
         get() = DEFAULT_EVENT_SYNC
+
     data class EventSyncChannel(val channel: String, val label: String? = null)
 
     val smolFiApiKey: String? get() = null
