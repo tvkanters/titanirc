@@ -40,11 +40,11 @@ class SmolFiPrependMessageTransformation(
         }
 
         return try {
-            connection.outputStream.use {
-                it.write("""{"url":${JsonPrimitive(originalUrl)}}""".toByteArray(Charsets.UTF_8))
-            }
-
-            connection.takeIf { it.responseCode == 200 }
+            connection.apply {
+                outputStream.use {
+                    it.write("""{"url":${JsonPrimitive(originalUrl)}}""".toByteArray(Charsets.UTF_8))
+                }
+            }.takeIf { it.responseCode == 200 }
                 ?.inputStream?.bufferedReader(Charsets.UTF_8)?.use { it.readText() }
                 ?.let { runCatching { Json.parseToJsonElement(it) }.getOrNull() }
                 ?.let { it as? JsonObject }
