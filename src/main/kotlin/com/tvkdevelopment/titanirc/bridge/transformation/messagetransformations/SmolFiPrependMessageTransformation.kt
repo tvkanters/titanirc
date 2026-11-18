@@ -14,61 +14,49 @@ import java.time.Duration
 
 class SmolFiPrependMessageTransformation(
     private val apiKey: String? = null,
-    private val endpoint: URI = URI.create("https://e.smol.fi/api/s"),
+    private val endpoint: URI = API_ENDPOINT,
     private val httpClient: HttpClient = HttpClient.newBuilder()
-        .connectTimeout(Duration.ofSeconds(3))
+        .connectTimeout(API_TIMEOUT)
         .build(),
 ) : MessageTransformation {
 
     override fun transform(sourceChannel: String, targetChannel: String, message: String): String =
         message.replace(REGEX) { match ->
-            val fallback = "https://smol.fi/e/?v=media.discordapp.net%2Fattachments%2F${encode(match.groupValues[1])}"
-            val key = apiKey?.takeIf { it.isNotBlank() } ?: return@replace fallback
-
-            try {
-                shorten(key, match.value) ?: fallback
-            } catch (_: InterruptedException) {
-                Thread.currentThread().interrupt()
-                fallback
-            } catch (_: Exception) {
-                fallback
-            }
+            apiKey?.takeIf { it.isNotBlank() }
+                ?.let { key ->
+                    runCatching { shorten(key, match.value) }
+                        .onFailure { if (it is InterruptedException) Thread.currentThread().interrupt() }
+                        .getOrNull()
+                }
+                ?: "https://smol.fi/e/?v=media.discordapp.net%2Fattachments%2F${encode(match.groupValues[1])}"
         }
 
     private fun shorten(key: String, originalUrl: String): String? {
         val request = HttpRequest.newBuilder(endpoint)
-            .timeout(Duration.ofSeconds(3))
+            .timeout(API_TIMEOUT)
             .header("Authorization", "Bearer $key")
             .header("Content-Type", "application/json")
             .POST(HttpRequest.BodyPublishers.ofString("""{"url":${JsonPrimitive(originalUrl)}}"""))
             .build()
 
-        val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
-        if (response.statusCode() !in 200..299) return null
-
-        val shortUrl = try {
-            val json = Json.parseToJsonElement(response.body()) as? JsonObject
-            (json?.get("short") as? JsonPrimitive)?.takeIf { it.isString }?.contentOrNull
-        } catch (_: Exception) {
-            null
-        }
-
-        return shortUrl?.takeIf { isValidShortUrl(it) }
+        return httpClient.send(request, HttpResponse.BodyHandlers.ofString())
+            .takeIf { it.statusCode() == 200 }
+            ?.body()
+            ?.let { runCatching { Json.parseToJsonElement(it) }.getOrNull() }
+            ?.let { it as? JsonObject }
+            ?.get("short")
+            ?.let { it as? JsonPrimitive }
+            ?.takeIf { it.isString }
+            ?.contentOrNull
     }
 
     companion object {
+        private val API_ENDPOINT = URI.create("https://e.smol.fi/api/s")
+        private val API_TIMEOUT = Duration.ofSeconds(2)
+
         private val REGEX =
             Regex("""(?<!https://smol.fi/e/\?v=)https?://(?:media|cdn)\.discordapp\.(?:net|com)/attachments/(\S+)""")
 
         private fun encode(string: String) = URLEncoder.encode(string, Charsets.UTF_8.name())
-
-        private fun isValidShortUrl(value: String): Boolean = try {
-            val uri = URI(value)
-            uri.scheme == "https" &&
-                (uri.host == "smol.fi" || uri.host?.endsWith(".smol.fi") == true) &&
-                !uri.rawPath.isNullOrBlank() && uri.userInfo == null && uri.rawFragment == null
-        } catch (_: Exception) {
-            false
-        }
     }
 }

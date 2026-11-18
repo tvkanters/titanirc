@@ -98,7 +98,7 @@ class SmolFiPrependMessageTransformationTest {
 
         // THEN
         assertEquals(
-            "Hi https://smol.fi/e/?v=https://media.discordapp.net/attachments/1234%2F1234%2Ftest.jpg no .mp4",
+            "Hi https://smol.fi/e/?v=media.discordapp.net%2Fattachments%2F1234%2F1234%2Ftest.jpg no .mp4",
             transformedMessage
         )
     }
@@ -108,7 +108,7 @@ class SmolFiPrependMessageTransformationTest {
         val message = "Hi https://cdn.discordapp.com/attachments/1234/1234/file"
 
         assertEquals(
-            "Hi https://smol.fi/e/?v=https://media.discordapp.net/attachments/1234%2F1234%2Ffile",
+            "Hi https://smol.fi/e/?v=media.discordapp.net%2Fattachments%2F1234%2F1234%2Ffile",
             sut.transform("", "", message)
         )
     }
@@ -145,7 +145,7 @@ class SmolFiPrependMessageTransformationTest {
             "https://e.smol.fi/video123",
         )
 
-        assertEquals("https://smol.fi/e/?v=https://media.discordapp.net/attachments/1234%2F1234%2Ftest.webm", result)
+        assertEquals("https://smol.fi/e/?v=media.discordapp.net%2Fattachments%2F1234%2F1234%2Ftest.webm", result)
     }
 
     @Test
@@ -155,7 +155,7 @@ class SmolFiPrependMessageTransformationTest {
             """"https://e.smol.fi/video123"""",
         )
 
-        assertEquals("https://smol.fi/e/?v=https://media.discordapp.net/attachments/1234%2F1234%2Ftest.mov", result)
+        assertEquals("https://smol.fi/e/?v=media.discordapp.net%2Fattachments%2F1234%2F1234%2Ftest.mov", result)
     }
 
     @Test
@@ -169,26 +169,38 @@ class SmolFiPrependMessageTransformationTest {
     }
 
     @Test
+    fun testApiUsesReturnedShortValue() {
+        val result = transformWithServer(
+            "https://media.discordapp.net/attachments/1234/1234/test.mp4",
+            """{"short":"https://example.com/returned"}""",
+        )
+
+        assertEquals("https://example.com/returned", result)
+    }
+
+    @Test
     fun testApiFailureFallsBackToOriginalBehaviour() {
         val original = "http://cdn.discordapp.com/attachments/1234/1234/test.mp4?ex=123&hm=abc"
-        val fallback = "https://smol.fi/e/?v=https://media.discordapp.net/attachments/1234%2F1234%2Ftest.mp4%3Fex%3D123%26hm%3Dabc"
+        val fallback = "https://smol.fi/e/?v=media.discordapp.net%2Fattachments%2F1234%2F1234%2Ftest.mp4%3Fex%3D123%26hm%3Dabc"
 
         assertEquals(fallback, transformWithServer(original, "failed", status = 500))
+        assertEquals(fallback, transformWithServer(original, """{"short":"https://e.smol.fi/v/other"}""", status = 201))
         assertEquals(fallback, transformWithServer(original, "{\"error\":\"not found\"}"))
         assertEquals(fallback, transformWithServer(original, "https://example.com/unrelated"))
         assertEquals(fallback, transformWithServer(original, """{"short_url":"https://e.smol.fi/v/old"}"""))
         assertEquals(fallback, transformWithServer(original, """{"url":"https://e.smol.fi/v/old"}"""))
+        assertEquals(fallback, transformWithServer(original, """{"short":42}"""))
     }
 
     @Test
-    fun testApiTimesOutAfterThreeSeconds() {
+    fun testApiTimesOutAfterTwoSeconds() {
         val original = "https://media.discordapp.net/attachments/1234/1234/test.mp4"
         val start = System.nanoTime()
 
-        val result = transformWithServer(original, "https://e.smol.fi/late", delayMillis = 5000)
+        val result = transformWithServer(original, "https://e.smol.fi/late", delayMillis = 4000)
 
-        assertEquals("https://smol.fi/e/?v=https://media.discordapp.net/attachments/1234%2F1234%2Ftest.mp4", result)
-        assertTrue((System.nanoTime() - start) / 1_000_000 < 4500, "API request exceeded the 3-second timeout")
+        assertEquals("https://smol.fi/e/?v=media.discordapp.net%2Fattachments%2F1234%2F1234%2Ftest.mp4", result)
+        assertTrue((System.nanoTime() - start) / 1_000_000 < 3000, "API request exceeded the 2-second timeout")
     }
 
     private fun transformWithServer(

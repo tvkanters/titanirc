@@ -15,7 +15,6 @@ interface TitanircConfiguration {
     val ircBotUsernames: Set<String> get() = emptySet()
 
     val discordToken: String
-    val smolFiApiKey: String? get() = null
     val discordNick: String
         get() = "\uD83D\uDCAC"
     val discordGuilds: Set<String>
@@ -26,6 +25,8 @@ interface TitanircConfiguration {
     val discordChannelTopicsToPreserve: Set<String> get() = emptySet()
     val discordEventSyncGuildToChannels: Map<String, List<EventSyncChannel>>
         get() = DEFAULT_EVENT_SYNC
+
+    val smolFiApiKey: String? get() = null
 
     data class EventSyncChannel(val channel: String, val label: String? = null)
 }
